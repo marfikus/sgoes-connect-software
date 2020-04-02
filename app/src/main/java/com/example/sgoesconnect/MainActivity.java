@@ -11,17 +11,23 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.UUID;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
+    private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static String macAddress = "98:D3:71:F5:DA:46";
+    private BluetoothSocket btSocket = null;
     Button bt_settings;
+    Button bt_connect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter != null) {
             //Toast.makeText(getApplicationContext(), "bluetooth adapter is detected", Toast.LENGTH_SHORT).show();
@@ -51,6 +57,21 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
             }
         });
+
+        bt_connect = (Button) findViewById(R.id.bt_connect);
+        bt_connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                Toast.makeText(getApplicationContext(), bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
+
+                //btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                //bluetoothAdapter.cancelDiscovery();
+                //btSocket.connect();
+
+            }
+        });
+
 
 
     }
