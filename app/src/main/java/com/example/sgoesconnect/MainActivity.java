@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
             outStream = tmpOut;
         }
 
-        public void sendData(String message) {
-            byte[] msgBuffer = message.getBytes();
+        public void sendData(byte[] msgBuffer) {
+            //byte[] msgBuffer = msg.getBytes();
 
             try {
                 outStream.write(msgBuffer);
@@ -59,12 +59,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static String macAddress = "98:D3:71:F5:DA:46";
     private BluetoothSocket btSocket = null;
     Button bt_settings;
     Button bt_connect;
+    Button connect_to_sensor;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
 
@@ -131,13 +142,24 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     try {
                         btSocket.close();
-                        Toast.makeText(getApplicationContext(), "exception, connect is closed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "exception, socket is closed", Toast.LENGTH_SHORT).show();
                     } catch (IOException e2) {
                         myError("Fatal Error", "не могу закрыть сокет" + e2.getMessage() + ".");
                     }
                 }
 
                 myThread = new ConnectedThread(btSocket);
+            }
+        });
+
+        connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        connect_to_sensor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] data = new byte[] { (byte)0x01, (byte)0xff};
+                //byte[] data = hexStringToByteArray("01ff");
+
+                myThread.sendData(data);
             }
         });
     }
