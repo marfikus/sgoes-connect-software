@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothSocket btSocket = null;
     Button bt_settings;
     Button bt_connect;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +75,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket copyBtSocket;
+        private final OutputStream outStream;
 
+        public ConnectedThread(BluetoothSocket socket) {
+            copyBtSocket = socket;
+            OutputStream tmpOut = null;
+
+            try {
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) {
+
+            }
+            outStream = tmpOut;
+        }
+
+        public void sendData(String message) {
+            byte[] msgBuffer = message.getBytes();
+
+            try {
+                outStream.write(msgBuffer);
+            } catch (IOException e) {
+
+            }
+        }
+
+        public void cancel() {
+            try {
+                copyBtSocket.close();
+            } catch (IOException e) {
+
+            }
+        }
+
+        public Object status_outStream() {
+            if (outStream == null) {
+                return null;
+            } else {
+                return outStream;
+            }
+        }
+    }
 
     }
 }
