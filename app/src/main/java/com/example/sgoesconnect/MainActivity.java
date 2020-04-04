@@ -6,14 +6,20 @@ import android.bluetooth.*;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,16 +27,44 @@ public class MainActivity extends AppCompatActivity {
     private class ConnectedThread extends Thread {
         private final BluetoothSocket copyBtSocket;
         private final OutputStream outStream;
+        private final InputStream inStream;
 
         public ConnectedThread(BluetoothSocket socket) {
             copyBtSocket = socket;
             OutputStream tmpOut = null;
+            InputStream tmpIn = null;
 
             try {
                 tmpOut = socket.getOutputStream();
+                tmpIn = socket.getInputStream();
             } catch (IOException e) {
+                //
             }
             outStream = tmpOut;
+            inStream = tmpIn;
+        }
+
+        public void run() {
+            byte[] buffer = new byte[1024];
+            //buffer = {0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            int numBytes;
+            //todo Скорость увеличить в скетче ардуино, возможно из-за этого не успевает за один раз принять всё...
+            while (true) {
+                try {
+                    //if (inStream.available() >= 1) {
+                        //numBytes = inStream.read(buffer, 0, 1);
+                        numBytes = inStream.read(buffer);
+                        byte[] data = Arrays.copyOf(buffer, numBytes);
+                        Log.d(LOG_TAG, "buffer:" + bytesToHex(data));
+                        myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
+                    //}
+                    //numBytes = inStream.read(buffer);
+                    //Log.d(LOG_TAG, "numBytes:" + numBytes);
+                    //myHandler.obtainMessage(arduinoData, numBytes, -1, buffer).sendToTarget();
+                } catch (IOException e) {
+                    break;
+                }
+            }
         }
 
         public void sendData(byte[] msgBuffer) {
@@ -59,14 +93,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // from: https://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java/140861#140861
+    // Dave L.
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i+1), 16));
+                                 + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    // from: https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+    // maybeWeCouldStealAVan
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     private static final int REQUEST_ENABLE_BT = 0;
@@ -78,11 +127,19 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
+    EditText sensor_address;
+    TextView gas_level_nkpr;
+    Handler myHandler;
+    final int arduinoData = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d(LOG_TAG, "ready");
+
+        gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -149,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 myThread = new ConnectedThread(btSocket);
+                myThread.start();
             }
         });
 
@@ -156,12 +214,37 @@ public class MainActivity extends AppCompatActivity {
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] data = new byte[] { (byte)0x01, (byte)0xff};
-                //byte[] data = hexStringToByteArray("01ff");
+
+                // первый способ формирования массива байт
+                //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
+
+                // второй способ
+                String outputHexString = "08010300000001840A";
+                byte[] data = hexStringToByteArray(outputHexString);
+                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
+
+                //sensor_address = (EditText) findViewById(R.id.sensor_address);
+                //byte[] data = hexStringToByteArray(sensor_address.getText().toString());
 
                 myThread.sendData(data);
             }
         });
+
+        myHandler = new Handler() {
+            public void handleMessage(android.os.Message msg) {
+                switch (msg.what) {
+                    case arduinoData:
+                        byte[] readBuf = (byte[]) msg.obj;
+                        // todo склеить несколько приходящих сообщений...
+                        //String strIncom = new String(readBuf, 0, msg.arg1);
+                        String inputHexString = bytesToHex(readBuf);
+                        //Log.d(LOG_TAG, "readBuf:" + readBuf);
+                        //Log.d(LOG_TAG, "inputHexString:" + inputHexString);
+                        gas_level_nkpr.setText(inputHexString);
+                        break;
+                }
+            };
+        };
     }
 
 /*    @Override
