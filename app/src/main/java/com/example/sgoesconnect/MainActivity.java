@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     numBytes = inStream.read(buffer);
                     byte[] data = Arrays.copyOf(buffer, numBytes);
-                    Log.d(LOG_TAG, "data:" + bytesToHex(data));
+                    //Log.d(LOG_TAG, "data:" + bytesToHex(data));
                     myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
                 } catch (IOException e) {
                     break;
@@ -111,6 +111,18 @@ public class MainActivity extends AppCompatActivity {
         return new String(hexChars);
     }
 
+    // from: http://developer.alexanderklimov.ru/android/java/array.php#concat
+    private byte[] concatArray(byte[] a, byte[] b) {
+        if (a == null)
+            return b;
+        if (b == null)
+            return a;
+        byte[] r = new byte[a.length + b.length];
+        System.arraycopy(a, 0, r, 0, a.length);
+        System.arraycopy(b, 0, r, a.length, b.length);
+        return r;
+    }
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static String macAddress = "98:D3:71:F5:DA:46";
@@ -124,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
     TextView gas_level_nkpr;
     Handler myHandler;
     final int arduinoData = 1;
+    int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
+    byte[] response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,11 +222,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                // Обнуляем счётчик принятых байт и массив:
+                numResponseBytes = 0;
+                response = null;
+
                 // первый способ формирования массива байт
                 //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
 
                 // второй способ
-                String outputHexString = "08010300000001840A";
+                String outputHexString = "010300000001840A";
                 byte[] data = hexStringToByteArray(outputHexString);
                 Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
@@ -227,13 +245,17 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
                     case arduinoData:
+                        // Увеличиваем счётчик принятых байт:
+                        numResponseBytes = numResponseBytes + msg.arg1;
+                        Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
+
+                        // Добавляем принятые байты в общий массив:
                         byte[] readBuf = (byte[]) msg.obj;
-                        // todo склеить несколько приходящих сообщений...
-                        //String strIncom = new String(readBuf, 0, msg.arg1);
-                        String inputHexString = bytesToHex(readBuf);
-                        //Log.d(LOG_TAG, "readBuf:" + readBuf);
-                        //Log.d(LOG_TAG, "inputHexString:" + inputHexString);
-                        gas_level_nkpr.setText(inputHexString);
+                        response = concatArray(response, readBuf);
+                        Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
+//                        Log.d(LOG_TAG, "=================================");
+
+                        gas_level_nkpr.setText(bytesToHex(response));
                         break;
                 }
             };
