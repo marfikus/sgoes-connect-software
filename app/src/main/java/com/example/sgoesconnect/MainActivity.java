@@ -255,20 +255,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }*/
 
-    //TODO  вот это надо как-то переделать...
+    //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if (myThread.status_outStream() != null) {
-            myThread.cancel();
+        if (myThread != null) {
+            if (myThread.status_outStream() != null) {
+                myThread.cancel();
+            }
         }
 
-        try {
-            btSocket.close();
-            Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
-        } catch (IOException e2) {
-            myError("Fatal Error", "В onPause() Не могу закрыть сокет" + e2.getMessage() + ".");
+        if (btSocket != null) {
+            try {
+                btSocket.close();
+                Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
+            } catch (IOException e2) {
+                myError("Fatal Error", "В onDestroy() Не могу закрыть сокет" + e2.getMessage() + ".");
+            }
         }
     }
 
