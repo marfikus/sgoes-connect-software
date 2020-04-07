@@ -46,21 +46,14 @@ public class MainActivity extends AppCompatActivity {
 
         public void run() {
             byte[] buffer = new byte[1024];
-            //buffer = {0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0};
             int numBytes;
-            //todo Скорость увеличить в скетче ардуино, возможно из-за этого не успевает за один раз принять всё...
+
             while (true) {
                 try {
-                    //if (inStream.available() >= 1) {
-                        //numBytes = inStream.read(buffer, 0, 1);
-                        numBytes = inStream.read(buffer);
-                        byte[] data = Arrays.copyOf(buffer, numBytes);
-                        Log.d(LOG_TAG, "buffer:" + bytesToHex(data));
-                        myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
-                    //}
-                    //numBytes = inStream.read(buffer);
-                    //Log.d(LOG_TAG, "numBytes:" + numBytes);
-                    //myHandler.obtainMessage(arduinoData, numBytes, -1, buffer).sendToTarget();
+                    numBytes = inStream.read(buffer);
+                    byte[] data = Arrays.copyOf(buffer, numBytes);
+                    Log.d(LOG_TAG, "data:" + bytesToHex(data));
+                    myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
                 } catch (IOException e) {
                     break;
                 }
