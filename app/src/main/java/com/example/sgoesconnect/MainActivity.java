@@ -123,6 +123,29 @@ public class MainActivity extends AppCompatActivity {
         return r;
     }
 
+    private void checkResponse() {
+        // TODO: 08.04.2020 возможно проще будет проверять response.length и отказаться от numResponseBytes
+        if (numResponseBytes < 5) {
+            return;
+        }
+        // отделяем 2 последних байта ответа
+        byte[] responseMsg = new byte[response.length - 2];
+        byte[] responseCRC = new byte[2];
+        System.arraycopy(response, 0, responseMsg, 0, response.length - 2);
+//        Log.d(LOG_TAG, "responseMsg: " + bytesToHex(responseMsg));
+        System.arraycopy(response, response.length - 2, responseCRC, 0, responseCRC.length);
+//        Log.d(LOG_TAG, "responseCRC: " + bytesToHex(responseCRC));
+
+        // сравниваем последние 2 байта ответа с тем, что вычислит функция calcCRC
+        
+    }
+
+    private byte[] calcCRC(byte[] msg) {
+        //
+
+        return new byte[] {33, 33}; //2 байта crc
+    }
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static String macAddress = "98:D3:71:F5:DA:46";
@@ -254,6 +277,8 @@ public class MainActivity extends AppCompatActivity {
                         response = concatArray(response, readBuf);
                         Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
+
+                        checkResponse();
 
                         gas_level_nkpr.setText(bytesToHex(response));
                         break;
