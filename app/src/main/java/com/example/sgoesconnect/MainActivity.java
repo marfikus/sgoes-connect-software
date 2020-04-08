@@ -19,8 +19,10 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.zip.Checksum;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -86,9 +88,76 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // from: https://gist.github.com/liuyork/6978474
+    // liuyork
+    private class CRC16Modbus implements Checksum {
+        private final int[] TABLE = {
+                0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
+                0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
+                0xcc01, 0x0cc0, 0x0d80, 0xcd41, 0x0f00, 0xcfc1, 0xce81, 0x0e40,
+                0x0a00, 0xcac1, 0xcb81, 0x0b40, 0xc901, 0x09c0, 0x0880, 0xc841,
+                0xd801, 0x18c0, 0x1980, 0xd941, 0x1b00, 0xdbc1, 0xda81, 0x1a40,
+                0x1e00, 0xdec1, 0xdf81, 0x1f40, 0xdd01, 0x1dc0, 0x1c80, 0xdc41,
+                0x1400, 0xd4c1, 0xd581, 0x1540, 0xd701, 0x17c0, 0x1680, 0xd641,
+                0xd201, 0x12c0, 0x1380, 0xd341, 0x1100, 0xd1c1, 0xd081, 0x1040,
+                0xf001, 0x30c0, 0x3180, 0xf141, 0x3300, 0xf3c1, 0xf281, 0x3240,
+                0x3600, 0xf6c1, 0xf781, 0x3740, 0xf501, 0x35c0, 0x3480, 0xf441,
+                0x3c00, 0xfcc1, 0xfd81, 0x3d40, 0xff01, 0x3fc0, 0x3e80, 0xfe41,
+                0xfa01, 0x3ac0, 0x3b80, 0xfb41, 0x3900, 0xf9c1, 0xf881, 0x3840,
+                0x2800, 0xe8c1, 0xe981, 0x2940, 0xeb01, 0x2bc0, 0x2a80, 0xea41,
+                0xee01, 0x2ec0, 0x2f80, 0xef41, 0x2d00, 0xedc1, 0xec81, 0x2c40,
+                0xe401, 0x24c0, 0x2580, 0xe541, 0x2700, 0xe7c1, 0xe681, 0x2640,
+                0x2200, 0xe2c1, 0xe381, 0x2340, 0xe101, 0x21c0, 0x2080, 0xe041,
+                0xa001, 0x60c0, 0x6180, 0xa141, 0x6300, 0xa3c1, 0xa281, 0x6240,
+                0x6600, 0xa6c1, 0xa781, 0x6740, 0xa501, 0x65c0, 0x6480, 0xa441,
+                0x6c00, 0xacc1, 0xad81, 0x6d40, 0xaf01, 0x6fc0, 0x6e80, 0xae41,
+                0xaa01, 0x6ac0, 0x6b80, 0xab41, 0x6900, 0xa9c1, 0xa881, 0x6840,
+                0x7800, 0xb8c1, 0xb981, 0x7940, 0xbb01, 0x7bc0, 0x7a80, 0xba41,
+                0xbe01, 0x7ec0, 0x7f80, 0xbf41, 0x7d00, 0xbdc1, 0xbc81, 0x7c40,
+                0xb401, 0x74c0, 0x7580, 0xb541, 0x7700, 0xb7c1, 0xb681, 0x7640,
+                0x7200, 0xb2c1, 0xb381, 0x7340, 0xb101, 0x71c0, 0x7080, 0xb041,
+                0x5000, 0x90c1, 0x9181, 0x5140, 0x9301, 0x53c0, 0x5280, 0x9241,
+                0x9601, 0x56c0, 0x5780, 0x9741, 0x5500, 0x95c1, 0x9481, 0x5440,
+                0x9c01, 0x5cc0, 0x5d80, 0x9d41, 0x5f00, 0x9fc1, 0x9e81, 0x5e40,
+                0x5a00, 0x9ac1, 0x9b81, 0x5b40, 0x9901, 0x59c0, 0x5880, 0x9841,
+                0x8801, 0x48c0, 0x4980, 0x8941, 0x4b00, 0x8bc1, 0x8a81, 0x4a40,
+                0x4e00, 0x8ec1, 0x8f81, 0x4f40, 0x8d01, 0x4dc0, 0x4c80, 0x8c41,
+                0x4400, 0x84c1, 0x8581, 0x4540, 0x8701, 0x47c0, 0x4680, 0x8641,
+                0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040
+        };
+
+
+        private int sum = 0xFFFF;
+
+        public long getValue() {
+            return sum;
+        }
+
+        public void reset() {
+            sum = 0xFFFF;
+        }
+
+        public void update(byte[] b, int off, int len) {
+            for (int i = off; i < off + len; i++)
+                update((int) b[i]);
+        }
+
+        public void update(int b) {
+            sum = (sum >> 8) ^ TABLE[((sum) ^ (b & 0xff)) & 0xff];
+        }
+
+        public byte[] getCrcBytes() {
+            long crc = (int) this.getValue();
+            byte[] byteStr = new byte[2];
+            byteStr[0] = (byte) ((crc & 0x000000ff));
+            byteStr[1] = (byte) ((crc & 0x0000ff00) >>> 8);
+            return byteStr;
+        }
+    }
+
     // from: https://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java/140861#140861
     // Dave L.
-    public static byte[] hexStringToByteArray(String s) {
+    private byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
@@ -100,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
 
     // from: https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
     // maybeWeCouldStealAVan
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
+    private final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    private String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
@@ -129,21 +198,85 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         // отделяем 2 последних байта ответа
-        byte[] responseMsg = new byte[response.length - 2];
-        byte[] responseCRC = new byte[2];
-        System.arraycopy(response, 0, responseMsg, 0, response.length - 2);
-//        Log.d(LOG_TAG, "responseMsg: " + bytesToHex(responseMsg));
-        System.arraycopy(response, response.length - 2, responseCRC, 0, responseCRC.length);
-//        Log.d(LOG_TAG, "responseCRC: " + bytesToHex(responseCRC));
+        byte[] respMsg = new byte[response.length - 2];
+        byte[] respCRC = new byte[2];
+        System.arraycopy(response, 0, respMsg, 0, response.length - 2);
+//        Log.d(LOG_TAG, "respMsg: " + bytesToHex(respMsg));
+        System.arraycopy(response, response.length - 2, respCRC, 0, respCRC.length);
+//        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
 
-        // сравниваем последние 2 байта ответа с тем, что вычислит функция calcCRC
-        
+        // сравниваем последние 2 байта ответа с тем, что вычислит CRC16Modbus
+        //CRC16Modbus crc = new CRC16Modbus();
+        crc.update(respMsg, 0, respMsg.length);
+//        Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
+
+        if (respCRC.equals(crc.getCrcBytes())) {
+            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(crc.getCrcBytes()));
+            return;
+        }
+
+//        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
+//        Log.d(LOG_TAG, "myCRC: " + bytesToHex(myCRC(respMsg, respMsg.length)));
+//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
+
+        // парсим ответ, выводим данные... (тоже отдельные функции)
+        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
     }
 
+    // пока не используется, может и не пригодится
     private byte[] calcCRC(byte[] msg) {
-        //
+        char accumulator = 0xFFFF;
+        int flag;
+        byte CRCHigh, CRCLow;
 
-        return new byte[] {33, 33}; //2 байта crc
+        for (int i = 0; i < msg.length; i++) {
+            accumulator = (char) (msg[i] ^ accumulator);
+
+            for (int j = 0; j < 8; j++) {
+
+                if ((accumulator & 0x0001) == 1) {
+                    accumulator = (char)(accumulator >> 1);
+                    accumulator = (char)(accumulator ^ 0xA001);
+                } else {
+                    accumulator = (char)(accumulator >> 1);
+                }
+            }
+        }
+        //accumulator = (char)(accumulator % 0xFFFF);
+        CRCLow = (byte)(accumulator & 0xFFFF);
+        CRCHigh = (byte)((accumulator >> 8) & 0xFFFF);
+        //0000000000000000
+        return new byte[] {CRCLow, CRCHigh};
+    }
+
+    // пока не используется, может и не пригодится
+    // from: https://www.cyberforum.ru/java-j2se/thread2494525.html
+    // kolyasoul
+    private byte[] myCRC(byte[] message, int length) {
+        byte CRCHigh, CRCLow;
+        char CRCFull = (char) 0xFFFF;
+
+        for (int i = 0; i < length; i++) {
+            CRCFull = (char)(CRCFull ^ message[i]);
+
+            for (int j = 0; j < 8; j++) {
+                if ((CRCFull & 0x0001) == 1) {
+                    CRCFull = (char) ((CRCFull >> 1) ^ 0xA001);
+                } else {
+                    CRCFull = (char) (CRCFull >> 1);
+                }
+            }
+        }
+//        Log.d(LOG_TAG, "CRCFull: " + CRCFull);
+//        CRCHigh = (byte)((CRCFull >> 8) & 0xFFFF);
+//        CRCLow = (byte)(CRCFull & 0x0000FFFF);
+
+        byte[] byteStr = new byte[2];
+        byteStr[0] = (byte) ((CRCFull & 0x000000ff));
+        byteStr[1] = (byte) ((CRCFull & 0x0000ff00) >>> 8);
+
+//        return new byte[] {CRCLow, CRCHigh};
+        return byteStr;
     }
 
     private static final int REQUEST_ENABLE_BT = 0;
@@ -158,9 +291,10 @@ public class MainActivity extends AppCompatActivity {
     EditText sensor_address;
     TextView gas_level_nkpr;
     Handler myHandler;
-    final int arduinoData = 1;
+    final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
-    byte[] response;
+    byte[] response; // текущий ответ датчика
+    CRC16Modbus crc = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +302,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Log.d(LOG_TAG, "ready");
+
+
+//        byte[] respMsg = hexStringToByteArray("0103030105A0");
+//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
+
+        // todo: пока здесь оставлю, потом может перенести, чтобы создавался только при необходимости
+        // todo: в метод создания запроса напрмиер перенести
+        crc = new CRC16Modbus();
+//        crc.update(respMsg, 0, respMsg.length);
+//        Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
+
 
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
 
@@ -237,6 +382,8 @@ public class MainActivity extends AppCompatActivity {
 
                 myThread = new ConnectedThread(btSocket);
                 myThread.start();
+
+
             }
         });
 
@@ -270,12 +417,12 @@ public class MainActivity extends AppCompatActivity {
                     case arduinoData:
                         // Увеличиваем счётчик принятых байт:
                         numResponseBytes = numResponseBytes + msg.arg1;
-                        Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
+                        //Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
 
                         // Добавляем принятые байты в общий массив:
                         byte[] readBuf = (byte[]) msg.obj;
                         response = concatArray(response, readBuf);
-                        Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
+                        //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
 
                         checkResponse();
@@ -283,7 +430,7 @@ public class MainActivity extends AppCompatActivity {
                         gas_level_nkpr.setText(bytesToHex(response));
                         break;
                 }
-            };
+            }
         };
     }
 
