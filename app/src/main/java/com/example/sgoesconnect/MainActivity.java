@@ -23,6 +23,7 @@ import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.zip.Checksum;
+import java.util.BitSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -220,7 +221,51 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
         // парсим ответ, выводим данные... (тоже отдельные функции)
-        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
+//        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
+        parseResponse();
+    }
+
+    private void parseResponse() {
+
+//      Разбор ответа должен производиться на основании запроса.
+//      Сравниваем первый байт запроса с первым байтом ответа (адреса) Если не совпадают:
+        int reqAddress = request[0] & 0xFF; // & 0xFF необходимо для приведения значения байта к виду 0..255
+        int respAddress = response[0] & 0xFF;
+
+        if (reqAddress != respAddress) {
+//          Это ответ на другой запрос, от другого датчика. Выходим?
+            Log.d(LOG_TAG, "reqAddress(" + reqAddress + ") != respAddress(" + respAddress + ")");
+            return;
+        }
+
+//      Сравниваем вторые байты (код функции). Если совпадают:
+        int reqFuncCode = request[1] & 0xFF;
+        int respFuncCode = response[1] & 0xFF;
+
+        if (reqFuncCode == respFuncCode) {
+            Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
+//          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
+//              читаем третий байт - количество байт идущих далее.
+//              в цикле читаем по 2 байта далее, пока не наберём это число
+//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
+
+
+        } else { // не совпадают
+            Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") != respFuncCode(" + respFuncCode + ")");
+//          Если второй байт ответа равен второму байту запроса с единицей в старшем бите (код ошибки):
+            int modReqFuncCode = (request[1] | 0b10000000) & 0xFF; // устанавливаем единицу в старший бит
+
+            if (respFuncCode == modReqFuncCode) {
+                Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") == modReqFuncCode(" + modReqFuncCode + ")");
+//              значит ответ на этот запрос, но с ошибкой:
+//              читаем третий байт ответа и выводим информацию об ошибке...
+                int respError = response[2] & 0xFF;
+                Log.d(LOG_TAG, "Error in response. Error code: " + respError);
+            } else {
+                // значит это хз что за ответ)...
+                Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
+            }
+        }
     }
 
     // пока не используется, может и не пригодится
@@ -292,8 +337,9 @@ public class MainActivity extends AppCompatActivity {
     TextView gas_level_nkpr;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
+    byte[] request; // текущий запрос
+    byte[] response; // текущий ответ
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
-    byte[] response; // текущий ответ датчика
     CRC16Modbus crc = null;
 
     @Override
@@ -401,13 +447,13 @@ public class MainActivity extends AppCompatActivity {
 
                 // второй способ
                 String outputHexString = "010300000001840A";
-                byte[] data = hexStringToByteArray(outputHexString);
+                request = hexStringToByteArray(outputHexString);
                 Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
                 //sensor_address = (EditText) findViewById(R.id.sensor_address);
                 //byte[] data = hexStringToByteArray(sensor_address.getText().toString());
 
-                myThread.sendData(data);
+                myThread.sendData(request);
             }
         });
 
