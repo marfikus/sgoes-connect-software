@@ -245,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
         if (reqFuncCode == respFuncCode) {
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
 //          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
-            // TODO: 11.04.2020 с этого места наверное надо вынести в отдельную функцию parseRespData()
             parseRespData();
 
         } else { // не совпадают
@@ -284,23 +283,39 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int curRegAddress = 0; // адрес текущего регистра
-        int curRegData = 0; // данные из текущего регистра
+        int curRegDataFull = 0; // данные из текущего регистра (2 байта вместе)
+        int curRegDataHighByte = 0; // данные из старшего байта текущего регистра
+        int curRegDataLowByte = 0; // данные из младшего байта текущего регистра
+        int curBytePos = 1; // позиция текущего байта данных в ответе
 
 //            цикл по количеству регистров:
         for (int i = 0; i < reqNumRegisters; i++) {
-//                вычисляем адрес регистра относительно адреса первого регистра из запроса
+//          вычисляем адрес регистра относительно адреса первого регистра из запроса
             curRegAddress = reqFirstRegAddress + i;
             Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
-//                если адрес регистра такой-то:
-            // TODO: 10.04.2020 switch сделать наверное...
-            if (curRegAddress == 0) {
-//                    берём в ответе соответсвующие 2 байта
-//                    преобразовываем их в соответсвии со спецификацией!
-                curRegData = ((response[3 + i] & 0xFF) << 8) | (response[3 + i + 1] & 0xFF);
-                Log.d(LOG_TAG, "curRegData: " + curRegData);
+            curBytePos = curBytePos + 2;
+            Log.d(LOG_TAG, "curBytePos: " + curBytePos);
+//          если адрес регистра такой-то:
+            switch (curRegAddress) {
+                case 0:
+//                  берём в ответе соответсвующие 2 байта
+//                  преобразовываем их в соответсвии со спецификацией!
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
-//                    выводим в соответсвующее поле
-                gas_level_nkpr.setText(Integer.toString(curRegData));
+//                  выводим в соответсвующее поле
+                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+                    break;
+
+                case 1:
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
             }
         }
 
@@ -491,7 +506,9 @@ public class MainActivity extends AppCompatActivity {
                 //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
 
                 // второй способ
-                String outputHexString = "010300000001840A";
+//                String outputHexString = "010300000001840A";
+//                String outputHexString = "010300010001840A";
+                String outputHexString = "010300000002840A";
                 request = hexStringToByteArray(outputHexString);
                 Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
