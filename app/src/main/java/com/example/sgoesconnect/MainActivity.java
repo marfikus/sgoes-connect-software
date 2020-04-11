@@ -246,51 +246,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
 //          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
             // TODO: 11.04.2020 с этого места наверное надо вынести в отдельную функцию parseRespData()
-
-//              читаем третий байт - количество байт идущих далее.
-            int respNumDataBytes = response[2] & 0xFF;
-            Log.d(LOG_TAG, "respNumDataBytes: " + respNumDataBytes);
-
-            // todo: количество регистров и адрес первого пока беру так, а вообще будет формироваться в запросе
-            int reqNumRegisters = ((request[4] & 0xFF) << 8) | (request[5] & 0xFF); // склеивание двух байт в одно целое число
-            Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
-            int reqFirstRegAddress = ((request[2] & 0xFF) << 8) | (request[3] & 0xFF); // склеивание двух байт в одно целое число
-            Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
-
-//            если количество регистров в запросе не равно половине количества байт в ответе (регистры 2х байтные):
-            if ((reqNumRegisters * 2) != respNumDataBytes) {
-                Log.d(LOG_TAG, "reqNumRegisters * 2(" + (reqNumRegisters * 2) + ") != respNumDataBytes(" + respNumDataBytes + ")");
-                return;
-            }
-
-            int curRegAddress = 0; // адрес текущего регистра
-            int curRegData = 0; // данные из текущего регистра
-
-//            цикл по количеству регистров:
-            for (int i = 0; i < reqNumRegisters; i++) {
-//                вычисляем адрес регистра относительно адреса первого регистра из запроса
-                curRegAddress = reqFirstRegAddress + i;
-                Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
-//                если адрес регистра такой-то:
-                // TODO: 10.04.2020 switch сделать наверное...
-                if (curRegAddress == 0) {
-//                    берём в ответе соответсвующие 2 байта
-//                    преобразовываем их в соответсвии со спецификацией!
-                    curRegData = ((response[3 + i] & 0xFF) << 8) | (response[3 + i + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegData: " + curRegData);
-
-//                    выводим в соответсвующее поле
-                    gas_level_nkpr.setText(Integer.toString(curRegData));
-                }
-            }
-
-//              в цикле читаем по 2 байта далее, пока не наберём это число
-//            byte[] respData = new byte[respNumDataBytes];
-//            for (int i = 0; i < respNumDataBytes; i++) {
-//
-//            }
-//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
-
+            parseRespData();
 
         } else { // не совпадают
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") != respFuncCode(" + respFuncCode + ")");
@@ -308,6 +264,53 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
             }
         }
+    }
+
+    private void parseRespData() {
+        // читаем третий байт - количество байт идущих далее.
+        int respNumDataBytes = response[2] & 0xFF;
+        Log.d(LOG_TAG, "respNumDataBytes: " + respNumDataBytes);
+
+        // todo: количество регистров и адрес первого пока беру так, а вообще будет формироваться в запросе
+        int reqNumRegisters = ((request[4] & 0xFF) << 8) | (request[5] & 0xFF); // склеивание двух байт в одно целое число
+        Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
+        int reqFirstRegAddress = ((request[2] & 0xFF) << 8) | (request[3] & 0xFF); // склеивание двух байт в одно целое число
+        Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
+
+//            если количество регистров в запросе не равно половине количества байт в ответе (регистры 2х байтные):
+        if ((reqNumRegisters * 2) != respNumDataBytes) {
+            Log.d(LOG_TAG, "reqNumRegisters * 2(" + (reqNumRegisters * 2) + ") != respNumDataBytes(" + respNumDataBytes + ")");
+            return;
+        }
+
+        int curRegAddress = 0; // адрес текущего регистра
+        int curRegData = 0; // данные из текущего регистра
+
+//            цикл по количеству регистров:
+        for (int i = 0; i < reqNumRegisters; i++) {
+//                вычисляем адрес регистра относительно адреса первого регистра из запроса
+            curRegAddress = reqFirstRegAddress + i;
+            Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
+//                если адрес регистра такой-то:
+            // TODO: 10.04.2020 switch сделать наверное...
+            if (curRegAddress == 0) {
+//                    берём в ответе соответсвующие 2 байта
+//                    преобразовываем их в соответсвии со спецификацией!
+                curRegData = ((response[3 + i] & 0xFF) << 8) | (response[3 + i + 1] & 0xFF);
+                Log.d(LOG_TAG, "curRegData: " + curRegData);
+
+//                    выводим в соответсвующее поле
+                gas_level_nkpr.setText(Integer.toString(curRegData));
+            }
+        }
+
+//              в цикле читаем по 2 байта далее, пока не наберём это число
+//            byte[] respData = new byte[respNumDataBytes];
+//            for (int i = 0; i < respNumDataBytes; i++) {
+//
+//            }
+//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
+
     }
 
     // пока не используется, может и не пригодится
