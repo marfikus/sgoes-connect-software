@@ -206,21 +206,19 @@ public class MainActivity extends AppCompatActivity {
         System.arraycopy(response, response.length - 2, respCRC, 0, respCRC.length);
 //        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
 
-        // сравниваем последние 2 байта ответа с тем, что вычислит CRC16Modbus
+        // сравниваем последние 2 байта ответа с тем, что вычислим здесь
         //CRC16Modbus crc = new CRC16Modbus();
-        crc.update(respMsg, 0, respMsg.length);
-        //Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
+//        crc.update(respMsg, 0, respMsg.length);
+//        Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
+//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
         Log.d(LOG_TAG, "response: " + bytesToHex(response));
 
-        if (!respCRC.equals(crc.getCrcBytes())) {
-            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(crc.getCrcBytes()));
+        // если контрольная сумма из ответа не совпадает с расчётом, то выходим:
+        if (!Arrays.equals(respCRC, calcCRC(respMsg))) {
+            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
             return;
         }
-
-//        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
-//        Log.d(LOG_TAG, "myCRC: " + bytesToHex(myCRC(respMsg, respMsg.length)));
-//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
@@ -292,14 +290,13 @@ public class MainActivity extends AppCompatActivity {
 
 //            цикл по количеству регистров:
         for (int i = 0; i < reqNumRegisters; i++) {
+            Log.d(LOG_TAG, "========================");
 //          вычисляем адрес регистра относительно адреса первого регистра из запроса
             curRegAddress = reqFirstRegAddress + i;
             Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
             curBytePos = curBytePos + 2;
             Log.d(LOG_TAG, "curBytePos: " + curBytePos);
-            curRegDataFull = 0;
-            curRegDataHighByte = 0;
-            curRegDataLowByte = 0;
+            
 //          если адрес регистра такой-то:
             switch (curRegAddress) {
                 case 0: // старший байт: адрес устройства, младший: скорость обмена
@@ -418,30 +415,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    // пока не используется, может и не пригодится
     private byte[] calcCRC(byte[] msg) {
-        char accumulator = 0xFFFF;
-        int flag;
-        byte CRCHigh, CRCLow;
+        char fullCRC = 0xFFFF;
+        byte highByteCRC, lowByteCRC;
 
         for (int i = 0; i < msg.length; i++) {
-            accumulator = (char) (msg[i] ^ accumulator);
+            fullCRC = (char) ((msg[i] & 0xFF) ^ fullCRC);
 
             for (int j = 0; j < 8; j++) {
 
-                if ((accumulator & 0x0001) == 1) {
-                    accumulator = (char)(accumulator >> 1);
-                    accumulator = (char)(accumulator ^ 0xA001);
+                if ((fullCRC & 0x0001) == 1) {
+                    fullCRC = (char) (fullCRC >> 1);
+                    fullCRC = (char) (fullCRC ^ 0xA001);
                 } else {
-                    accumulator = (char)(accumulator >> 1);
+                    fullCRC = (char) (fullCRC >> 1);
                 }
             }
         }
-        //accumulator = (char)(accumulator % 0xFFFF);
-        CRCLow = (byte)(accumulator & 0xFFFF);
-        CRCHigh = (byte)((accumulator >> 8) & 0xFFFF);
-        //0000000000000000
-        return new byte[] {CRCLow, CRCHigh};
+
+        lowByteCRC = (byte) (fullCRC & 0xFFFF);
+        highByteCRC = (byte) ((fullCRC >> 8) & 0xFFFF);
+
+        return new byte[] {lowByteCRC, highByteCRC};
     }
 
     // пока не используется, может и не пригодится
