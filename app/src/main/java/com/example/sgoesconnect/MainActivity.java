@@ -209,9 +209,11 @@ public class MainActivity extends AppCompatActivity {
         // сравниваем последние 2 байта ответа с тем, что вычислит CRC16Modbus
         //CRC16Modbus crc = new CRC16Modbus();
         crc.update(respMsg, 0, respMsg.length);
-//        Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
+        //Log.d(LOG_TAG, "crc: " + bytesToHex(crc.getCrcBytes()));
 
-        if (respCRC.equals(crc.getCrcBytes())) {
+        Log.d(LOG_TAG, "response: " + bytesToHex(response));
+
+        if (!respCRC.equals(crc.getCrcBytes())) {
             Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(crc.getCrcBytes()));
             return;
         }
@@ -295,6 +297,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
             curBytePos = curBytePos + 2;
             Log.d(LOG_TAG, "curBytePos: " + curBytePos);
+            curRegDataFull = 0;
+            curRegDataHighByte = 0;
+            curRegDataLowByte = 0;
 //          если адрес регистра такой-то:
             switch (curRegAddress) {
                 case 0: // старший байт: адрес устройства, младший: скорость обмена
@@ -593,7 +598,8 @@ public class MainActivity extends AppCompatActivity {
                 // второй способ
 //                String outputHexString = "010300000001840A";
 //                String outputHexString = "010300010001840A";
-                String outputHexString = "010300000002840A";
+//                String outputHexString = "010300000002840A";
+                String outputHexString = "01030000000C840A";
                 request = hexStringToByteArray(outputHexString);
                 Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
@@ -610,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
                     case arduinoData:
                         // Увеличиваем счётчик принятых байт:
                         numResponseBytes = numResponseBytes + msg.arg1;
-                        //Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
+                        Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
 
                         // Добавляем принятые байты в общий массив:
                         byte[] readBuf = (byte[]) msg.obj;
