@@ -297,17 +297,102 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "curBytePos: " + curBytePos);
 //          если адрес регистра такой-то:
             switch (curRegAddress) {
-                case 0:
+                case 0: // старший байт: адрес устройства, младший: скорость обмена
+
 //                  берём в ответе соответсвующие 2 байта
 //                  преобразовываем их в соответсвии со спецификацией!
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+//                  выводим в соответсвующее поле
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+                    break;
+
+                case 1: // старший байт: тип прибора, младший: флаги состояния
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    // TODO: 12.04.2020 флаги состояния надо расписать...
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
                     curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                  выводим в соответсвующее поле
                     gas_level_nkpr.setText(Integer.toString(curRegDataFull));
                     break;
 
-                case 1:
+                case 3: // старший байт: порог 1, младший: порог 2
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 4: // D - приведённое
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 5: // напряжение опорного канала
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 6: // напряжение рабочего канала
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 7: // D - приборное
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 8: // температура, показания встроенного терморезистора
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 9: // серийный номер прибора
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
+                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 11: // номер версии ПО прибора (беззнаковое целое)
+                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 12: // старший байт: тип прибора, младший: модификация прибора
                     curRegDataHighByte = response[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     curRegDataLowByte = response[curBytePos + 1] & 0xFF;
