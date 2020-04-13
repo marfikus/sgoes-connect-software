@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
             curBytePos = curBytePos + 2;
             Log.d(LOG_TAG, "curBytePos: " + curBytePos);
-            
+
 //          если адрес регистра такой-то:
             switch (curRegAddress) {
                 case 0: // старший байт: адрес устройства, младший: скорость обмена
@@ -314,9 +314,15 @@ public class MainActivity extends AppCompatActivity {
                 case 1: // старший байт: тип прибора, младший: флаги состояния
                     curRegDataHighByte = response[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    // TODO: 12.04.2020 флаги состояния надо расписать...
-                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+                    String stFlags = Integer.toBinaryString(response[curBytePos + 1]);
+                    stFlags = String.format("%8s", stFlags).replace(' ', '0');
+                    int stFlagsLen = stFlags.length();
+                    for (int j = 1; j <= 8; j++) {
+                        Log.d(LOG_TAG, "State flag " + j + ": " + stFlags.charAt(stFlagsLen - j));
+                    }
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
