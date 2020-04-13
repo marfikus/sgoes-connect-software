@@ -19,8 +19,11 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.zip.Checksum;
+import java.util.BitSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     numBytes = inStream.read(buffer);
                     byte[] data = Arrays.copyOf(buffer, numBytes);
-                    Log.d(LOG_TAG, "data:" + bytesToHex(data));
+                    //Log.d(LOG_TAG, "data:" + bytesToHex(data));
                     myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
                 } catch (IOException e) {
                     break;
@@ -88,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     // from: https://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java/140861#140861
     // Dave L.
-    public static byte[] hexStringToByteArray(String s) {
+    private byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
@@ -100,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
     // from: https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
     // maybeWeCouldStealAVan
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
+    private final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    private String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
@@ -109,6 +112,267 @@ public class MainActivity extends AppCompatActivity {
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    // from: http://developer.alexanderklimov.ru/android/java/array.php#concat
+    private byte[] concatArray(byte[] a, byte[] b) {
+        if (a == null)
+            return b;
+        if (b == null)
+            return a;
+        byte[] r = new byte[a.length + b.length];
+        System.arraycopy(a, 0, r, 0, a.length);
+        System.arraycopy(b, 0, r, a.length, b.length);
+        return r;
+    }
+
+    private void checkResponse() {
+        // TODO: 08.04.2020 возможно проще будет проверять response.length и отказаться от numResponseBytes
+        if (numResponseBytes < 5) {
+            return;
+        }
+        // отделяем 2 последних байта ответа
+        byte[] respMsg = new byte[response.length - 2];
+        byte[] respCRC = new byte[2];
+        System.arraycopy(response, 0, respMsg, 0, response.length - 2);
+//        Log.d(LOG_TAG, "respMsg: " + bytesToHex(respMsg));
+        System.arraycopy(response, response.length - 2, respCRC, 0, respCRC.length);
+//        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
+
+        // сравниваем последние 2 байта ответа с тем, что вычислим здесь
+
+//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
+        Log.d(LOG_TAG, "response: " + bytesToHex(response));
+
+        // если контрольная сумма из ответа не совпадает с расчётом, то выходим:
+        if (!Arrays.equals(respCRC, calcCRC(respMsg))) {
+            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
+            return;
+        }
+
+        // парсим ответ, выводим данные... (тоже отдельные функции)
+//        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
+        parseResponse();
+    }
+
+    private void parseResponse() {
+
+//      Разбор ответа должен производиться на основании запроса.
+//      Сравниваем первый байт запроса с первым байтом ответа (адреса) Если не совпадают:
+        int reqAddress = request[0] & 0xFF; // & 0xFF необходимо для приведения значения байта к виду 0..255
+        int respAddress = response[0] & 0xFF;
+
+        if (reqAddress != respAddress) {
+//          Это ответ на другой запрос, от другого датчика. Выходим?
+            Log.d(LOG_TAG, "reqAddress(" + reqAddress + ") != respAddress(" + respAddress + ")");
+            return;
+        }
+
+//      Сравниваем вторые байты (код функции). Если совпадают:
+        int reqFuncCode = request[1] & 0xFF;
+        int respFuncCode = response[1] & 0xFF;
+
+        if (reqFuncCode == respFuncCode) {
+            Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
+//          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
+            parseRespData();
+
+        } else { // не совпадают
+            Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") != respFuncCode(" + respFuncCode + ")");
+//          Если второй байт ответа равен второму байту запроса с единицей в старшем бите (код ошибки):
+            int modReqFuncCode = (request[1] | 0b10000000) & 0xFF; // устанавливаем единицу в старший бит
+
+            if (respFuncCode == modReqFuncCode) {
+                Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") == modReqFuncCode(" + modReqFuncCode + ")");
+//              значит ответ на этот запрос, но с ошибкой:
+//              читаем третий байт ответа и выводим информацию об ошибке...
+                int respError = response[2] & 0xFF;
+                Log.d(LOG_TAG, "Error in response. Error code: " + respError);
+            } else {
+                // значит это хз что за ответ)...
+                Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
+            }
+        }
+    }
+
+    private void parseRespData() {
+        // читаем третий байт - количество байт идущих далее.
+        int respNumDataBytes = response[2] & 0xFF;
+        Log.d(LOG_TAG, "respNumDataBytes: " + respNumDataBytes);
+
+        // todo: количество регистров и адрес первого пока беру так, а вообще будет формироваться в запросе
+        int reqNumRegisters = ((request[4] & 0xFF) << 8) | (request[5] & 0xFF); // склеивание двух байт в одно целое число
+        Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
+        int reqFirstRegAddress = ((request[2] & 0xFF) << 8) | (request[3] & 0xFF); // склеивание двух байт в одно целое число
+        Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
+
+//            если количество регистров в запросе не равно половине количества байт в ответе (регистры 2х байтные):
+        if ((reqNumRegisters * 2) != respNumDataBytes) {
+            Log.d(LOG_TAG, "reqNumRegisters * 2(" + (reqNumRegisters * 2) + ") != respNumDataBytes(" + respNumDataBytes + ")");
+            return;
+        }
+
+        int curRegAddress = 0; // адрес текущего регистра
+        int curRegDataFull = 0; // данные из текущего регистра (2 байта вместе)
+        int curRegDataHighByte = 0; // данные из старшего байта текущего регистра
+        int curRegDataLowByte = 0; // данные из младшего байта текущего регистра
+        int curBytePos = 1; // позиция текущего байта данных в ответе
+
+//            цикл по количеству регистров:
+        for (int i = 0; i < reqNumRegisters; i++) {
+            Log.d(LOG_TAG, "========================");
+//          вычисляем адрес регистра относительно адреса первого регистра из запроса
+            curRegAddress = reqFirstRegAddress + i;
+            Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
+            curBytePos = curBytePos + 2;
+            Log.d(LOG_TAG, "curBytePos: " + curBytePos);
+
+//          если адрес регистра такой-то:
+            switch (curRegAddress) {
+                case 0: // старший байт: адрес устройства, младший: скорость обмена
+
+//                  берём в ответе соответсвующие 2 байта
+//                  преобразовываем их в соответсвии со спецификацией!
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+//                  выводим в соответсвующее поле
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+                    break;
+
+                case 1: // старший байт: тип прибора, младший: флаги состояния
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+
+//                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+                    String stFlags = Integer.toBinaryString(response[curBytePos + 1]);
+                    stFlags = String.format("%8s", stFlags).replace(' ', '0');
+                    int stFlagsLen = stFlags.length();
+                    for (int j = 1; j <= 8; j++) {
+                        Log.d(LOG_TAG, "State flag " + j + ": " + stFlags.charAt(stFlagsLen - j));
+                    }
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+                    break;
+
+                case 3: // старший байт: порог 1, младший: порог 2
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 4: // D - приведённое
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 5: // напряжение опорного канала
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 6: // напряжение рабочего канала
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 7: // D - приборное
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 8: // температура, показания встроенного терморезистора
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 9: // серийный номер прибора
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
+                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 11: // номер версии ПО прибора (беззнаковое целое)
+                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
+                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+                case 12: // старший байт: тип прибора, младший: модификация прибора
+                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    break;
+
+            }
+        }
+
+//              в цикле читаем по 2 байта далее, пока не наберём это число
+//            byte[] respData = new byte[respNumDataBytes];
+//            for (int i = 0; i < respNumDataBytes; i++) {
+//
+//            }
+//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
+
+    }
+
+    private byte[] calcCRC(byte[] msg) {
+        char fullCRC = 0xFFFF;
+        byte highByteCRC, lowByteCRC;
+
+        for (int i = 0; i < msg.length; i++) {
+            fullCRC = (char) ((msg[i] & 0xFF) ^ fullCRC);
+
+            for (int j = 0; j < 8; j++) {
+
+                if ((fullCRC & 0x0001) == 1) {
+                    fullCRC = (char) (fullCRC >> 1);
+                    fullCRC = (char) (fullCRC ^ 0xA001);
+                } else {
+                    fullCRC = (char) (fullCRC >> 1);
+                }
+            }
+        }
+
+        lowByteCRC = (byte) (fullCRC & 0xFFFF);
+        highByteCRC = (byte) ((fullCRC >> 8) & 0xFFFF);
+
+        return new byte[] {lowByteCRC, highByteCRC};
     }
 
     private static final int REQUEST_ENABLE_BT = 0;
@@ -123,7 +387,10 @@ public class MainActivity extends AppCompatActivity {
     EditText sensor_address;
     TextView gas_level_nkpr;
     Handler myHandler;
-    final int arduinoData = 1;
+    final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
+    byte[] request; // текущий запрос
+    byte[] response; // текущий ответ
+    int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +398,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Log.d(LOG_TAG, "ready");
+
+
+//        byte[] respMsg = hexStringToByteArray("0103030105A0");
+//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
+
 
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
 
@@ -200,6 +472,8 @@ public class MainActivity extends AppCompatActivity {
 
                 myThread = new ConnectedThread(btSocket);
                 myThread.start();
+
+
             }
         });
 
@@ -208,18 +482,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                // Обнуляем счётчик принятых байт и массив:
+                numResponseBytes = 0;
+                response = null;
+
                 // первый способ формирования массива байт
                 //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
 
                 // второй способ
-                String outputHexString = "08010300000001840A";
-                byte[] data = hexStringToByteArray(outputHexString);
+//                String outputHexString = "010300000001840A";
+//                String outputHexString = "010300010001840A";
+//                String outputHexString = "010300000002840A";
+                String outputHexString = "01030000000C45CF";
+                request = hexStringToByteArray(outputHexString);
                 Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
                 //sensor_address = (EditText) findViewById(R.id.sensor_address);
                 //byte[] data = hexStringToByteArray(sensor_address.getText().toString());
 
-                myThread.sendData(data);
+                myThread.sendData(request);
             }
         });
 
@@ -227,16 +508,22 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
                     case arduinoData:
+                        // Увеличиваем счётчик принятых байт:
+                        numResponseBytes = numResponseBytes + msg.arg1;
+                        Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
+
+                        // Добавляем принятые байты в общий массив:
                         byte[] readBuf = (byte[]) msg.obj;
-                        // todo склеить несколько приходящих сообщений...
-                        //String strIncom = new String(readBuf, 0, msg.arg1);
-                        String inputHexString = bytesToHex(readBuf);
-                        //Log.d(LOG_TAG, "readBuf:" + readBuf);
-                        //Log.d(LOG_TAG, "inputHexString:" + inputHexString);
-                        gas_level_nkpr.setText(inputHexString);
+                        response = concatArray(response, readBuf);
+                        //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
+//                        Log.d(LOG_TAG, "=================================");
+
+                        checkResponse();
+
+//                        gas_level_nkpr.setText(bytesToHex(response));
                         break;
                 }
-            };
+            }
         };
     }
 
