@@ -44,19 +44,21 @@
         android:id="@+id/set_zero"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text='Установка "0"'
-        app:layout_constraintStart_toStartOf="@+id/title_relay_2"
-        app:layout_constraintTop_toBottomOf="@+id/title_relay_2" />
+        android:layout_marginStart="35dp"
+        android:layout_marginLeft="35dp"
+        android:text='Уст.\n"0"'
+        app:layout_constraintStart_toEndOf="@+id/title_gas_level_nkpr"
+        app:layout_constraintTop_toTopOf="@+id/title_gas_level_nkpr" />
 
     <Button
         android:id="@+id/main_calibration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Осн. калибровка"
-        app:layout_constraintStart_toStartOf="@+id/set_zero"
-        app:layout_constraintTop_toBottomOf="@+id/set_zero" />
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="Осн.\nкалибр."
+        app:layout_constraintStart_toEndOf="@+id/set_zero"
+        app:layout_constraintTop_toTopOf="@+id/set_zero" />
 
     <Button
         android:id="@+id/bt_settings"
@@ -133,7 +135,7 @@
         android:id="@+id/title_threshold_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="50dp"
         android:text="1 порог:"
         app:layout_constraintStart_toStartOf="@+id/title_gas_level_nkpr"
         app:layout_constraintTop_toBottomOf="@+id/title_gas_level_nkpr" />
@@ -172,7 +174,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Реле исправности:"
+        android:text="Реле неисправности:"
         app:layout_constraintStart_toStartOf="@+id/title_threshold_2"
         app:layout_constraintTop_toBottomOf="@+id/title_threshold_2" />
 
@@ -181,7 +183,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="1 реле:"
+        android:text="Реле 1 порога:"
         app:layout_constraintStart_toStartOf="@+id/title_fault_relay"
         app:layout_constraintTop_toBottomOf="@+id/title_fault_relay" />
 
@@ -190,7 +192,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="2 реле:"
+        android:text="Реле 2 порога:"
         app:layout_constraintStart_toStartOf="@+id/title_relay_1"
         app:layout_constraintTop_toBottomOf="@+id/title_relay_1" />
 
