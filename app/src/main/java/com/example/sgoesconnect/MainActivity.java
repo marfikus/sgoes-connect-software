@@ -300,7 +300,21 @@ public class MainActivity extends AppCompatActivity {
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
                     curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+//                    Log.d(LOG_TAG, "curRegDataFull_float: " + Float.intBitsToFloat(curRegDataFull));
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+
+//                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
+//                    float fCurRegDataHighByte = response[curBytePos] & 0xFF;
+//                    Log.d(LOG_TAG, "fCurRegDataHighByte: " + fCurRegDataHighByte);
+//                    float fCurRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    Log.d(LOG_TAG, "fCurRegDataLowByte: " + fCurRegDataLowByte);
+//                    float fCurRegDataFull = fCurRegDataHighByte + fCurRegDataLowByte;
+//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
@@ -357,11 +371,14 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
-                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
+//                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+
+                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    fCurRegDataFull = fCurRegDataFull / 10;
+                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
