@@ -128,15 +128,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkResponse() {
         // TODO: 08.04.2020 возможно проще будет проверять response.length и отказаться от numResponseBytes
-        if (numResponseBytes < 5) {
+        int respLength = response.length;
+        if (respLength < 5) {
             return;
         }
         // отделяем 2 последних байта ответа
-        byte[] respMsg = new byte[response.length - 2];
+        byte[] respMsg = new byte[respLength - 2];
         byte[] respCRC = new byte[2];
-        System.arraycopy(response, 0, respMsg, 0, response.length - 2);
+        System.arraycopy(response, 0, respMsg, 0, respLength - 2);
 //        Log.d(LOG_TAG, "respMsg: " + bytesToHex(respMsg));
-        System.arraycopy(response, response.length - 2, respCRC, 0, respCRC.length);
+        System.arraycopy(response, respLength - 2, respCRC, 0, respCRC.length);
 //        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
 
         // сравниваем последние 2 байта ответа с тем, что вычислим здесь
@@ -150,17 +151,31 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // копируем ответ себе локально,
+        // чтобы не допустить добавления в него новых порций байт, во время обработки
+        byte[] localCopyResponse = new byte[respLength];
+        localCopyResponse = Arrays.copyOf(response, respLength);
+
+        // а глобальный ответ обнуляем
+        // TODO: 15.04.2020 убрать потом эту переменную отдельным коммитом
+        numResponseBytes = 0;
+        response = null;
+
+        // и запрос тоже скопируем, поскольку он тоже может измениться
+        byte[] localCopyRequest = new byte[request.length];
+        localCopyRequest = Arrays.copyOf(request, request.length);
+
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
-        parseResponse();
+        parseResponse(localCopyRequest, localCopyResponse);
     }
 
-    private void parseResponse() {
+    private void parseResponse(byte[] localCopyRequest, byte[] localCopyResponse) {
 
 //      Разбор ответа должен производиться на основании запроса.
 //      Сравниваем первый байт запроса с первым байтом ответа (адреса) Если не совпадают:
-        int reqAddress = request[0] & 0xFF; // & 0xFF необходимо для приведения значения байта к виду 0..255
-        int respAddress = response[0] & 0xFF;
+        int reqAddress = localCopyRequest[0] & 0xFF; // & 0xFF необходимо для приведения значения байта к виду 0..255
+        int respAddress = localCopyResponse[0] & 0xFF;
 
         if (reqAddress != respAddress) {
 //          Это ответ на другой запрос, от другого датчика. Выходим?
@@ -169,25 +184,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
 //      Сравниваем вторые байты (код функции). Если совпадают:
-        int reqFuncCode = request[1] & 0xFF;
-        int respFuncCode = response[1] & 0xFF;
+        int reqFuncCode = localCopyRequest[1] & 0xFF;
+        int respFuncCode = localCopyResponse[1] & 0xFF;
 
         if (reqFuncCode == respFuncCode) {
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
 //          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
-            parseRespData();
+            parseRespData(localCopyRequest, localCopyResponse);
 
         } else { // не совпадают
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") != respFuncCode(" + respFuncCode + ")");
 //          Если второй байт ответа равен второму байту запроса с единицей в старшем бите (код ошибки):
-            int modReqFuncCode = (request[1] | 0b10000000) & 0xFF; // устанавливаем единицу в старший бит
+            int modReqFuncCode = (localCopyRequest[1] | 0b10000000) & 0xFF; // устанавливаем единицу в старший бит
 
             if (respFuncCode == modReqFuncCode) {
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") == modReqFuncCode(" + modReqFuncCode + ")");
 //              значит ответ на этот запрос, но с ошибкой:
 //              читаем третий байт ответа и выводим информацию об ошибке...
-                int respError = response[2] & 0xFF;
-                Log.d(LOG_TAG, "Error in response. Error code: " + respError);
+                int respError = localCopyResponse[2] & 0xFF;
+                Log.d(LOG_TAG, "Error in localCopyResponse. Error code: " + respError);
             } else {
                 // значит это хз что за ответ)...
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
@@ -195,15 +210,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void parseRespData() {
+    private void parseRespData(byte[] localCopyRequest, byte[] localCopyResponse) {
         // читаем третий байт - количество байт идущих далее.
-        int respNumDataBytes = response[2] & 0xFF;
+        int respNumDataBytes = localCopyResponse[2] & 0xFF;
         Log.d(LOG_TAG, "respNumDataBytes: " + respNumDataBytes);
 
         // todo: количество регистров и адрес первого пока беру так, а вообще будет формироваться в запросе
-        int reqNumRegisters = ((request[4] & 0xFF) << 8) | (request[5] & 0xFF); // склеивание двух байт в одно целое число
+        int reqNumRegisters = ((localCopyRequest[4] & 0xFF) << 8) | (localCopyRequest[5] & 0xFF); // склеивание двух байт в одно целое число
         Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
-        int reqFirstRegAddress = ((request[2] & 0xFF) << 8) | (request[3] & 0xFF); // склеивание двух байт в одно целое число
+        int reqFirstRegAddress = ((localCopyRequest[2] & 0xFF) << 8) | (localCopyRequest[3] & 0xFF); // склеивание двух байт в одно целое число
         Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
 
 //            если количество регистров в запросе не равно половине количества байт в ответе (регистры 2х байтные):
@@ -234,18 +249,18 @@ public class MainActivity extends AppCompatActivity {
 //                  берём в ответе соответсвующие 2 байта
 //                  преобразовываем их в соответсвии со спецификацией!
 
-                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     sensor_address.setText(Integer.toString(curRegDataHighByte));
 
-                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
 //                  выводим в соответсвующее поле
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
                     break;
 
                 case 1: // старший байт: тип прибора, младший: флаги состояния
-                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     /* TODO: 14.04.2020 пока вывожу только метан, а остальные в виде номера,
                                         а вообще можно расписать все коды по спецификации... */
@@ -255,9 +270,9 @@ public class MainActivity extends AppCompatActivity {
                         sensor_type.setText(Integer.toString(curRegDataHighByte));
                     }
 
-//                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
 //                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-                    String stFlags = Integer.toBinaryString(response[curBytePos + 1]);
+                    String stFlags = Integer.toBinaryString(localCopyResponse[curBytePos + 1]);
                     stFlags = String.format("%8s", stFlags).replace(' ', '0');
                     int stFlagsLen = stFlags.length();
                     int flagState = 0;
@@ -298,18 +313,18 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 //                    Log.d(LOG_TAG, "curRegDataFull_float: " + Float.intBitsToFloat(curRegDataFull));
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
 
-//                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
 //                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
 
-//                    float fCurRegDataHighByte = response[curBytePos] & 0xFF;
+//                    float fCurRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
 //                    Log.d(LOG_TAG, "fCurRegDataHighByte: " + fCurRegDataHighByte);
-//                    float fCurRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    float fCurRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
 //                    Log.d(LOG_TAG, "fCurRegDataLowByte: " + fCurRegDataLowByte);
 //                    float fCurRegDataFull = fCurRegDataHighByte + fCurRegDataLowByte;
 //                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
@@ -318,52 +333,52 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
-                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     threshold_1.setText(Integer.toString(curRegDataHighByte));
 
-                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     threshold_2.setText(Integer.toString(curRegDataLowByte));
                     break;
 
                 case 4: // D - приведённое
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 5: // напряжение опорного канала
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 6: // напряжение рабочего канала
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 7: // D - приборное
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 8: // температура, показания встроенного терморезистора
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 9: // серийный номер прибора
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     serial_number.setText(Integer.toString(curRegDataFull));
 
@@ -371,11 +386,11 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
-//                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
 
-                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     fCurRegDataFull = fCurRegDataFull / 10;
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
@@ -383,16 +398,16 @@ public class MainActivity extends AppCompatActivity {
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
                     // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 12: // старший байт: тип прибора, младший: модификация прибора
-                    curRegDataHighByte = response[curBytePos] & 0xFF;
+                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
+                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
@@ -567,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
                         input_sensor_address.setEnabled(false);
                         // запускаем цикл отправки запроса
                         sensorConnection = true;
-                        startSensorConnection();
+                        //startSensorConnection();
                     }
                 } else {
                     connect_to_sensor.setText("Старт");
@@ -579,8 +594,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                 // Обнуляем счётчик принятых байт и массив:
-                numResponseBytes = 0;
-                response = null;
+//                numResponseBytes = 0;
+//                response = null;
 
                 // первый способ формирования массива байт
                 //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
@@ -631,7 +646,7 @@ public class MainActivity extends AppCompatActivity {
             // создаём запрос
             createRequest();
             // отправляем запрос
-            myThread.sendData(request);
+            //myThread.sendData(request);
             // если команда == 06, то меняем её на 03
             if (requestFuncCode == 6) {
                 requestFuncCode = 3;
@@ -647,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkInputAddress() {
 
-        return false;
+        return true;
     }
 
 /*    @Override
