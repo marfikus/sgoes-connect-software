@@ -126,24 +126,34 @@ public class MainActivity extends AppCompatActivity {
         return r;
     }
 
-    private void checkResponse() {
-        // TODO: 08.04.2020 возможно проще будет проверять response.length и отказаться от numResponseBytes
-        int respLength = response.length;
+    private void checkResponse(byte[] _request, byte[] _response) {
+        int respLength = _response.length;
         if (respLength < 5) {
             return;
         }
+
+        // Копируем ответ себе локально,
+        // чтобы не допустить добавления в него новых порций байт, во время обработки.
+        // Делаю это, поскольку не уверен в том, как передаются массивы в методы,
+        // по значению или по ссылке. Однозначного ответа не нашёл пока, поэтому пока так.
+//        byte[] localCopyResponse = new byte[respLength];
+        byte[] localCopyResponse = Arrays.copyOf(_response, respLength);
+        // и запрос тоже скопируем, поскольку он тоже может измениться
+//        byte[] localCopyRequest = new byte[_request.length];
+        byte[] localCopyRequest = Arrays.copyOf(_request, _request.length);
+        
         // отделяем 2 последних байта ответа
         byte[] respMsg = new byte[respLength - 2];
         byte[] respCRC = new byte[2];
-        System.arraycopy(response, 0, respMsg, 0, respLength - 2);
+        System.arraycopy(localCopyResponse, 0, respMsg, 0, respLength - 2);
 //        Log.d(LOG_TAG, "respMsg: " + bytesToHex(respMsg));
-        System.arraycopy(response, respLength - 2, respCRC, 0, respCRC.length);
+        System.arraycopy(localCopyResponse, respLength - 2, respCRC, 0, respCRC.length);
 //        Log.d(LOG_TAG, "respCRC: " + bytesToHex(respCRC));
 
         // сравниваем последние 2 байта ответа с тем, что вычислим здесь
 
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
-        Log.d(LOG_TAG, "response: " + bytesToHex(response));
+        Log.d(LOG_TAG, "localCopyResponse: " + bytesToHex(localCopyResponse));
 
         // если контрольная сумма из ответа не совпадает с расчётом, то выходим:
         if (!Arrays.equals(respCRC, calcCRC(respMsg))) {
@@ -151,22 +161,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // копируем ответ себе локально,
-        // чтобы не допустить добавления в него новых порций байт, во время обработки
-        byte[] localCopyResponse = new byte[respLength];
-        localCopyResponse = Arrays.copyOf(response, respLength);
-
-        // а глобальный ответ обнуляем
+        // Глобальный ответ обнуляем, поскольку проверка ответа пройдена
+        // и далее работаем с его копией
         // TODO: 15.04.2020 убрать потом эту переменную отдельным коммитом
         numResponseBytes = 0;
         response = null;
-
-        // и запрос тоже скопируем, поскольку он тоже может измениться
-        byte[] localCopyRequest = new byte[request.length];
-        localCopyRequest = Arrays.copyOf(request, request.length);
-
+        
         // парсим ответ, выводим данные... (тоже отдельные функции)
-//        Log.d(LOG_TAG, "go to parsing response... " + bytesToHex(response));
+//        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
         parseResponse(localCopyRequest, localCopyResponse);
     }
 
@@ -630,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
                         //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
 
-                        checkResponse();
+                        checkResponse(request, response);
 
 //                        gas_level_nkpr.setText(bytesToHex(response));
                         break;
