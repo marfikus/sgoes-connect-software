@@ -452,12 +452,14 @@ public class MainActivity extends AppCompatActivity {
     TextView fault_relay;
     TextView relay_1;
     TextView relay_2;
+    EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
     boolean sensorConnection = false;
+    int requestFuncCode = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -480,6 +482,7 @@ public class MainActivity extends AppCompatActivity {
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
+        input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -556,17 +559,21 @@ public class MainActivity extends AppCompatActivity {
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // если подключения нет
                 if (!sensorConnection) {
-                    connect_to_sensor.setText("Стоп");
-                    // запускаем цикл отправки запроса
-                    
-                    sensorConnection = true;
+                    // проверяем поле адреса, если адрес корректный
+                    if (checkInputAddress()) {
+                        connect_to_sensor.setText("Стоп");
+                        input_sensor_address.setEnabled(false);
+                        // запускаем цикл отправки запроса
+                        sensorConnection = true;
+                        startSensorConnection();
+                    }
                 } else {
                     connect_to_sensor.setText("Старт");
+                    input_sensor_address.setEnabled(true);
                     // останавливаем цикл отправки запроса
-
+                    // (он останавливается сам, когда sensorConnection == false)
                     sensorConnection = false;
                 }
 
@@ -595,6 +602,7 @@ public class MainActivity extends AppCompatActivity {
 
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
+                // TODO: 15.04.2020 switch здесь можно убрать, заменить на if()
                 switch (msg.what) {
                     case arduinoData:
                         // Увеличиваем счётчик принятых байт:
@@ -614,6 +622,32 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    // TODO: 15.04.2020 возможно этот метод лучше вынести в отдельный поток...
+    private void startSensorConnection() {
+        // пока подключение активно
+        while (sensorConnection) {
+            // создаём запрос
+            createRequest();
+            // отправляем запрос
+            myThread.sendData(request);
+            // если команда == 06, то меняем её на 03
+            if (requestFuncCode == 6) {
+                requestFuncCode = 3;
+            }
+            // ждём некоторое время (1-2 сек)
+
+        }
+    }
+
+    private void createRequest() {
+
+    }
+
+    private boolean checkInputAddress() {
+
+        return false;
     }
 
 /*    @Override
