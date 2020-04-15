@@ -233,8 +233,11 @@ public class MainActivity extends AppCompatActivity {
 
 //                  берём в ответе соответсвующие 2 байта
 //                  преобразовываем их в соответсвии со спецификацией!
+
                     curRegDataHighByte = response[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    sensor_address.setText(Integer.toString(curRegDataHighByte));
+
                     curRegDataLowByte = response[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
 //                  выводим в соответсвующее поле
@@ -244,32 +247,84 @@ public class MainActivity extends AppCompatActivity {
                 case 1: // старший байт: тип прибора, младший: флаги состояния
                     curRegDataHighByte = response[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    /* TODO: 14.04.2020 пока вывожу только метан, а остальные в виде номера,
+                                        а вообще можно расписать все коды по спецификации... */
+                    if (curRegDataHighByte == 1) {
+                        sensor_type.setText("Метан");
+                    } else {
+                        sensor_type.setText(Integer.toString(curRegDataHighByte));
+                    }
 
 //                    curRegDataLowByte = response[curBytePos + 1] & 0xFF;
 //                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     String stFlags = Integer.toBinaryString(response[curBytePos + 1]);
                     stFlags = String.format("%8s", stFlags).replace(' ', '0');
                     int stFlagsLen = stFlags.length();
-                    for (int j = 1; j <= 8; j++) {
-                        Log.d(LOG_TAG, "State flag " + j + ": " + stFlags.charAt(stFlagsLen - j));
+                    int flagState = 0;
+                    for (int flag = 1; flag <= 8; flag++) {
+                        flagState = Character.digit(stFlags.charAt(stFlagsLen - flag), 10);
+                        Log.d(LOG_TAG, "State flag " + flag + ": " + flagState);
+                        switch (flag) {
+                            case 1: // реле отказа (0 - авария 1 - норма)
+                                if (flagState == 1) {
+                                    fault_relay.setText("замкнуто(норма)");
+                                    fault_relay.setBackgroundColor(0xFFFFFFFF);
+                                } else {
+                                    fault_relay.setText("разомкнуто(авария)");
+                                    fault_relay.setBackgroundColor(0xFFFF0000);
+                                }
+                                break;
+                            case 2: // реле порога 1 (0 - норма 1 - сработка)
+                                if (flagState == 1) {
+                                    relay_1.setText("замкнуто");
+                                    relay_1.setBackgroundColor(0xFFFF0000);
+                                } else {
+                                    relay_1.setText("разомкнуто");
+                                    relay_1.setBackgroundColor(0xFFFFFFFF);
+                                }
+                                break;
+                            case 3: // реле порога 2 (0 - норма 1 - сработка)
+                                if (flagState == 1) {
+                                    relay_2.setText("замкнуто");
+                                    relay_2.setBackgroundColor(0xFFFF0000);
+                                } else {
+                                    relay_2.setText("разомкнуто");
+                                    relay_2.setBackgroundColor(0xFFFFFFFF);
+                                }
+                                break;
+                            // TODO: 14.04.2020 остальные флаги пока не обрабатываются
+                        }
                     }
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
                     curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+//                    Log.d(LOG_TAG, "curRegDataFull_float: " + Float.intBitsToFloat(curRegDataFull));
+//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
+
+//                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
+//                    float fCurRegDataHighByte = response[curBytePos] & 0xFF;
+//                    Log.d(LOG_TAG, "fCurRegDataHighByte: " + fCurRegDataHighByte);
+//                    float fCurRegDataLowByte = response[curBytePos + 1] & 0xFF;
+//                    Log.d(LOG_TAG, "fCurRegDataLowByte: " + fCurRegDataLowByte);
+//                    float fCurRegDataFull = fCurRegDataHighByte + fCurRegDataLowByte;
+//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
                     curRegDataHighByte = response[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    threshold_1.setText(Integer.toString(curRegDataHighByte));
+
                     curRegDataLowByte = response[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+                    threshold_2.setText(Integer.toString(curRegDataLowByte));
                     break;
 
                 case 4: // D - приведённое
@@ -310,16 +365,20 @@ public class MainActivity extends AppCompatActivity {
                 case 9: // серийный номер прибора
                     curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
                     Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    serial_number.setText(Integer.toString(curRegDataFull));
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
-                    // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
-                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
+//                    curRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
+
+                    float fCurRegDataFull = ((response[curBytePos] & 0xFF) << 8) | (response[curBytePos + 1] & 0xFF);
+                    fCurRegDataFull = fCurRegDataFull / 10;
+                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -384,8 +443,15 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
-    EditText sensor_address;
+    TextView sensor_address;
+    TextView serial_number;
+    TextView sensor_type;
     TextView gas_level_nkpr;
+    TextView threshold_1;
+    TextView threshold_2;
+    TextView fault_relay;
+    TextView relay_1;
+    TextView relay_2;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
     byte[] request; // текущий запрос
@@ -404,7 +470,15 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
 
+        sensor_address = (TextView) findViewById(R.id.sensor_address);
+        serial_number = (TextView) findViewById(R.id.serial_number);
+        sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
+        threshold_1 = (TextView) findViewById(R.id.threshold_1);
+        threshold_2 = (TextView) findViewById(R.id.threshold_2);
+        fault_relay = (TextView) findViewById(R.id.fault_relay);
+        relay_1 = (TextView) findViewById(R.id.relay_1);
+        relay_2 = (TextView) findViewById(R.id.relay_2);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
