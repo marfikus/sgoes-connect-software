@@ -457,6 +457,7 @@ public class MainActivity extends AppCompatActivity {
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
+    boolean sensorConnection = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -555,6 +556,20 @@ public class MainActivity extends AppCompatActivity {
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // если подключения нет
+                if (!sensorConnection) {
+                    connect_to_sensor.setText("Стоп");
+                    // запускаем цикл отправки запроса
+                    
+                    sensorConnection = true;
+                } else {
+                    connect_to_sensor.setText("Старт");
+                    // останавливаем цикл отправки запроса
+
+                    sensorConnection = false;
+                }
+
 
                 // Обнуляем счётчик принятых байт и массив:
                 numResponseBytes = 0;
