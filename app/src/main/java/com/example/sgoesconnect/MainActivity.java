@@ -511,6 +511,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // TODO: 16.04.2020 возможно часть этих действий можно вынести в отдельный поток,
+        //  а то при подключении интерфейс подвисает...
         bt_connect = (Button) findViewById(R.id.bt_connect);
         bt_connect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -586,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
                         // запускаем цикл отправки запроса
                         sensorConnection = true;
 
-                        // TODO: 16.04.2020 а здесь можно сделать проверку, чтоб один раз это создать,
+                        // TODO: 16.04.2020 а здесь можно наверное сделать проверку, чтоб один раз это создать,
                         //  а потом просто управлять переключением sensorConnection.
                         Runnable task = new Runnable() {
                             @Override
@@ -610,7 +612,7 @@ public class MainActivity extends AppCompatActivity {
                     sensorConnection = false;
 
                     // TODO: 16.04.2020 нужно ли его здесь прерывать или достаточно того,
-                    //  что он сам приостановится?...
+                    //  что он сам приостановится?... вроде как это сейчас лишнее...
                     if (sensConThread != null) {
                         Thread dummy = sensConThread;
                         sensConThread = null;
