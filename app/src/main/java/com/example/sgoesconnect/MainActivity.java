@@ -614,7 +614,6 @@ public class MainActivity extends AppCompatActivity {
                         sensorConnectionThread.start();
                     }
                 } else {
-
                     // останавливаем поток отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
                     sensorConnection = false;
@@ -708,13 +707,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRequest() {
+        request = null;
+
+        //int address = input_sensor_address.gett
+
         String outputHexString = "01030000000C45CF";
         request = hexStringToByteArray(outputHexString);
         Log.d(LOG_TAG, "outputHexString: " + outputHexString);
     }
 
     private boolean checkInputAddress() {
-        // TODO: 15.04.2020 надо сделать проверку адреса из поля ввода
+        // адрес должен быть в диапазоне 1..247
+        String inputAddress = input_sensor_address.getText().toString();
+
+        if (inputAddress.length() == 0) {
+            Log.d(LOG_TAG, "input_sensor_address is empty");
+            Toast.makeText(getApplicationContext(), "Введите адрес датчика от 1 до 247", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        if (Integer.parseInt(inputAddress) < 1) {
+            Log.d(LOG_TAG, "input_sensor_address < 1");
+            Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        if (Integer.parseInt(inputAddress) > 247) {
+            Log.d(LOG_TAG, "input_sensor_address > 247");
+            Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
+            return false;
+        }
 
         return true;
     }
