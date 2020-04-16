@@ -477,6 +477,7 @@ public class MainActivity extends AppCompatActivity {
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
     boolean sensorConnection = false;
     int requestFuncCode = 3;
+    Thread sensConThread = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -584,7 +585,22 @@ public class MainActivity extends AppCompatActivity {
                         input_sensor_address.setEnabled(false);
                         // запускаем цикл отправки запроса
                         sensorConnection = true;
-                        //startSensorConnection();
+
+                        // TODO: 16.04.2020 а здесь можно сделать проверку, чтоб один раз это создать,
+                        //  а потом просто управлять переключением sensorConnection.
+                        Runnable task = new Runnable() {
+                            @Override
+                            public void run() {
+                                startSensorConnection();
+                            }
+                        };
+                        sensConThread = new Thread(task);
+
+                        // поток завершится при завершении главного потока
+                        // но что-то оно не работает...
+//                        sensConThread.setDaemon(true);
+
+                        sensConThread.start();
                     }
                 } else {
                     connect_to_sensor.setText("Старт");
@@ -592,6 +608,15 @@ public class MainActivity extends AppCompatActivity {
                     // останавливаем цикл отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
                     sensorConnection = false;
+
+                    // TODO: 16.04.2020 нужно ли его здесь прерывать или достаточно того,
+                    //  что он сам приостановится?...
+                    if (sensConThread != null) {
+                        Thread dummy = sensConThread;
+                        sensConThread = null;
+                        dummy.interrupt();
+                    }
+
                 }
 
 
@@ -606,14 +631,14 @@ public class MainActivity extends AppCompatActivity {
 //                String outputHexString = "010300000001840A";
 //                String outputHexString = "010300010001840A";
 //                String outputHexString = "010300000002840A";
-                String outputHexString = "01030000000C45CF";
-                request = hexStringToByteArray(outputHexString);
-                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
+//                String outputHexString = "01030000000C45CF";
+//                request = hexStringToByteArray(outputHexString);
+//                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
 
                 //sensor_address = (EditText) findViewById(R.id.sensor_address);
                 //byte[] data = hexStringToByteArray(sensor_address.getText().toString());
 
-                myThread.sendData(request);
+                //myThread.sendData(request);
             }
         });
 
@@ -641,28 +666,42 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    // TODO: 15.04.2020 возможно этот метод лучше вынести в отдельный поток...
     private void startSensorConnection() {
-        // пока подключение активно
-        while (sensorConnection) {
+        // пока подключение активно и нет команды прерывания текущего потока
+        while ((sensorConnection) && (!Thread.currentThread().isInterrupted())) {
             // создаём запрос
             createRequest();
+            // чистим глобальный ответ
+            // добавил на случай, когда пропадает связь с дачиком, потом восстанавливается,
+            // а тут часть старого ответа видимо осталась и начинается каша...
+            response = null;
             // отправляем запрос
-            //myThread.sendData(request);
+            myThread.sendData(request);
             // если команда == 06, то меняем её на 03
             if (requestFuncCode == 6) {
                 requestFuncCode = 3;
             }
-            // ждём некоторое время (1-2 сек)
-
+            // ждём некоторое время
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                // если есть внешнее прерывание, то прерываем цикл
+                e.printStackTrace();
+                Log.d(LOG_TAG, "InterruptedException:" + e);
+                break;
+            }
         }
+
     }
 
     private void createRequest() {
-
+        String outputHexString = "01030000000C45CF";
+        request = hexStringToByteArray(outputHexString);
+        Log.d(LOG_TAG, "outputHexString: " + outputHexString);
     }
 
     private boolean checkInputAddress() {
+        // TODO: 15.04.2020 надо сделать проверку адреса из поля ввода
 
         return true;
     }
@@ -686,6 +725,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(LOG_TAG, "onDestroy()");
 
         if (myThread != null) {
             if (myThread.status_outStream() != null) {
@@ -700,6 +740,12 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e2) {
                 myError("Fatal Error", "В onDestroy() Не могу закрыть сокет" + e2.getMessage() + ".");
             }
+        }
+
+        if (sensConThread != null) {
+            Thread dummy = sensConThread;
+            sensConThread = null;
+            dummy.interrupt();
         }
     }
 
