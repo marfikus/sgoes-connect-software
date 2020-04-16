@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
     boolean sensorConnection = false;
     int requestFuncCode = 3;
-    Thread sensConThread = null;
+    Thread sensorConnectionThread = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -510,6 +510,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
             }
         });
+
+        // TODO: 16.04.2020 блокировать кнопку соединения с датчиком,
+        //  а после установления связи с платой - разблокировать.
+
+        // TODO: 16.04.2020 да и остальные кнопки тоже блокировать на всякий случай...
 
         // TODO: 16.04.2020 возможно часть этих действий можно вынести в отдельный поток,
         //  а то при подключении интерфейс подвисает...
@@ -583,42 +588,47 @@ public class MainActivity extends AppCompatActivity {
                 if (!sensorConnection) {
                     // проверяем поле адреса, если адрес корректный
                     if (checkInputAddress()) {
-                        connect_to_sensor.setText("Стоп");
                         input_sensor_address.setEnabled(false);
-                        // запускаем цикл отправки запроса
+                        connect_to_sensor.setText("Стоп");
+                        // переключаем индикатор текущего подключения
                         sensorConnection = true;
 
-                        // TODO: 16.04.2020 а здесь можно наверное сделать проверку, чтоб один раз это создать,
-                        //  а потом просто управлять переключением sensorConnection.
+                        // Создаём задачу, которую будем выполнять в отдельном потоке.
+                        // Практика показала, что нужно именно каждый раз выполнять эти действия,
+                        // поскольку после остановки потока, он уже недоступен
+                        // (насколько я это понимаю на данный момент).
                         Runnable task = new Runnable() {
                             @Override
                             public void run() {
                                 startSensorConnection();
                             }
                         };
-                        sensConThread = new Thread(task);
+                        // Создаём отдельный поток с этой задачей
+                        sensorConnectionThread = new Thread(task);
 
-                        // поток завершится при завершении главного потока
-                        // но что-то оно не работает...
-//                        sensConThread.setDaemon(true);
+                        // вроде как с этой строкой поток должен завершиться
+                        // при завершении главного потока, но что-то оно не работает...
+                        //sensorConnectionThread.setDaemon(true);
 
-                        sensConThread.start();
+                        // Запускаем поток
+                        sensorConnectionThread.start();
                     }
                 } else {
-                    connect_to_sensor.setText("Старт");
-                    input_sensor_address.setEnabled(true);
-                    // останавливаем цикл отправки запроса
+
+                    // останавливаем поток отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
                     sensorConnection = false;
 
-                    // TODO: 16.04.2020 нужно ли его здесь прерывать или достаточно того,
-                    //  что он сам приостановится?... вроде как это сейчас лишнее...
-                    if (sensConThread != null) {
-                        Thread dummy = sensConThread;
-                        sensConThread = null;
+                    // Принудительное прерывание потока.
+                    // Вроде как это сейчас лишнее, при текущей логике
+/*                    if (sensorConnectionThread != null) {
+                        Thread dummy = sensorConnectionThread;
+                        sensorConnectionThread = null;
                         dummy.interrupt();
-                    }
+                    }*/
 
+                    connect_to_sensor.setText("Старт");
+                    input_sensor_address.setEnabled(true);
                 }
 
 
@@ -669,6 +679,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSensorConnection() {
+        Log.d(LOG_TAG, "Start Sensor Connection");
         // пока подключение активно и нет команды прерывания текущего потока
         while ((sensorConnection) && (!Thread.currentThread().isInterrupted())) {
             // создаём запрос
@@ -693,7 +704,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
-
+        Log.d(LOG_TAG, "Stop Sensor Connection");
     }
 
     private void createRequest() {
@@ -744,9 +755,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (sensConThread != null) {
-            Thread dummy = sensConThread;
-            sensConThread = null;
+        if (sensorConnectionThread != null) {
+            Thread dummy = sensorConnectionThread;
+            sensorConnectionThread = null;
             dummy.interrupt();
         }
     }
