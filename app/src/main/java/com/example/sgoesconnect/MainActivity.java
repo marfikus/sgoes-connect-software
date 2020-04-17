@@ -628,6 +628,9 @@ public class MainActivity extends AppCompatActivity {
 
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
+
+                    // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
+                    //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }
 
 
@@ -707,13 +710,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRequest() {
-        request = null;
+//        request = null;
 
-        //int address = input_sensor_address.gett
+        byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
+        byte funcCode = (byte)requestFuncCode;
+        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
+//        byte[] firstRegAddress = hexStringToByteArray("0000");
+//        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
+        byte firstRegAddressHigh = (byte)0x00;
+        byte firstRegAddressLow = (byte)0x00;
+//        byte[] numRegisters = hexStringToByteArray("000D");
+//        byte[] numRegisters = { (byte)0x00, (byte)0x0D };
+        byte numRegistersHigh = (byte)0x00;
+        byte numRegistersLow = (byte)0x0C;
 
-        String outputHexString = "01030000000C45CF";
-        request = hexStringToByteArray(outputHexString);
-        Log.d(LOG_TAG, "outputHexString: " + outputHexString);
+        // собираем это в один массив для расчёта CRC
+        byte[] reqMsg = {
+                         sensorAddress,
+                         funcCode,
+                         firstRegAddressHigh,
+                         firstRegAddressLow,
+                         numRegistersHigh,
+                         numRegistersLow
+        };
+
+        // считаем CRC
+        byte[] reqCRC = calcCRC(reqMsg);
+
+        // формируем общий массив запроса
+        request = concatArray(reqMsg, reqCRC);
+
+//        String outputHexString = "01030000000C45CF";
+//        request = hexStringToByteArray(outputHexString);
+//        Log.d(LOG_TAG, "outputHexString: " + outputHexString);
+        Log.d(LOG_TAG, "request: " + bytesToHex(request));
     }
 
     private boolean checkInputAddress() {
