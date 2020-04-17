@@ -190,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
         int respFuncCode = localCopyResponse[1] & 0xFF;
 
         if (reqFuncCode == respFuncCode) {
+            // TODO: 17.04.2020 добавить проверку на значение кода функции: если 3, то парсим,
+            //  если 6, то пропускаем, ибо незачем тратить время на разбор этого ответа (сообщение в лог выдаём)
             Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
 //          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
             parseRespData(localCopyRequest, localCopyResponse);
@@ -729,16 +731,40 @@ public class MainActivity extends AppCompatActivity {
 
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
         byte funcCode = (byte)_requestFuncCode;
-        
+
+        byte[] reqMsg = {};
+
         // по умолчанию (код функции = 03) отправляются эти байты
-        byte firstRegAddressHigh = (byte)0x00;
-        byte firstRegAddressLow = (byte)0x00;
-        byte numRegistersHigh = (byte)0x00;
-        byte numRegistersLow = (byte)0x0C;
+        if (_requestFuncCode == 3) {
+            byte firstRegAddressHigh = (byte)0x00;
+            byte firstRegAddressLow = (byte)0x00;
+            byte numRegistersHigh = (byte)0x00;
+            byte numRegistersLow = (byte)0x0C;
+
+            // собираем это в один массив для расчёта CRC
+            reqMsg = new byte[] {
+                    sensorAddress,
+                    funcCode,
+                    firstRegAddressHigh,
+                    firstRegAddressLow,
+                    numRegistersHigh,
+                    numRegistersLow
+            };
+        }
+
+        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
+        // TODO: 17.04.2020 а ещё будут кнопки установки порогов, смены адреса...
 
         // а если код функции изменён, то команда будет несколько иная
         if (_requestFuncCode == 6) {
-            // 
+            // TODO: 17.04.2020 сделать один флаг для хранения текущей команды кода функции 06:
+            //  калибровка, уст нуля, уст порога 1, порога 2, смена адреса...
+            //  А потом в свитче перебирать эти значения...
+            //  перечисление сделать? или строковое значение проверять...
+//            switch () {
+//                case
+//            }
+
             if (_calibration && _settingZero) {
                 // неопределённость, ничего не делаем, пропускаем итерацию
                 // TODO: 17.04.2020 вместо этого сделать взаимоисключение в обработчиках кнопок
@@ -753,25 +779,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
-        // TODO: 17.04.2020 а ещё будут кнопки установки порогов, смены адреса...
-
 //        byte[] firstRegAddress = hexStringToByteArray("0000");
 //        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
-
 //        byte[] numRegisters = hexStringToByteArray("000D");
 //        byte[] numRegisters = { (byte)0x00, (byte)0x0D };
-
-
-        // собираем это в один массив для расчёта CRC
-        byte[] reqMsg = {
-                         sensorAddress,
-                         funcCode,
-                         firstRegAddressHigh,
-                         firstRegAddressLow,
-                         numRegistersHigh,
-                         numRegistersLow
-        };
 
         // считаем CRC
         byte[] reqCRC = calcCRC(reqMsg);
