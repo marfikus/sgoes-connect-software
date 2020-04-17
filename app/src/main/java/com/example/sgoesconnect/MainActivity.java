@@ -475,8 +475,10 @@ public class MainActivity extends AppCompatActivity {
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
-    boolean sensorConnection = false;
-    int requestFuncCode = 3;
+    boolean sensorConnection = false; // флаг текущего подключения
+    int requestFuncCode = 3; // код функции запроса
+    boolean calibration = false; // флаг кнопки калибровки
+    boolean settingZero = false; // флаг кнопки установки нуля
     Thread sensorConnectionThread = null;
 
     @Override
@@ -590,7 +592,15 @@ public class MainActivity extends AppCompatActivity {
                     if (checkInputAddress()) {
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
-                        // переключаем индикатор текущего подключения
+
+                        // сбрасываем код функции в дефолтное состояние
+                        // (на случай, если команда сменилась, а потом остановили соединение)
+                        requestFuncCode = 3;
+                        // также сбрасываем флаги калибровки и установки нуля
+                        calibration = false;
+                        settingZero = false;
+
+                        // переключаем флаг текущего подключения
                         sensorConnection = true;
 
                         // Создаём задачу, которую будем выполнять в отдельном потоке.
@@ -685,16 +695,19 @@ public class MainActivity extends AppCompatActivity {
         // пока подключение активно и нет команды прерывания текущего потока
         while ((sensorConnection) && (!Thread.currentThread().isInterrupted())) {
             // создаём запрос
-            createRequest();
+            int _requestFuncCode = createRequest(requestFuncCode, calibration, settingZero);
             // чистим глобальный ответ
             // добавил на случай, когда пропадает связь с дачиком, потом восстанавливается,
             // а тут часть старого ответа видимо осталась и начинается каша...
             response = null;
             // отправляем запрос
             myThread.sendData(request);
-            // если команда == 06, то меняем её на 03
-            if (requestFuncCode == 6) {
+            // если команда в отправленном запросе = 06, то меняем глобальную на 03
+            if (_requestFuncCode == 6) {
                 requestFuncCode = 3;
+                // и обнуляем флаги кнопок
+                calibration = false;
+                settingZero = false;
             }
             // ждём некоторое время
             try {
@@ -709,20 +722,46 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "Stop Sensor Connection");
     }
 
-    private void createRequest() {
-//        request = null;
+    private int createRequest(int _requestFuncCode, boolean _calibration, boolean _settingZero) {
+        // копируем себе глобальный код функции и дальше работаем с ним,
+        // поскольку глобальный может измениться (нажали кнопку обнуления или калибровки)
+//        int _requestFuncCode = requestFuncCode;
 
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
-        byte funcCode = (byte)requestFuncCode;
-        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
-//        byte[] firstRegAddress = hexStringToByteArray("0000");
-//        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
+        byte funcCode = (byte)_requestFuncCode;
+        
+        // по умолчанию (код функции = 03) отправляются эти байты
         byte firstRegAddressHigh = (byte)0x00;
         byte firstRegAddressLow = (byte)0x00;
-//        byte[] numRegisters = hexStringToByteArray("000D");
-//        byte[] numRegisters = { (byte)0x00, (byte)0x0D };
         byte numRegistersHigh = (byte)0x00;
         byte numRegistersLow = (byte)0x0C;
+
+        // а если код функции изменён, то команда будет несколько иная
+        if (_requestFuncCode == 6) {
+            // 
+            if (_calibration && _settingZero) {
+                // неопределённость, ничего не делаем, пропускаем итерацию
+                // TODO: 17.04.2020 вместо этого сделать взаимоисключение в обработчиках кнопок
+            } else {
+                if (_calibration) {
+                    
+                } else {
+                    if (_settingZero) {
+                        
+                    }
+                }
+            }
+        }
+
+        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
+        // TODO: 17.04.2020 а ещё будут кнопки установки порогов, смены адреса...
+
+//        byte[] firstRegAddress = hexStringToByteArray("0000");
+//        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
+
+//        byte[] numRegisters = hexStringToByteArray("000D");
+//        byte[] numRegisters = { (byte)0x00, (byte)0x0D };
+
 
         // собираем это в один массив для расчёта CRC
         byte[] reqMsg = {
@@ -744,6 +783,11 @@ public class MainActivity extends AppCompatActivity {
 //        request = hexStringToByteArray(outputHexString);
 //        Log.d(LOG_TAG, "outputHexString: " + outputHexString);
         Log.d(LOG_TAG, "request: " + bytesToHex(request));
+
+        // возвращаем код функции, который был на момент создания запроса,
+        // поскольку глобальный может измениться во время вычисления и отправки запроса 
+        // (нажали кнопку обнуления или калибровки)
+        return _requestFuncCode;
     }
 
     private boolean checkInputAddress() {
