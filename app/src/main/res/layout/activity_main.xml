@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:text="Connect to sensor"
+        android:text="Старт"
         app:layout_constraintBottom_toBottomOf="@+id/input_sensor_address"
         app:layout_constraintStart_toEndOf="@+id/input_sensor_address" />
 
