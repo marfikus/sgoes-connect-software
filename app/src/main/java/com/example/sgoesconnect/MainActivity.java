@@ -163,8 +163,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Глобальный ответ обнуляем, поскольку проверка ответа пройдена
         // и далее работаем с его копией
-        // TODO: 15.04.2020 убрать потом эту переменную отдельным коммитом
-        numResponseBytes = 0;
         response = null;
         
         // парсим ответ, выводим данные... (тоже отдельные функции)
@@ -476,11 +474,9 @@ public class MainActivity extends AppCompatActivity {
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
-    int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
+    //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
     boolean sensorConnection = false; // флаг текущего подключения
     //int requestFuncCode = 3; // код функции запроса
-    //boolean calibration = false; // флаг кнопки калибровки
-    //boolean settingZero = false; // флаг кнопки установки нуля
     Thread sensorConnectionThread = null;
     enum Commands { // команды с кнопок
         NONE,
@@ -606,12 +602,8 @@ public class MainActivity extends AppCompatActivity {
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
 
-                        // сбрасываем код функции в дефолтное состояние
+                        // сбрасываем команду с кнопок в дефолтное состояние
                         // (на случай, если команда сменилась, а потом остановили соединение)
-//                        requestFuncCode = 3;
-                        // также сбрасываем флаги калибровки и установки нуля
-//                        calibration = false;
-//                        settingZero = false;
                         commandFromButton = Commands.NONE;
 
                         // переключаем флаг текущего подключения
@@ -657,24 +649,12 @@ public class MainActivity extends AppCompatActivity {
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }
 
-
-                // Обнуляем счётчик принятых байт и массив:
-//                numResponseBytes = 0;
-//                response = null;
-
-                // первый способ формирования массива байт
-                //byte[] data = new byte[] { (byte)0x01, (byte)0x03};
-
-                // второй способ
 //                String outputHexString = "010300000001840A";
 //                String outputHexString = "010300010001840A";
 //                String outputHexString = "010300000002840A";
 //                String outputHexString = "01030000000C45CF";
 //                request = hexStringToByteArray(outputHexString);
 //                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
-
-                //sensor_address = (EditText) findViewById(R.id.sensor_address);
-                //byte[] data = hexStringToByteArray(sensor_address.getText().toString());
 
                 //myThread.sendData(request);
             }
@@ -685,9 +665,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 15.04.2020 switch здесь можно убрать, заменить на if()
                 switch (msg.what) {
                     case arduinoData:
-                        // Увеличиваем счётчик принятых байт:
-                        numResponseBytes = numResponseBytes + msg.arg1;
-                        Log.d(LOG_TAG, "numResponseBytes:" + numResponseBytes);
+                        Log.d(LOG_TAG, "numResponseBytes:" + msg.arg1);
 
                         // Добавляем принятые байты в общий массив:
                         byte[] readBuf = (byte[]) msg.obj;
@@ -716,15 +694,6 @@ public class MainActivity extends AppCompatActivity {
             response = null;
             // отправляем запрос
             myThread.sendData(request);
-            // TODO: 18.04.2020 убрать это, сброс можно сделать и при создании запроса.
-            //  Зачем пересылать туда обратно код фунции...
-            // если команда в отправленном запросе = 06, то меняем глобальную на 03
-//            if (_requestFuncCode == 6) {
-//                requestFuncCode = 3;
-//                // и обнуляем флаги кнопок
-//                calibration = false;
-//                settingZero = false;
-//            }
             // ждём некоторое время
             try {
                 Thread.sleep(2000);
@@ -739,88 +708,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRequest(Commands _commandFromButton) {
-        // копируем себе глобальный код функции и дальше работаем с ним,
-        // поскольку глобальный может измениться (нажали кнопку обнуления или калибровки)
-//        int _requestFuncCode = requestFuncCode;
-
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
-        //byte funcCode = (byte)_requestFuncCode;
-
         byte[] reqMsg = {};
 
-        // по умолчанию (код функции = 03) отправляются эти байты
-//        if (_requestFuncCode == 3) {
-//            byte firstRegAddressHigh = (byte)0x00;
-//            byte firstRegAddressLow = (byte)0x00;
-//            byte numRegistersHigh = (byte)0x00;
-//            byte numRegistersLow = (byte)0x0C;
-//
-//            // собираем это в один массив для расчёта CRC
-//            reqMsg = new byte[] {
-//                    sensorAddress,
-//                    (byte)0x03  // funcCode
-//                    (byte)0x00, // firstRegAddressHigh
-//                    (byte)0x00, // firstRegAddressLow
-//                    (byte)0x00, // numRegistersHigh
-//                    (byte)0x0C  // numRegistersLow
-//            };
-//        }
-
-        // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
-        // TODO: 17.04.2020 а ещё будут кнопки установки порогов, смены адреса...
-
-        // а если код функции изменён, то команда будет несколько иная
-//        if (_requestFuncCode == 6) {
-            // TODO: 17.04.2020 сделать один флаг(commandFromButton) для хранения текущей команды кода функции 06:
-            //  калибровка, уст нуля, уст порога 1, порога 2, смена адреса...
-            //  А потом в свитче перебирать эти значения...
-
-            // TODO: 18.04.2020 А можно избавиться от глобального кода функции,
-            //  просто смотреть по enum, если нет команд с кнопок, то 03
-
-            switch (_commandFromButton) {
-                case NONE: // команды с кнопок нет, обычный запрос данных
-                    reqMsg = new byte[] {
-                            sensorAddress,
-                            (byte)0x03, // funcCode
-                            (byte)0x00, // firstRegAddressHigh
-                            (byte)0x00, // firstRegAddressLow
-                            (byte)0x00, // numRegistersHigh
-                            (byte)0x0C  // numRegistersLow
-                    };
-                    break;
-                case SET_ZERO: // установка нуля
-                    reqMsg = new byte[] {
-                            sensorAddress,
-                            (byte)0x06, // funcCode
-                            (byte)0x00, // firstRegAddressHigh
-                            (byte)0x02, // firstRegAddressLow
-                            (byte)0x00, // dataHigh
-                            (byte)0x00  // dataLow
-                    };
-                    // сбрасываем глобальную команду
-                    commandFromButton = Commands.NONE;
-                    break;
-            }
-
-//            if (_calibration && _settingZero) {
-//                // неопределённость, ничего не делаем, пропускаем итерацию
-//                // TODO: 17.04.2020 вместо этого сделать взаимоисключение в обработчиках кнопок
-//            } else {
-//                if (_calibration) {
-//
-//                } else {
-//                    if (_settingZero) {
-//
-//                    }
-//                }
-//            }
-//        }
-
-//        byte[] firstRegAddress = hexStringToByteArray("0000");
-//        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
-//        byte[] numRegisters = hexStringToByteArray("000D");
-//        byte[] numRegisters = { (byte)0x00, (byte)0x0D };
+        switch (_commandFromButton) {
+            case NONE: // команды с кнопок нет, обычный запрос данных
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x03, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x00, // firstRegAddressLow
+                        (byte)0x00, // numRegistersHigh
+                        (byte)0x0C  // numRegistersLow
+                };
+                break;
+            case SET_ZERO: // установка нуля
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x02, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)0x00  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+        }
 
         // считаем CRC
         byte[] reqCRC = calcCRC(reqMsg);
@@ -832,11 +746,6 @@ public class MainActivity extends AppCompatActivity {
 //        request = hexStringToByteArray(outputHexString);
 //        Log.d(LOG_TAG, "outputHexString: " + outputHexString);
         Log.d(LOG_TAG, "request: " + bytesToHex(request));
-
-        // возвращаем код функции, который был на момент создания запроса,
-        // поскольку глобальный может измениться во время вычисления и отправки запроса 
-        // (нажали кнопку обнуления или калибровки)
-//        return _requestFuncCode;
     }
 
     private boolean checkInputAddress() {
