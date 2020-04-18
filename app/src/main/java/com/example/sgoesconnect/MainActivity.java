@@ -478,10 +478,21 @@ public class MainActivity extends AppCompatActivity {
     byte[] response; // текущий ответ
     int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
     boolean sensorConnection = false; // флаг текущего подключения
-    int requestFuncCode = 3; // код функции запроса
-    boolean calibration = false; // флаг кнопки калибровки
-    boolean settingZero = false; // флаг кнопки установки нуля
+    //int requestFuncCode = 3; // код функции запроса
+    //boolean calibration = false; // флаг кнопки калибровки
+    //boolean settingZero = false; // флаг кнопки установки нуля
     Thread sensorConnectionThread = null;
+    enum Commands { // команды с кнопок
+        NONE,
+        SET_ZERO,
+        CALIBRATION_1,
+        CALIBRATION_2,
+        SET_THRESHOLD_1,
+        SET_THRESHOLD_2,
+        SET_DEFAULT_SETTINGS,
+        CHANGE_SENSOR_ADDRESS
+    }
+    Commands commandFromButton = Commands.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -597,10 +608,11 @@ public class MainActivity extends AppCompatActivity {
 
                         // сбрасываем код функции в дефолтное состояние
                         // (на случай, если команда сменилась, а потом остановили соединение)
-                        requestFuncCode = 3;
+//                        requestFuncCode = 3;
                         // также сбрасываем флаги калибровки и установки нуля
-                        calibration = false;
-                        settingZero = false;
+//                        calibration = false;
+//                        settingZero = false;
+                        commandFromButton = Commands.NONE;
 
                         // переключаем флаг текущего подключения
                         sensorConnection = true;
@@ -697,20 +709,22 @@ public class MainActivity extends AppCompatActivity {
         // пока подключение активно и нет команды прерывания текущего потока
         while ((sensorConnection) && (!Thread.currentThread().isInterrupted())) {
             // создаём запрос
-            int _requestFuncCode = createRequest(requestFuncCode, calibration, settingZero);
+            createRequest(commandFromButton);
             // чистим глобальный ответ
             // добавил на случай, когда пропадает связь с дачиком, потом восстанавливается,
             // а тут часть старого ответа видимо осталась и начинается каша...
             response = null;
             // отправляем запрос
             myThread.sendData(request);
+            // TODO: 18.04.2020 убрать это, сброс можно сделать и при создании запроса.
+            //  Зачем пересылать туда обратно код фунции...
             // если команда в отправленном запросе = 06, то меняем глобальную на 03
-            if (_requestFuncCode == 6) {
-                requestFuncCode = 3;
-                // и обнуляем флаги кнопок
-                calibration = false;
-                settingZero = false;
-            }
+//            if (_requestFuncCode == 6) {
+//                requestFuncCode = 3;
+//                // и обнуляем флаги кнопок
+//                calibration = false;
+//                settingZero = false;
+//            }
             // ждём некоторое время
             try {
                 Thread.sleep(2000);
@@ -724,60 +738,84 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "Stop Sensor Connection");
     }
 
-    private int createRequest(int _requestFuncCode, boolean _calibration, boolean _settingZero) {
+    private void createRequest(Commands _commandFromButton) {
         // копируем себе глобальный код функции и дальше работаем с ним,
         // поскольку глобальный может измениться (нажали кнопку обнуления или калибровки)
 //        int _requestFuncCode = requestFuncCode;
 
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
-        byte funcCode = (byte)_requestFuncCode;
+        //byte funcCode = (byte)_requestFuncCode;
 
         byte[] reqMsg = {};
 
         // по умолчанию (код функции = 03) отправляются эти байты
-        if (_requestFuncCode == 3) {
-            byte firstRegAddressHigh = (byte)0x00;
-            byte firstRegAddressLow = (byte)0x00;
-            byte numRegistersHigh = (byte)0x00;
-            byte numRegistersLow = (byte)0x0C;
-
-            // собираем это в один массив для расчёта CRC
-            reqMsg = new byte[] {
-                    sensorAddress,
-                    funcCode,
-                    firstRegAddressHigh,
-                    firstRegAddressLow,
-                    numRegistersHigh,
-                    numRegistersLow
-            };
-        }
+//        if (_requestFuncCode == 3) {
+//            byte firstRegAddressHigh = (byte)0x00;
+//            byte firstRegAddressLow = (byte)0x00;
+//            byte numRegistersHigh = (byte)0x00;
+//            byte numRegistersLow = (byte)0x0C;
+//
+//            // собираем это в один массив для расчёта CRC
+//            reqMsg = new byte[] {
+//                    sensorAddress,
+//                    (byte)0x03  // funcCode
+//                    (byte)0x00, // firstRegAddressHigh
+//                    (byte)0x00, // firstRegAddressLow
+//                    (byte)0x00, // numRegistersHigh
+//                    (byte)0x0C  // numRegistersLow
+//            };
+//        }
 
         // TODO: 16.04.2020 если код функции 06, то данные другие! Причём для калибровки и обнуления возможно разные...
         // TODO: 17.04.2020 а ещё будут кнопки установки порогов, смены адреса...
 
         // а если код функции изменён, то команда будет несколько иная
-        if (_requestFuncCode == 6) {
-            // TODO: 17.04.2020 сделать один флаг для хранения текущей команды кода функции 06:
+//        if (_requestFuncCode == 6) {
+            // TODO: 17.04.2020 сделать один флаг(commandFromButton) для хранения текущей команды кода функции 06:
             //  калибровка, уст нуля, уст порога 1, порога 2, смена адреса...
             //  А потом в свитче перебирать эти значения...
-            //  перечисление сделать? или строковое значение проверять...
-//            switch () {
-//                case
-//            }
 
-            if (_calibration && _settingZero) {
-                // неопределённость, ничего не делаем, пропускаем итерацию
-                // TODO: 17.04.2020 вместо этого сделать взаимоисключение в обработчиках кнопок
-            } else {
-                if (_calibration) {
-                    
-                } else {
-                    if (_settingZero) {
-                        
-                    }
-                }
+            // TODO: 18.04.2020 А можно избавиться от глобального кода функции,
+            //  просто смотреть по enum, если нет команд с кнопок, то 03
+
+            switch (_commandFromButton) {
+                case NONE: // команды с кнопок нет, обычный запрос данных
+                    reqMsg = new byte[] {
+                            sensorAddress,
+                            (byte)0x03, // funcCode
+                            (byte)0x00, // firstRegAddressHigh
+                            (byte)0x00, // firstRegAddressLow
+                            (byte)0x00, // numRegistersHigh
+                            (byte)0x0C  // numRegistersLow
+                    };
+                    break;
+                case SET_ZERO: // установка нуля
+                    reqMsg = new byte[] {
+                            sensorAddress,
+                            (byte)0x06, // funcCode
+                            (byte)0x00, // firstRegAddressHigh
+                            (byte)0x02, // firstRegAddressLow
+                            (byte)0x00, // dataHigh
+                            (byte)0x00  // dataLow
+                    };
+                    // сбрасываем глобальную команду
+                    commandFromButton = Commands.NONE;
+                    break;
             }
-        }
+
+//            if (_calibration && _settingZero) {
+//                // неопределённость, ничего не делаем, пропускаем итерацию
+//                // TODO: 17.04.2020 вместо этого сделать взаимоисключение в обработчиках кнопок
+//            } else {
+//                if (_calibration) {
+//
+//                } else {
+//                    if (_settingZero) {
+//
+//                    }
+//                }
+//            }
+//        }
 
 //        byte[] firstRegAddress = hexStringToByteArray("0000");
 //        byte[] firstRegAddress = { (byte)0x00, (byte)0x00 };
@@ -798,7 +836,7 @@ public class MainActivity extends AppCompatActivity {
         // возвращаем код функции, который был на момент создания запроса,
         // поскольку глобальный может измениться во время вычисления и отправки запроса 
         // (нажали кнопку обнуления или калибровки)
-        return _requestFuncCode;
+//        return _requestFuncCode;
     }
 
     private boolean checkInputAddress() {
