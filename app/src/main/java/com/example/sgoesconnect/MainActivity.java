@@ -396,6 +396,8 @@ public class MainActivity extends AppCompatActivity {
                     fCurRegDataFull = fCurRegDataFull / 10;
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
+//                    gas_level_volume
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -465,6 +467,7 @@ public class MainActivity extends AppCompatActivity {
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
+    TextView gas_level_volume;
     TextView threshold_1;
     TextView threshold_2;
     TextView fault_relay;
@@ -507,6 +510,7 @@ public class MainActivity extends AppCompatActivity {
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
+        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
         threshold_1 = (TextView) findViewById(R.id.threshold_1);
         threshold_2 = (TextView) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
