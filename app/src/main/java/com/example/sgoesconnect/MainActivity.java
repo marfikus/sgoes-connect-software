@@ -19,6 +19,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
@@ -397,7 +399,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
 
-//                    gas_level_volume
+                    float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
+                    Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                    gas_level_volume.setText(Float.toString(volumePercent));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -451,6 +455,12 @@ public class MainActivity extends AppCompatActivity {
         highByteCRC = (byte) ((fullCRC >> 8) & 0xFFFF);
 
         return new byte[] {lowByteCRC, highByteCRC};
+    }
+
+    private float nkprPercentToVolumePercent(float nkprPercent) {
+        float volumePercent = (nkprPercent * (float)4.4) / (float)100.0;
+        volumePercent = new BigDecimal(volumePercent).setScale(3, RoundingMode.UP).floatValue();
+        return volumePercent;
     }
 
     private static final int REQUEST_ENABLE_BT = 0;
