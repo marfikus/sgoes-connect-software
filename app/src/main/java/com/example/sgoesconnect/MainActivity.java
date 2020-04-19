@@ -458,6 +458,7 @@ public class MainActivity extends AppCompatActivity {
     Button bt_settings;
     Button bt_connect;
     Button connect_to_sensor;
+    Button set_zero;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
     TextView sensor_address;
@@ -680,6 +681,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        set_zero = (Button) findViewById(R.id.set_zero);
+        set_zero.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 18.04.2020 спросить подтверждение действия
+                commandFromButton = Commands.SET_ZERO;
+                Log.d(LOG_TAG, commandFromButton.toString());
+            }
+        });
     }
 
     private void startSensorConnection() {
