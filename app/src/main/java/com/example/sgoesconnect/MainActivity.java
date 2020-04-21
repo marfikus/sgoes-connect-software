@@ -19,9 +19,12 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.ToDoubleBiFunction;
 import java.util.zip.Checksum;
 import java.util.BitSet;
 
@@ -396,6 +399,10 @@ public class MainActivity extends AppCompatActivity {
                     fCurRegDataFull = fCurRegDataFull / 10;
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+
+                    float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
+                    Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                    gas_level_volume.setText(Float.toString(volumePercent));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -451,6 +458,12 @@ public class MainActivity extends AppCompatActivity {
         return new byte[] {lowByteCRC, highByteCRC};
     }
 
+    private float nkprPercentToVolumePercent(float nkprPercent) {
+        float volumePercent = (nkprPercent * (float)4.4) / (float)100.0;
+        volumePercent = new BigDecimal(volumePercent).setScale(3, RoundingMode.UP).floatValue();
+        return volumePercent;
+    }
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static String macAddress = "98:D3:71:F5:DA:46";
@@ -465,6 +478,7 @@ public class MainActivity extends AppCompatActivity {
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
+    TextView gas_level_volume;
     TextView threshold_1;
     TextView threshold_2;
     TextView fault_relay;
@@ -507,6 +521,7 @@ public class MainActivity extends AppCompatActivity {
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
+        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
         threshold_1 = (TextView) findViewById(R.id.threshold_1);
         threshold_2 = (TextView) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
@@ -557,8 +572,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
                 }
 
-                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код не
-                // выполнялся при отключенном блютусе и тп...
+                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код
+                //  не выполнялся при отключенном блютусе и тп...
 
                 BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
@@ -689,6 +704,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 18.04.2020 спросить подтверждение действия
                 commandFromButton = Commands.SET_ZERO;
                 Log.d(LOG_TAG, commandFromButton.toString());
+                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
     }
