@@ -24,6 +24,7 @@ import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.ToDoubleBiFunction;
 import java.util.zip.Checksum;
 import java.util.BitSet;
 
@@ -571,8 +572,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
                 }
 
-                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код не
-                // выполнялся при отключенном блютусе и тп...
+                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код
+                //  не выполнялся при отключенном блютусе и тп...
 
                 BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
@@ -703,6 +704,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 18.04.2020 спросить подтверждение действия
                 commandFromButton = Commands.SET_ZERO;
                 Log.d(LOG_TAG, commandFromButton.toString());
+                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
     }
