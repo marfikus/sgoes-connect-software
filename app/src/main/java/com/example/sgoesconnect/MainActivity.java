@@ -130,6 +130,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkResponse(byte[] _request, byte[] _response) {
+
+        // если код функции в текущем запросе == 06, то не обрабатываем пока эти ответы
+        int reqFuncCode = _request[1] & 0xFF;
+        if (reqFuncCode == 6) {
+            Log.d(LOG_TAG, "checkResponse: reqFuncCode == " + reqFuncCode + ". Skip it.");
+            return;
+        }
+
         int respLength = _response.length;
         if (respLength < 5) {
             return;
