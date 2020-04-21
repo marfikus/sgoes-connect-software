@@ -400,9 +400,15 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
 
+                    // объёмные проценты
                     float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
                     Log.d(LOG_TAG, "volumePercent: " + volumePercent);
                     gas_level_volume.setText(Float.toString(volumePercent));
+
+                    // ток в мА
+                    float current = nkprPercentToCurrent(fCurRegDataFull);
+                    Log.d(LOG_TAG, "current: " + current);
+                    gas_level_current.setText(Float.toString(current));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -462,6 +468,12 @@ public class MainActivity extends AppCompatActivity {
         float volumePercent = (nkprPercent * (float)4.4) / (float)100.0;
         volumePercent = new BigDecimal(volumePercent).setScale(3, RoundingMode.UP).floatValue();
         return volumePercent;
+    }
+
+    private float nkprPercentToCurrent(float nkprPercent) {
+        float current = ((nkprPercent * (float)16.0) / (float)100.0) + (float)4.0;
+        current = new BigDecimal(current).setScale(2, RoundingMode.UP).floatValue();
+        return current;
     }
 
     private static final int REQUEST_ENABLE_BT = 0;
