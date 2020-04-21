@@ -479,6 +479,7 @@ public class MainActivity extends AppCompatActivity {
     TextView sensor_type;
     TextView gas_level_nkpr;
     TextView gas_level_volume;
+    TextView gas_level_current;
     TextView threshold_1;
     TextView threshold_2;
     TextView fault_relay;
@@ -522,6 +523,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
         gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
+        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
         threshold_1 = (TextView) findViewById(R.id.threshold_1);
         threshold_2 = (TextView) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
