@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[40];
             int numBytes;
 
             while (true) {
