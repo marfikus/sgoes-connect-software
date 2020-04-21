@@ -400,9 +400,15 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
 
+                    // объёмные проценты
                     float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
                     Log.d(LOG_TAG, "volumePercent: " + volumePercent);
                     gas_level_volume.setText(Float.toString(volumePercent));
+
+                    // ток в мА
+                    float current = nkprPercentToCurrent(fCurRegDataFull);
+                    Log.d(LOG_TAG, "current: " + current);
+                    gas_level_current.setText(Float.toString(current));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -464,6 +470,12 @@ public class MainActivity extends AppCompatActivity {
         return volumePercent;
     }
 
+    private float nkprPercentToCurrent(float nkprPercent) {
+        float current = ((nkprPercent * (float)16.0) / (float)100.0) + (float)4.0;
+        current = new BigDecimal(current).setScale(2, RoundingMode.UP).floatValue();
+        return current;
+    }
+
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static String macAddress = "98:D3:71:F5:DA:46";
@@ -479,6 +491,7 @@ public class MainActivity extends AppCompatActivity {
     TextView sensor_type;
     TextView gas_level_nkpr;
     TextView gas_level_volume;
+    TextView gas_level_current;
     TextView threshold_1;
     TextView threshold_2;
     TextView fault_relay;
@@ -522,6 +535,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
         gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
+        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
         threshold_1 = (TextView) findViewById(R.id.threshold_1);
         threshold_2 = (TextView) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);

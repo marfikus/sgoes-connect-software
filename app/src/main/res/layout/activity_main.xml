@@ -46,6 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="35dp"
         android:layout_marginLeft="35dp"
+        android:layout_marginTop="8dp"
         android:text='Уст.\n"0"'
         app:layout_constraintStart_toEndOf="@+id/title_gas_level_nkpr"
         app:layout_constraintTop_toTopOf="@+id/title_gas_level_nkpr" />
@@ -141,13 +142,22 @@
         app:layout_constraintTop_toBottomOf="@+id/title_gas_level_nkpr" />
 
     <TextView
+        android:id="@+id/title_gas_level_current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="мА:"
+        app:layout_constraintStart_toStartOf="@+id/title_gas_level_volume"
+        app:layout_constraintTop_toBottomOf="@+id/title_gas_level_volume" />
+
+    <TextView
         android:id="@+id/title_threshold_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="1 порог:"
-        app:layout_constraintStart_toStartOf="@+id/title_gas_level_volume"
-        app:layout_constraintTop_toBottomOf="@+id/title_gas_level_volume" />
+        app:layout_constraintStart_toStartOf="@+id/title_gas_level_current"
+        app:layout_constraintTop_toBottomOf="@+id/title_gas_level_current" />
 
     <TextView
         android:id="@+id/title_threshold_2"
@@ -263,5 +273,15 @@
         android:text="null"
         app:layout_constraintBottom_toBottomOf="@+id/title_gas_level_volume"
         app:layout_constraintStart_toEndOf="@+id/title_gas_level_volume" />
+
+    <TextView
+        android:id="@+id/gas_level_current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="null"
+        app:layout_constraintBottom_toBottomOf="@+id/title_gas_level_current"
+        app:layout_constraintStart_toEndOf="@+id/title_gas_level_current" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
