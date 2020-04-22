@@ -514,6 +514,7 @@ public class MainActivity extends AppCompatActivity {
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
+    final int sensorConnectionThreadData = 2;
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -745,8 +746,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(LOG_TAG, "sensorConnection is stopped. Skip this response.");
                     return;
                 }
-
-                // TODO: 15.04.2020 switch здесь можно убрать, заменить на if()
                 switch (msg.what) {
                     case arduinoData:
                         Log.d(LOG_TAG, "numResponseBytes:" + msg.arg1);
@@ -761,6 +760,12 @@ public class MainActivity extends AppCompatActivity {
                         requestCounter = 0;
 
                         checkResponse(request, response);
+                        break;
+                    case sensorConnectionThreadData:
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+                        if (msg.obj == ConnectionState.NO_RESPONSE) {
+                            sensor_connection_state.setText("НЕТ ОТВЕТА");
+                        }
                         break;
                 }
             }
@@ -797,9 +802,8 @@ public class MainActivity extends AppCompatActivity {
             if ((requestCounter >= 3) && (workingMode == WorkingMode.READING_DATA)) {
                 connectionState = ConnectionState.NO_RESPONSE;
                 Log.d(LOG_TAG, "connectionState: " + connectionState.toString());
-                //sensor_connection_state.setText("НЕТ ОТВЕТА");
-                //changeConnectionState();
-                // TODO: 22.04.2020 здесь надо сообщить главному потоку, чтобы он сменил статус на экране
+                // сообщаем главному потоку, чтобы он сменил статус на экране
+                myHandler.obtainMessage(sensorConnectionThreadData, connectionState).sendToTarget();
             }
 
             // ждём некоторое время
