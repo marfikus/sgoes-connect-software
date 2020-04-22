@@ -175,6 +175,9 @@ public class MainActivity extends AppCompatActivity {
         // Глобальный ответ обнуляем, поскольку проверка ответа пройдена
         // и далее работаем с его копией
         response = null;
+
+        connectionState = ConnectionState.CONNECTED;
+        sensor_connection_state.setText("ПОДКЛЮЧЕН");
         
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
@@ -216,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
 //              читаем третий байт ответа и выводим информацию об ошибке...
                 int respError = localCopyResponse[2] & 0xFF;
                 Log.d(LOG_TAG, "Error in localCopyResponse. Error code: " + respError);
+                // TODO: 22.04.2020 вывод на экран, можно тостом наверное
             } else {
                 // значит это хз что за ответ)...
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
@@ -528,9 +532,10 @@ public class MainActivity extends AppCompatActivity {
     }
     Commands commandFromButton = Commands.NONE;
     enum ConnectionState { // состояние подключения
-        CONNECTED,
+        DISCONNECTED,
+        WAITING_FOR_RESPONSE,
         NO_RESPONSE,
-        DISCONNECTED
+        CONNECTED
     }
     ConnectionState connectionState = ConnectionState.DISCONNECTED;
     enum WorkingMode { // режим работы
@@ -544,6 +549,7 @@ public class MainActivity extends AppCompatActivity {
         CHANGING_SENSOR_ADDRESS
     }
     WorkingMode workingMode = WorkingMode.READING_DATA;
+    int requestCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -665,6 +671,14 @@ public class MainActivity extends AppCompatActivity {
                         // (на случай, если команда сменилась, а потом остановили соединение)
                         commandFromButton = Commands.NONE;
 
+                        // устанавливаем статусы
+                        connectionState = ConnectionState.WAITING_FOR_RESPONSE;
+                        sensor_connection_state.setText("ПОДКЛЮЧЕНИЕ...");
+                        workingMode = WorkingMode.READING_DATA;
+                        working_mode.setText("ОПРОС");
+
+                        requestCounter = 0;
+
                         // переключаем флаг текущего подключения
                         sensorConnection = true;
 
@@ -701,6 +715,11 @@ public class MainActivity extends AppCompatActivity {
                         dummy.interrupt();
                     }*/
 
+                    connectionState = ConnectionState.DISCONNECTED;
+                    sensor_connection_state.setText("ОТКЛЮЧЕН");
+                    workingMode = WorkingMode.READING_DATA;
+                    working_mode.setText("ОПРОС");
+
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
 
@@ -732,9 +751,10 @@ public class MainActivity extends AppCompatActivity {
                         //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
 
-                        checkResponse(request, response);
+                        // обнуляем счётчик запросов, т.к. что-то получили
+                        requestCounter = 0;
 
-//                        gas_level_nkpr.setText(bytesToHex(response));
+                        checkResponse(request, response);
                         break;
                 }
             }
@@ -764,6 +784,18 @@ public class MainActivity extends AppCompatActivity {
             response = null;
             // отправляем запрос
             myThread.sendData(request);
+            
+            // увеличиваем счётчик запросов
+            requestCounter = requestCounter + 1;
+            // проверяем его состояние, если более 3х запросов без ответа, то меняем статус
+            if ((requestCounter >= 3) && (workingMode == WorkingMode.READING_DATA)) {
+                connectionState = ConnectionState.NO_RESPONSE;
+                Log.d(LOG_TAG, "connectionState: " + connectionState.toString());
+                //sensor_connection_state.setText("НЕТ ОТВЕТА");
+                //changeConnectionState();
+                // TODO: 22.04.2020 здесь надо сообщить главному потоку, чтобы он сменил статус на экране
+            }
+
             // ждём некоторое время
             try {
                 Thread.sleep(2000);
@@ -775,6 +807,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Log.d(LOG_TAG, "Stop Sensor Connection");
+    }
+
+    private void changeConnectionState() {
+        if (connectionState == ConnectionState.NO_RESPONSE) {
+            sensor_connection_state.setText("НЕТ ОТВЕТА");
+        }
     }
 
     private void createRequest(Commands _commandFromButton) {
