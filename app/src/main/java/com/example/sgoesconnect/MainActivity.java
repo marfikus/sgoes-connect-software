@@ -505,6 +505,8 @@ public class MainActivity extends AppCompatActivity {
     TextView fault_relay;
     TextView relay_1;
     TextView relay_2;
+    TextView sensor_connection_state;
+    TextView working_mode;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
@@ -566,6 +568,8 @@ public class MainActivity extends AppCompatActivity {
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
+        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
+        working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
