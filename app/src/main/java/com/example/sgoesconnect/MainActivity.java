@@ -740,6 +740,12 @@ public class MainActivity extends AppCompatActivity {
 
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
+                // если остановили подключение, то не надо уже обрабатывать ответ
+                if (!sensorConnection) {
+                    Log.d(LOG_TAG, "sensorConnection is stopped. Skip this response.");
+                    return;
+                }
+
                 // TODO: 15.04.2020 switch здесь можно убрать, заменить на if()
                 switch (msg.what) {
                     case arduinoData:
