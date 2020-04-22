@@ -517,14 +517,31 @@ public class MainActivity extends AppCompatActivity {
     enum Commands { // команды с кнопок
         NONE,
         SET_ZERO,
-        CALIBRATION_1,
-        CALIBRATION_2,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
         SET_THRESHOLD_1,
         SET_THRESHOLD_2,
         SET_DEFAULT_SETTINGS,
         CHANGE_SENSOR_ADDRESS
     }
     Commands commandFromButton = Commands.NONE;
+    enum ConnectionState { // состояние подключения
+        CONNECTED,
+        NO_RESPONSE,
+        DISCONNECTED
+    }
+    ConnectionState connectionState = ConnectionState.DISCONNECTED;
+    enum WorkingMode { // режим работы
+        READING_DATA,
+        SETTING_ZERO,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
+        SETTING_THRESHOLD_1,
+        SETTING_THRESHOLD_2,
+        SETTING_DEFAULT_SETTINGS,
+        CHANGING_SENSOR_ADDRESS
+    }
+    WorkingMode workingMode = WorkingMode.READING_DATA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
