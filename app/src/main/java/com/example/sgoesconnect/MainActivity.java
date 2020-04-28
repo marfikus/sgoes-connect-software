@@ -177,11 +177,11 @@ public class MainActivity extends AppCompatActivity {
         response = null;
 
         connectionState = ConnectionState.CONNECTED;
-        sensor_connection_state.setText("ПОДКЛЮЧЕН");
+        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕН");
 
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
-        working_mode.setText("ОПРОС");
+        working_mode.setText("РЕЖИМ: ОПРОС");
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
 
@@ -680,9 +680,9 @@ public class MainActivity extends AppCompatActivity {
 
                         // устанавливаем статусы
                         connectionState = ConnectionState.WAITING_FOR_RESPONSE;
-                        sensor_connection_state.setText("ПОДКЛЮЧЕНИЕ...");
+                        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
                         workingMode = WorkingMode.READING_DATA;
-                        working_mode.setText("ОПРОС");
+                        working_mode.setText("РЕЖИМ: ОПРОС");
 
                         requestCounter = 0;
 
@@ -723,9 +723,9 @@ public class MainActivity extends AppCompatActivity {
                     }*/
 
                     connectionState = ConnectionState.DISCONNECTED;
-                    sensor_connection_state.setText("ОТКЛЮЧЕН");
+                    sensor_connection_state.setText("СТАТУС: ОТКЛЮЧЕН");
                     workingMode = WorkingMode.READING_DATA;
-                    working_mode.setText("ОПРОС");
+                    working_mode.setText("РЕЖИМ: ---");
 
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
@@ -779,7 +779,7 @@ public class MainActivity extends AppCompatActivity {
                     case sensorConnectionThreadData:
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
                         if (msg.obj == ConnectionState.NO_RESPONSE) {
-                            sensor_connection_state.setText("НЕТ ОТВЕТА");
+                            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
                         }
                         break;
                 }
@@ -795,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, commandFromButton.toString());
 
                 workingMode = WorkingMode.SETTING_ZERO;
-                working_mode.setText("УСТАНОВКА НУЛЯ");
+                working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
                 set_zero.setEnabled(false);
 
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
@@ -845,7 +845,7 @@ public class MainActivity extends AppCompatActivity {
     private void changeSensorConnectionStateOnScreen() {
         // TODO: 22.04.2020 switch
         if (connectionState == ConnectionState.NO_RESPONSE) {
-            sensor_connection_state.setText("НЕТ ОТВЕТА");
+            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
         }
     }
 
