@@ -178,7 +178,13 @@ public class MainActivity extends AppCompatActivity {
 
         connectionState = ConnectionState.CONNECTED;
         sensor_connection_state.setText("ПОДКЛЮЧЕН");
-        
+
+        // Востанавливаем индикацию обычного режима:
+        workingMode = WorkingMode.READING_DATA;
+        working_mode.setText("ОПРОС");
+        // Разблокируем кнопки посылки команд:
+        set_zero.setEnabled(true);
+
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
         parseResponse(localCopyRequest, localCopyResponse);
@@ -742,22 +748,31 @@ public class MainActivity extends AppCompatActivity {
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 // если остановили подключение, то не надо уже обрабатывать ответ
+                // (предотвращение "инерции")
                 if (!sensorConnection) {
                     Log.d(LOG_TAG, "sensorConnection is stopped. Skip this response.");
                     return;
                 }
                 switch (msg.what) {
                     case arduinoData:
+                        // обнуляем счётчик запросов, т.к. что-то получили
+                        requestCounter = 0;
+
+                        // TODO: 28.04.2020 тоже борьба с инерционностью стороннего потока.
+                        //  Отсекаем ответы на старые запросы, если была какая-нибудь команда с кнопок.
+                        if (commandFromButton != Commands.NONE) {
+                            Log.d(LOG_TAG, "'Inertial' response Skip it.");
+                            return;
+                        }
+
                         Log.d(LOG_TAG, "numResponseBytes:" + msg.arg1);
 
                         // Добавляем принятые байты в общий массив:
+                        // (накапливаем ответ, поскольку за один раз всё принять пока не получается)
                         byte[] readBuf = (byte[]) msg.obj;
                         response = concatArray(response, readBuf);
                         //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
-
-                        // обнуляем счётчик запросов, т.к. что-то получили
-                        requestCounter = 0;
 
                         checkResponse(request, response);
                         break;
@@ -778,6 +793,11 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 18.04.2020 спросить подтверждение действия
                 commandFromButton = Commands.SET_ZERO;
                 Log.d(LOG_TAG, commandFromButton.toString());
+
+                workingMode = WorkingMode.SETTING_ZERO;
+                working_mode.setText("УСТАНОВКА НУЛЯ");
+                set_zero.setEnabled(false);
+
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
@@ -795,7 +815,7 @@ public class MainActivity extends AppCompatActivity {
             response = null;
             // отправляем запрос
             myThread.sendData(request);
-            
+
             // увеличиваем счётчик запросов
             requestCounter = requestCounter + 1;
             // проверяем его состояние, если более 3х запросов без ответа, то меняем статус
@@ -819,7 +839,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "Stop Sensor Connection");
     }
 
-    private void changeConnectionState() {
+    // TODO: 22.04.2020 переименовать connectionState в sensorConnectionState
+
+    // TODO: 22.04.2020  привязать ко всем местам, где меняется этот статус
+    private void changeSensorConnectionStateOnScreen() {
+        // TODO: 22.04.2020 switch
         if (connectionState == ConnectionState.NO_RESPONSE) {
             sensor_connection_state.setText("НЕТ ОТВЕТА");
         }
