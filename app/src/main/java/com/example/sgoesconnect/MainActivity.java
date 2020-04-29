@@ -730,6 +730,9 @@ public class MainActivity extends AppCompatActivity {
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
 
+                    // Блокируем кнопки команд:
+                    set_zero.setEnabled(false);
+
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }

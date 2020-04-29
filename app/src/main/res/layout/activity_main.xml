@@ -48,6 +48,7 @@
         android:layout_marginStart="35dp"
         android:layout_marginLeft="35dp"
         android:layout_marginTop="8dp"
+        android:enabled="false"
         android:text='Уст.\n"0"'
         app:layout_constraintStart_toEndOf="@+id/title_gas_level_nkpr"
         app:layout_constraintTop_toTopOf="@+id/title_gas_level_nkpr" />
@@ -58,6 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:enabled="false"
         android:text="Осн.\nкалибр."
         app:layout_constraintStart_toEndOf="@+id/set_zero"
         app:layout_constraintTop_toTopOf="@+id/set_zero" />
