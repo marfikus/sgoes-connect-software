@@ -175,7 +175,16 @@ public class MainActivity extends AppCompatActivity {
         // Глобальный ответ обнуляем, поскольку проверка ответа пройдена
         // и далее работаем с его копией
         response = null;
-        
+
+        connectionState = ConnectionState.CONNECTED;
+        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕН");
+
+        // Востанавливаем индикацию обычного режима:
+        workingMode = WorkingMode.READING_DATA;
+        working_mode.setText("РЕЖИМ: ОПРОС");
+        // Разблокируем кнопки посылки команд:
+        set_zero.setEnabled(true);
+
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
         parseResponse(localCopyRequest, localCopyResponse);
@@ -216,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 //              читаем третий байт ответа и выводим информацию об ошибке...
                 int respError = localCopyResponse[2] & 0xFF;
                 Log.d(LOG_TAG, "Error in localCopyResponse. Error code: " + respError);
+                // TODO: 22.04.2020 вывод на экран, можно тостом наверное
             } else {
                 // значит это хз что за ответ)...
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
@@ -505,9 +515,12 @@ public class MainActivity extends AppCompatActivity {
     TextView fault_relay;
     TextView relay_1;
     TextView relay_2;
+    TextView sensor_connection_state;
+    TextView working_mode;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
+    final int sensorConnectionThreadData = 2;
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -517,14 +530,33 @@ public class MainActivity extends AppCompatActivity {
     enum Commands { // команды с кнопок
         NONE,
         SET_ZERO,
-        CALIBRATION_1,
-        CALIBRATION_2,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
         SET_THRESHOLD_1,
         SET_THRESHOLD_2,
         SET_DEFAULT_SETTINGS,
         CHANGE_SENSOR_ADDRESS
     }
     Commands commandFromButton = Commands.NONE;
+    enum ConnectionState { // состояние подключения
+        DISCONNECTED,
+        WAITING_FOR_RESPONSE,
+        NO_RESPONSE,
+        CONNECTED
+    }
+    ConnectionState connectionState = ConnectionState.DISCONNECTED;
+    enum WorkingMode { // режим работы
+        READING_DATA,
+        SETTING_ZERO,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
+        SETTING_THRESHOLD_1,
+        SETTING_THRESHOLD_2,
+        SETTING_DEFAULT_SETTINGS,
+        CHANGING_SENSOR_ADDRESS
+    }
+    WorkingMode workingMode = WorkingMode.READING_DATA;
+    int requestCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -549,6 +581,8 @@ public class MainActivity extends AppCompatActivity {
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
+        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
+        working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
@@ -644,6 +678,14 @@ public class MainActivity extends AppCompatActivity {
                         // (на случай, если команда сменилась, а потом остановили соединение)
                         commandFromButton = Commands.NONE;
 
+                        // устанавливаем статусы
+                        connectionState = ConnectionState.WAITING_FOR_RESPONSE;
+                        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
+                        workingMode = WorkingMode.READING_DATA;
+                        working_mode.setText("РЕЖИМ: ОПРОС");
+
+                        requestCounter = 0;
+
                         // переключаем флаг текущего подключения
                         sensorConnection = true;
 
@@ -680,6 +722,11 @@ public class MainActivity extends AppCompatActivity {
                         dummy.interrupt();
                     }*/
 
+                    connectionState = ConnectionState.DISCONNECTED;
+                    sensor_connection_state.setText("СТАТУС: ОТКЛЮЧЕН");
+                    workingMode = WorkingMode.READING_DATA;
+                    working_mode.setText("РЕЖИМ: ---");
+
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
 
@@ -700,20 +747,40 @@ public class MainActivity extends AppCompatActivity {
 
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                // TODO: 15.04.2020 switch здесь можно убрать, заменить на if()
+                // если остановили подключение, то не надо уже обрабатывать ответ
+                // (предотвращение "инерции")
+                if (!sensorConnection) {
+                    Log.d(LOG_TAG, "sensorConnection is stopped. Skip this response.");
+                    return;
+                }
                 switch (msg.what) {
                     case arduinoData:
+                        // обнуляем счётчик запросов, т.к. что-то получили
+                        requestCounter = 0;
+
+                        // TODO: 28.04.2020 тоже борьба с инерционностью стороннего потока.
+                        //  Отсекаем ответы на старые запросы, если была какая-нибудь команда с кнопок.
+                        if (commandFromButton != Commands.NONE) {
+                            Log.d(LOG_TAG, "'Inertial' response Skip it.");
+                            return;
+                        }
+
                         Log.d(LOG_TAG, "numResponseBytes:" + msg.arg1);
 
                         // Добавляем принятые байты в общий массив:
+                        // (накапливаем ответ, поскольку за один раз всё принять пока не получается)
                         byte[] readBuf = (byte[]) msg.obj;
                         response = concatArray(response, readBuf);
                         //Log.d(LOG_TAG, "response:" + bytesToHex(response) + "\n ");
 //                        Log.d(LOG_TAG, "=================================");
 
                         checkResponse(request, response);
-
-//                        gas_level_nkpr.setText(bytesToHex(response));
+                        break;
+                    case sensorConnectionThreadData:
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+                        if (msg.obj == ConnectionState.NO_RESPONSE) {
+                            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
+                        }
                         break;
                 }
             }
@@ -726,6 +793,11 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 18.04.2020 спросить подтверждение действия
                 commandFromButton = Commands.SET_ZERO;
                 Log.d(LOG_TAG, commandFromButton.toString());
+
+                workingMode = WorkingMode.SETTING_ZERO;
+                working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
+                set_zero.setEnabled(false);
+
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
@@ -743,6 +815,17 @@ public class MainActivity extends AppCompatActivity {
             response = null;
             // отправляем запрос
             myThread.sendData(request);
+
+            // увеличиваем счётчик запросов
+            requestCounter = requestCounter + 1;
+            // проверяем его состояние, если более 3х запросов без ответа, то меняем статус
+            if ((requestCounter >= 3) && (workingMode == WorkingMode.READING_DATA)) {
+                connectionState = ConnectionState.NO_RESPONSE;
+                Log.d(LOG_TAG, "connectionState: " + connectionState.toString());
+                // сообщаем главному потоку, чтобы он сменил статус на экране
+                myHandler.obtainMessage(sensorConnectionThreadData, connectionState).sendToTarget();
+            }
+
             // ждём некоторое время
             try {
                 Thread.sleep(2000);
@@ -754,6 +837,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Log.d(LOG_TAG, "Stop Sensor Connection");
+    }
+
+    // TODO: 22.04.2020 переименовать connectionState в sensorConnectionState
+
+    // TODO: 22.04.2020  привязать ко всем местам, где меняется этот статус
+    private void changeSensorConnectionStateOnScreen() {
+        // TODO: 22.04.2020 switch
+        if (connectionState == ConnectionState.NO_RESPONSE) {
+            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
+        }
     }
 
     private void createRequest(Commands _commandFromButton) {

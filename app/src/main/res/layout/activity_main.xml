@@ -13,10 +13,11 @@
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
-        android:ems="5"
-        android:hint="address"
+        android:ems="3"
+        android:hint="адрес"
         android:inputType="number"
         android:maxLength="3"
+        android:text="1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bt_settings" />
 
@@ -24,8 +25,8 @@
         android:id="@+id/connect_to_sensor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
         android:text="Старт"
         app:layout_constraintBottom_toBottomOf="@+id/input_sensor_address"
         app:layout_constraintStart_toEndOf="@+id/input_sensor_address" />
@@ -283,5 +284,24 @@
         android:text="null"
         app:layout_constraintBottom_toBottomOf="@+id/title_gas_level_current"
         app:layout_constraintStart_toEndOf="@+id/title_gas_level_current" />
+
+    <TextView
+        android:id="@+id/sensor_connection_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="СТАТУС: ОТКЛЮЧЕН"
+        app:layout_constraintStart_toEndOf="@+id/connect_to_sensor"
+        app:layout_constraintTop_toTopOf="@+id/connect_to_sensor" />
+
+    <TextView
+        android:id="@+id/working_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="РЕЖИМ: ---"
+        app:layout_constraintStart_toStartOf="@+id/sensor_connection_state"
+        app:layout_constraintTop_toBottomOf="@+id/sensor_connection_state" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
