@@ -605,14 +605,41 @@ public class MainActivity extends AppCompatActivity {
         bt_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                // Получаем блютус адаптер
                 final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                
+                // Если блютус адаптер не обнаружен, то сообщаем об этом и выходим
+                if (bluetoothAdapter == null) {
+                    Log.d(LOG_TAG, "bluetooth adapter is not detected");
+                    Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Toast.makeText(getApplicationContext(), "bluetooth adapter is detected", Toast.LENGTH_SHORT).show();
+                
+                // Если адаптер не доступен (выключен), то запрашиваем его включение, а пока выходим
+                if (!bluetoothAdapter.isEnabled()) {
+                    Log.d(LOG_TAG, "bluetooth is disabled");
+                    Toast.makeText(getApplicationContext(), "bluetooth is disabled", Toast.LENGTH_SHORT).show();
+                    // Запрос на включение bluetooth:
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    // Пока блютус включится, уже исключение вылетет, поэтому выходим.
+                    // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
+                    return;
+                    // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше   
+                }
+                //Toast.makeText(getApplicationContext(), "bluetooth is enabled", Toast.LENGTH_SHORT).show();
+                //String myDeviceName = bluetoothAdapter.getName();
+                //Toast.makeText(getApplicationContext(), myDeviceName, Toast.LENGTH_SHORT).show();
 
-            /*  При первом подключении ("на холодную") смарт с модулем связываются только с 3-4 попытки.
+                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код
+                //  не выполнялся при отключенном блютусе и тп...
+
+                /*  При первом подключении ("на холодную") смарт с модулем связываются только с 3-4 попытки.
                 Поэтому сделал пока подключение в цикле с максимальным количеством попыток
-                (чтобы исключить возможность зацикливания).
+                (чтобы исключить возможность зацикливания). 
                 А при успехе, устанавливается соответсвующий флаг. */
-
+                
                 // Флаг успешного подключения.
                 boolean connectIsOpen = false;
                 // Счётчик попыток подключения.
@@ -620,67 +647,61 @@ public class MainActivity extends AppCompatActivity {
                 // Максимальное количество попыток
                 final int MAX_CONNECTION_TRIES = 5;
 
-                if (bluetoothAdapter != null) {
-                    //Toast.makeText(getApplicationContext(), "bluetooth adapter is detected", Toast.LENGTH_SHORT).show();
-
-                    if (bluetoothAdapter.isEnabled()) {
-                        //Toast.makeText(getApplicationContext(), "bluetooth is enabled", Toast.LENGTH_SHORT).show();
-                        //String myDeviceName = bluetoothAdapter.getName();
-                        //Toast.makeText(getApplicationContext(), myDeviceName, Toast.LENGTH_SHORT).show();
-                    } else {
-                        //Toast.makeText(getApplicationContext(), "bluetooth is disabled", Toast.LENGTH_SHORT).show();
-
-                        // запрос на включение bluetooth:
-                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                        // Пока блютус включится, уже исключение вылетет, поэтому выходим.
-                        // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
-                        return;
-                        // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше
-                    }
-
-                } else {
-                    Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
-                }
-
-                // TODO переделать: продумать правильную последовательность, чтобы дальнейший код
-                //  не выполнялся при отключенном блютусе и тп...
-
+                // TODO Возможно эту строку тоже в цикл надо перенести, надо проверить..
+                // но тогда убрать выход в проверке на null
                 BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
-                Toast.makeText(getApplicationContext(), bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
-                //Log.d(LOG_TAG, "***Получили удаленный Device***" + bluetoothDevice.getName());
+                // Может эта проверка и не нужна, но на всякий случай добавил
+                if (bluetoothDevice == null) {
+                    Log.d(LOG_TAG, "No device with MAC address: " + macAddress);
+                    Toast.makeText(getApplicationContext(), "No device with MAC address: " + macAddress, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(getApplicationContext(), "bluetoothDevice: " + bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
+                // Log.d(LOG_TAG, "bluetoothDevice: " + bluetoothDevice.getName());
 
                 // Пока не подключились и не достигли макс количества попыток
                 while ((!connectIsOpen) && (countConnectionTries < MAX_CONNECTION_TRIES)) {
+                    // Пробуем создать сокет
                     try {
                         btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
                         Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
-                        myError("Fatal Error", "Не могу создать сокет: " + e.getMessage() + ".");
+                        myError("Fatal Error", "Can't create a socket: " + e.getMessage() + ".");
                     }
-
+                    // TODO что делает эта строка?
                     bluetoothAdapter.cancelDiscovery();
-
+                    
+                    // TODO А может оставить в цикле только попытки подключиться?
+                    // Открытие сокета вынести выше и выполнять 1 раз, 
+                    // закрытие вынести ниже при окончании попыток подключения
+                    // Надо попробовать..
+                    
+                    // Пробуем подключиться к плате
                     try {
                         btSocket.connect();
                         Toast.makeText(getApplicationContext(), "connect is open", Toast.LENGTH_SHORT).show();
-                        // Переключаем флаг успешного подключения
+                        // Взводим флаг успешного подключения
                         connectIsOpen = true;
                     } catch (IOException e) {
+                        Log.d(LOG_TAG, "Can't connect to device: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Can't connect to device, show log", Toast.LENGTH_SHORT).show();
+                        // Если не получилось, то закрываем сокет (пробуем закрыть)
                         try {
                             btSocket.close();
-                            Toast.makeText(getApplicationContext(), "exception, socket is closed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
                         } catch (IOException e2) {
-                            myError("Fatal Error", "не могу закрыть сокет" + e2.getMessage() + ".");
+                            myError("Fatal Error", "Can't close a socket:" + e2.getMessage() + ".");
                         }
                     }
                     countConnectionTries = countConnectionTries + 1;
                 }
-
+                // Если так и не подключились, то выходим
+                if (!connectIsOpen) {
+                    return;
+                }
+                // Иначе создаём отдельный поток с подключением и запускаем его
                 myThread = new ConnectedThread(btSocket);
                 myThread.start();
-
-
             }
         });
 
@@ -969,7 +990,7 @@ public class MainActivity extends AppCompatActivity {
                 btSocket.close();
                 Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
             } catch (IOException e2) {
-                myError("Fatal Error", "В onDestroy() Не могу закрыть сокет" + e2.getMessage() + ".");
+                myError("Fatal Error", "onDestroy(): Can't close a socket:" + e2.getMessage() + ".");
             }
         }
 
@@ -982,6 +1003,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void myError(String title, String message) {
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
+        Log.d(LOG_TAG, title + " - " + message);
         finish();
     }
 }
