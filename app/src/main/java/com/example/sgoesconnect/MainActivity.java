@@ -608,6 +608,18 @@ public class MainActivity extends AppCompatActivity {
 
                 final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+            /*  При первом подключении ("на холодную") смарт с модулем связываются только с 3-4 попытки.
+                Поэтому сделал пока подключение в цикле с максимальным количеством попыток
+                (чтобы исключить возможность зацикливания).
+                А при успехе, устанавливается соответсвующий флаг. */
+
+                // Флаг успешного подключения.
+                boolean connectIsOpen = false;
+                // Счётчик попыток подключения.
+                int countConnectionTries = 0;
+                // Максимальное количество попыток
+                final int MAX_CONNECTION_TRIES = 5;
+
                 if (bluetoothAdapter != null) {
                     //Toast.makeText(getApplicationContext(), "bluetooth adapter is detected", Toast.LENGTH_SHORT).show();
 
@@ -621,7 +633,10 @@ public class MainActivity extends AppCompatActivity {
                         // запрос на включение bluetooth:
                         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-
+                        // Пока блютус включится, уже исключение вылетет, поэтому выходим.
+                        // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
+                        return;
+                        // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше
                     }
 
                 } else {
@@ -635,25 +650,31 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
                 //Log.d(LOG_TAG, "***Получили удаленный Device***" + bluetoothDevice.getName());
 
-                try {
-                    btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                    Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    myError("Fatal Error", "Не могу создать сокет: " + e.getMessage() + ".");
-                }
-
-                bluetoothAdapter.cancelDiscovery();
-
-                try {
-                    btSocket.connect();
-                    Toast.makeText(getApplicationContext(), "connect is open", Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
+                // Пока не подключились и не достигли макс количества попыток
+                while ((!connectIsOpen) && (countConnectionTries < MAX_CONNECTION_TRIES)) {
                     try {
-                        btSocket.close();
-                        Toast.makeText(getApplicationContext(), "exception, socket is closed", Toast.LENGTH_SHORT).show();
-                    } catch (IOException e2) {
-                        myError("Fatal Error", "не могу закрыть сокет" + e2.getMessage() + ".");
+                        btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                        Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        myError("Fatal Error", "Не могу создать сокет: " + e.getMessage() + ".");
                     }
+
+                    bluetoothAdapter.cancelDiscovery();
+
+                    try {
+                        btSocket.connect();
+                        Toast.makeText(getApplicationContext(), "connect is open", Toast.LENGTH_SHORT).show();
+                        // Переключаем флаг успешного подключения
+                        connectIsOpen = true;
+                    } catch (IOException e) {
+                        try {
+                            btSocket.close();
+                            Toast.makeText(getApplicationContext(), "exception, socket is closed", Toast.LENGTH_SHORT).show();
+                        } catch (IOException e2) {
+                            myError("Fatal Error", "не могу закрыть сокет" + e2.getMessage() + ".");
+                        }
+                    }
+                    countConnectionTries = countConnectionTries + 1;
                 }
 
                 myThread = new ConnectedThread(btSocket);
