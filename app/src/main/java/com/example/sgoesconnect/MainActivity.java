@@ -538,13 +538,19 @@ public class MainActivity extends AppCompatActivity {
         CHANGE_SENSOR_ADDRESS
     }
     Commands commandFromButton = Commands.NONE;
-    enum ConnectionState { // состояние подключения
+    enum ConnectionState { // состояние подключения к датчику
         DISCONNECTED,
         WAITING_FOR_RESPONSE,
         NO_RESPONSE,
         CONNECTED
     }
     ConnectionState connectionState = ConnectionState.DISCONNECTED;
+    enum BtDeviceConnectionState { // состояние подключения к плате
+        DISCONNECTED,
+        CONNECTING,
+        CONNECTED
+    }
+    BtDeviceConnectionState btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
     enum WorkingMode { // режим работы
         READING_DATA,
         SETTING_ZERO,
@@ -699,9 +705,14 @@ public class MainActivity extends AppCompatActivity {
                 if (!connectIsOpen) {
                     return;
                 }
-                // Иначе создаём отдельный поток с подключением и запускаем его
+                // Иначе (всё ок) создаём отдельный поток с подключением
+                // для дальнейшего обмена информацией и запускаем его
                 myThread = new ConnectedThread(btSocket);
                 myThread.start();
+
+                // Меняем статус состояния подключения к плате
+                btDeviceConnectionState = BtDeviceConnectionState.CONNECTED;
+                // TODO сменить название кнопки
             }
         });
 
