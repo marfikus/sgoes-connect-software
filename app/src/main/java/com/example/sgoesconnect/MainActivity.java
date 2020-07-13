@@ -538,6 +538,7 @@ public class MainActivity extends AppCompatActivity {
         CHANGE_SENSOR_ADDRESS
     }
     Commands commandFromButton = Commands.NONE;
+    // TODO переименовать в sensorConnectionState
     enum ConnectionState { // состояние подключения к датчику
         DISCONNECTED,
         WAITING_FOR_RESPONSE,
@@ -615,10 +616,10 @@ public class MainActivity extends AppCompatActivity {
                 if (btDeviceConnectionState == BtDeviceConnectionState.DISCONNECTED) {
                     // Блокируем пока кнопку, чтоб повторно не нажимали
                     bt_connect.setEnabled(false);
-
+                    
                     // Получаем блютус адаптер
                     final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
+                    
                     // Если блютус адаптер не обнаружен, то сообщаем об этом и выходим
                     if (bluetoothAdapter == null) {
                         Log.d(LOG_TAG, "bluetooth adapter is not detected");
@@ -637,7 +638,7 @@ public class MainActivity extends AppCompatActivity {
                         // Пока блютус включится, уже исключение вылетет, поэтому выходим.
                         // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
                         return;
-                        // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше
+                        // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше   
                     }
                     //Toast.makeText(getApplicationContext(), "bluetooth is enabled", Toast.LENGTH_SHORT).show();
                     //String myDeviceName = bluetoothAdapter.getName();
@@ -648,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
 
                     /*  При первом подключении ("на холодную") смарт с модулем связываются только с 3-4 попытки.
                     Поэтому сделал пока подключение в цикле с максимальным количеством попыток
-                    (чтобы исключить возможность зацикливания).
+                    (чтобы исключить возможность зацикливания). 
                     А при успехе, устанавливается соответсвующий флаг. */
                     
                     // Флаг успешного подключения.
@@ -712,6 +713,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     // Иначе (всё ок) создаём отдельный поток с подключением
                     // для дальнейшего обмена информацией и запускаем его
+                    // TODO переименовать myThread > btConnectionThread
                     myThread = new ConnectedThread(btSocket);
                     myThread.start();
 
@@ -724,10 +726,25 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // Если есть подключение к плате, то отключаемся
                 if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                    // Блокируем кнопку
+                    bt_connect.setEnabled(false);
                     
+                    // Останавливаем подключение к датчику если оно есть
+                    if (connectionState != ConnectionState.DISCONNECTED) {
+                        // имитируем нажатие кнопки Стоп
+                        // или вызываем функцию остановки 
+                        // или дублируем код остановки
+                    }
+                    
+                    // Закрываем подключения
+                    closeAllConnections();
+                    // Меняем статус состояния подключения к плате
+                    btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
+                    // TODO сменить название кнопки
+                    bt_connect.setText("Connect");
+                    // Восстанавливаем доступность кнопки
+                    bt_connect.setEnabled(true);
                 }
-                
-
             }
         });
 
@@ -1005,6 +1022,22 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(LOG_TAG, "onDestroy()");
 
+        closeAllConnections();
+    }
+
+    private void myError(String title, String message) {
+        Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
+        Log.d(LOG_TAG, title + " - " + message);
+        finish();
+    }
+    
+    private void closeAllConnections() {
+        if (sensorConnectionThread != null) {
+            Thread dummy = sensorConnectionThread;
+            sensorConnectionThread = null;
+            dummy.interrupt();
+        }
+        
         if (myThread != null) {
             if (myThread.status_outStream() != null) {
                 myThread.cancel();
@@ -1020,16 +1053,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (sensorConnectionThread != null) {
-            Thread dummy = sensorConnectionThread;
-            sensorConnectionThread = null;
-            dummy.interrupt();
-        }
-    }
-
-    private void myError(String title, String message) {
-        Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
-        Log.d(LOG_TAG, title + " - " + message);
-        finish();
     }
 }
