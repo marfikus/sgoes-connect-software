@@ -723,19 +723,21 @@ public class MainActivity extends AppCompatActivity {
                     bt_connect.setText("Disconnect");
                     // Восстанавливаем доступность кнопки
                     bt_connect.setEnabled(true);
+                    // Выход, чтобы не проверялось следующее условие
+                    return;
                 }
                 // Если есть подключение к плате, то отключаемся
                 if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
                     // Блокируем кнопку
                     bt_connect.setEnabled(false);
-                    
-                    // Останавливаем подключение к датчику если оно есть
+                    // Останавливаем подключение к датчику, если оно есть
                     if (connectionState != ConnectionState.DISCONNECTED) {
                         // имитируем нажатие кнопки Стоп
-                        // или вызываем функцию остановки 
+                        connect_to_sensor.onClick(null); // возможно так
+                      	// TODO проверить надо!!!
+                        // или вызываем функцию остановки, предварительно создав её 
                         // или дублируем код остановки
                     }
-                    
                     // Закрываем подключения
                     closeAllConnections();
                     // Меняем статус состояния подключения к плате
@@ -890,7 +892,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    // TODO rename to sensorConnectionCycle()
     private void startSensorConnection() {
         Log.d(LOG_TAG, "Start Sensor Connection");
         // пока подключение активно и нет команды прерывания текущего потока
