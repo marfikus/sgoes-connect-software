@@ -602,11 +602,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // TODO: 16.04.2020 блокировать кнопку соединения с датчиком,
-        //  а после установления связи с платой - разблокировать.
-
-        // TODO: 16.04.2020 да и остальные кнопки тоже блокировать на всякий случай...
-
         // TODO: 16.04.2020 возможно часть этих действий можно вынести в отдельный поток,
         //  а то при подключении интерфейс подвисает...
         bt_connect = (Button) findViewById(R.id.bt_connect);
@@ -637,18 +632,11 @@ public class MainActivity extends AppCompatActivity {
                         // Запрос на включение bluetooth:
                         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                        // Пока блютус включится, уже исключение вылетет, поэтому выходим.
-                        // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
                         bt_connect.setEnabled(true);
+                        // Пока блютус включится, уже исключение вылетет, поэтому выходим.
                         return;
                         // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше   
                     }
-                    //Toast.makeText(getApplicationContext(), "bluetooth is enabled", Toast.LENGTH_SHORT).show();
-                    //String myDeviceName = bluetoothAdapter.getName();
-                    //Toast.makeText(getApplicationContext(), myDeviceName, Toast.LENGTH_SHORT).show();
-
-                    // TODO переделать: продумать правильную последовательность, чтобы дальнейший код
-                    //  не выполнялся при отключенном блютусе и тп...
 
                     /*  При первом подключении ("на холодную") смарт с модулем связываются только с 3-4 попытки.
                     Поэтому сделал пока подключение в цикле с максимальным количеством попыток
@@ -686,7 +674,7 @@ public class MainActivity extends AppCompatActivity {
                         bt_connect.setEnabled(true);
                         return;
                     }
-                    // TODO что делает эта строка?
+
                     if (bluetoothAdapter.isDiscovering()) {
                         bluetoothAdapter.cancelDiscovery();
                     }
