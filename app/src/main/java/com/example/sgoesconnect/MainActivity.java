@@ -739,6 +739,8 @@ public class MainActivity extends AppCompatActivity {
                     bt_connect.setText("bt_disconnect");
                     // Восстанавливаем доступность кнопки
                     bt_connect.setEnabled(true);
+                    // И делаем доступной кнопку соединения с датчиком
+                    connect_to_sensor.setEnabled(true);
                     // Выход, чтобы не проверялось следующее условие
                     return;
                 }
@@ -749,10 +751,7 @@ public class MainActivity extends AppCompatActivity {
                     // Останавливаем подключение к датчику, если оно есть
                     if (connectionState != ConnectionState.DISCONNECTED) {
                         // имитируем нажатие кнопки Стоп
-                        connect_to_sensor.performClick(); // возможно так
-                      	// TODO проверить надо!!!
-                        // или вызываем функцию остановки, предварительно создав её 
-                        // или дублируем код остановки
+                        connect_to_sensor.performClick();
                     }
                     // Закрываем подключения
                     closeAllConnections();
@@ -762,6 +761,8 @@ public class MainActivity extends AppCompatActivity {
                     bt_connect.setText("bt_connect");
                     // Восстанавливаем доступность кнопки
                     bt_connect.setEnabled(true);
+                    // Блокируем кнопку соединения с датчиком
+                    connect_to_sensor.setEnabled(false);
                 }
             }
         });
