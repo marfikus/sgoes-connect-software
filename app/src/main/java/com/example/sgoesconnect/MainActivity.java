@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ResultReceiver;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -624,6 +625,7 @@ public class MainActivity extends AppCompatActivity {
                     if (bluetoothAdapter == null) {
                         Log.d(LOG_TAG, "bluetooth adapter is not detected");
                         Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
+                        bt_connect.setEnabled(true);
                         return;
                     }
                     // Toast.makeText(getApplicationContext(), "bluetooth adapter is detected", Toast.LENGTH_SHORT).show();
@@ -637,6 +639,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                         // Пока блютус включится, уже исключение вылетет, поэтому выходим.
                         // TODO Если добавлю кнопке возможность отключения от модуля, то надо будет здесь возвращать исходное значение
+                        bt_connect.setEnabled(true);
                         return;
                         // А при повторном нажатии (с уже включённым блютузом) алгоритм пойдёт дальше   
                     }
@@ -657,7 +660,7 @@ public class MainActivity extends AppCompatActivity {
                     // Счётчик попыток подключения.
                     int countConnectionTries = 0;
                     // Максимальное количество попыток
-                    final int MAX_CONNECTION_TRIES = 5;
+                    final int MAX_CONNECTION_TRIES = 3;
 
                     // TODO Возможно эту строку тоже в цикл надо перенести, надо проверить..
                     // но тогда убрать выход в проверке на null
@@ -666,31 +669,40 @@ public class MainActivity extends AppCompatActivity {
                     if (bluetoothDevice == null) {
                         Log.d(LOG_TAG, "No device with MAC address: " + macAddress);
                         Toast.makeText(getApplicationContext(), "No device with MAC address: " + macAddress, Toast.LENGTH_SHORT).show();
+                        bt_connect.setEnabled(true);
                         return;
                     }
                     Toast.makeText(getApplicationContext(), "bluetoothDevice: " + bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
                     // Log.d(LOG_TAG, "bluetoothDevice: " + bluetoothDevice.getName());
 
+                    // Пробуем создать сокет
+                    try {
+                        btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+//                        SystemClock.sleep(500);
+                        Log.d(LOG_TAG, "socket is created");
+                        Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        myError("Fatal Error", "Can't create a socket: " + e.getMessage() + ".");
+                        bt_connect.setEnabled(true);
+                        return;
+                    }
+                    // TODO что делает эта строка?
+                    if (bluetoothAdapter.isDiscovering()) {
+                        bluetoothAdapter.cancelDiscovery();
+                    }
+//                    SystemClock.sleep(500);
                     // Пока не подключились и не достигли макс количества попыток
                     while ((!connectIsOpen) && (countConnectionTries < MAX_CONNECTION_TRIES)) {
-                        // Пробуем создать сокет
-                        try {
-                            btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-                            Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            myError("Fatal Error", "Can't create a socket: " + e.getMessage() + ".");
-                        }
-                        // TODO что делает эта строка?
-                        bluetoothAdapter.cancelDiscovery();
-                        
-                        // TODO А может оставить в цикле только попытки подключиться?
-                        // Открытие сокета вынести выше и выполнять 1 раз, 
-                        // закрытие вынести ниже при окончании попыток подключения
-                        // Надо попробовать..
-                        
+
+                        // TODO Бывает сразу подключается, а бывает подвисает, причину пока не понял.
+                        //  Пробовал делать паузы - также. Вынес из цикла создание и закрытие сокета,
+                        //  но тоже не помогло. Пока так оставил, может и в железке дело (hc-05).
+
                         // Пробуем подключиться к плате
                         try {
+//                            SystemClock.sleep(500);
                             btSocket.connect();
+                            Log.d(LOG_TAG, "connect is open");
                             Toast.makeText(getApplicationContext(), "connect is open", Toast.LENGTH_SHORT).show();
                             // Взводим флаг успешного подключения
                             connectIsOpen = true;
@@ -698,17 +710,21 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(LOG_TAG, "Can't connect to device: " + e.getMessage());
                             Toast.makeText(getApplicationContext(), "Can't connect to device, show log", Toast.LENGTH_SHORT).show();
                             // Если не получилось, то закрываем сокет (пробуем закрыть)
-                            try {
-                                btSocket.close();
-                                Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
-                            } catch (IOException e2) {
-                                myError("Fatal Error", "Can't close a socket:" + e2.getMessage() + ".");
-                            }
                         }
                         countConnectionTries = countConnectionTries + 1;
                     }
                     // Если так и не подключились, то выходим
                     if (!connectIsOpen) {
+                        try {
+                            btSocket.close();
+                            Log.d(LOG_TAG, "socket is closed");
+                            Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
+                        } catch (IOException e2) {
+//                                Log.d(LOG_TAG, "Can't close a socket");
+                            myError("Fatal Error", "Can't close a socket:" + e2.getMessage() + ".");
+                        }
+
+                        bt_connect.setEnabled(true);
                         return;
                     }
                     // Иначе (всё ок) создаём отдельный поток с подключением
@@ -720,7 +736,7 @@ public class MainActivity extends AppCompatActivity {
                     // Меняем статус состояния подключения к плате
                     btDeviceConnectionState = BtDeviceConnectionState.CONNECTED;
                     // TODO сменить название кнопки
-                    bt_connect.setText("Disconnect");
+                    bt_connect.setText("bt_disconnect");
                     // Восстанавливаем доступность кнопки
                     bt_connect.setEnabled(true);
                     // Выход, чтобы не проверялось следующее условие
@@ -733,7 +749,7 @@ public class MainActivity extends AppCompatActivity {
                     // Останавливаем подключение к датчику, если оно есть
                     if (connectionState != ConnectionState.DISCONNECTED) {
                         // имитируем нажатие кнопки Стоп
-                        connect_to_sensor.onClick(null); // возможно так
+                        connect_to_sensor.performClick(); // возможно так
                       	// TODO проверить надо!!!
                         // или вызываем функцию остановки, предварительно создав её 
                         // или дублируем код остановки
@@ -743,7 +759,7 @@ public class MainActivity extends AppCompatActivity {
                     // Меняем статус состояния подключения к плате
                     btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
                     // TODO сменить название кнопки
-                    bt_connect.setText("Connect");
+                    bt_connect.setText("bt_connect");
                     // Восстанавливаем доступность кнопки
                     bt_connect.setEnabled(true);
                 }
@@ -1049,6 +1065,7 @@ public class MainActivity extends AppCompatActivity {
         if (btSocket != null) {
             try {
                 btSocket.close();
+                Log.d(LOG_TAG, "socket is closed");
                 Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
             } catch (IOException e2) {
                 myError("Fatal Error", "onDestroy(): Can't close a socket:" + e2.getMessage() + ".");
