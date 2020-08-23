@@ -666,6 +666,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "bluetoothDevice: " + bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
                     // Log.d(LOG_TAG, "bluetoothDevice: " + bluetoothDevice.getName());
 
+                    if (bluetoothAdapter.isDiscovering()) {
+                        bluetoothAdapter.cancelDiscovery();
+                    }
+
                     // Пробуем создать сокет
                     try {
                         btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
@@ -678,9 +682,6 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (bluetoothAdapter.isDiscovering()) {
-                        bluetoothAdapter.cancelDiscovery();
-                    }
                     SystemClock.sleep(500);
 
                     // Сбрасываем флаг и счётчик
@@ -716,8 +717,8 @@ public class MainActivity extends AppCompatActivity {
                     };
                     btSocketConnectionThread = new Thread(btConnection);
                     btSocketConnectionThread.start();
-
                 }
+
                 // Если есть подключение к плате, то отключаемся
                 if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
                     // Блокируем кнопку
