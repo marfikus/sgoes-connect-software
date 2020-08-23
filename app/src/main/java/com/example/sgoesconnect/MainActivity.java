@@ -577,6 +577,8 @@ public class MainActivity extends AppCompatActivity {
     // Максимальное количество попыток
     final int MAX_BT_SOCKET_CONNECTION_TRIES = 3;
 
+    BluetoothDevice bluetoothDevice = null;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -655,7 +657,8 @@ public class MainActivity extends AppCompatActivity {
                     (чтобы исключить возможность зацикливания).
                     А при успехе, устанавливается соответсвующий флаг. */
 
-                    BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+//                    BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                    bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
                     // Может эта проверка и не нужна, но на всякий случай добавил
                     if (bluetoothDevice == null) {
                         Log.d(LOG_TAG, "No device with MAC address: " + macAddress);
@@ -670,46 +673,51 @@ public class MainActivity extends AppCompatActivity {
                         bluetoothAdapter.cancelDiscovery();
                     }
 
-                    // Пробуем создать сокет
-                    try {
-                        btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
-//                        SystemClock.sleep(500);
-                        Log.d(LOG_TAG, "socket is created");
-                        Toast.makeText(getApplicationContext(), "socket is created", Toast.LENGTH_SHORT).show();
-                    } catch (IOException e) {
-                        myError("Fatal Error", "Can't create a socket: " + e.getMessage() + ".");
-                        bt_connect.setEnabled(true);
-                        return;
-                    }
-
-                    SystemClock.sleep(500);
-
                     // Сбрасываем флаг и счётчик
                     btSocketConnectIsOpen = false;
                     btSocketCountConnectionTries = 0;
 
+                    // Создаём отдельный поток, дабы не тормозить интерфейс,
+                    // в котором пробуем подключиться к плате
                     Runnable btConnection = new Runnable() {
                         @Override
                         public void run() {
                             // Пока не подключились и не достигли макс количества попыток
                             while ((!btSocketConnectIsOpen) && (btSocketCountConnectionTries < MAX_BT_SOCKET_CONNECTION_TRIES)) {
+                                // Пробуем создать сокет
+                                try {
+                                    btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
+                                    Log.d(LOG_TAG, "socket is created");
+                                } catch (IOException e) {
+                                    myError("Fatal Error", "Can't create a socket: " + e.getMessage() + ".");
+                                    return;
+                                }
 
                                 // TODO Бывает сразу подключается, а бывает подвисает, причину пока не понял.
-                                //  Пробовал делать паузы - также. Вынес из цикла создание и закрытие сокета,
+                                //  Пробовал делать паузы - также. Пробовал выносить из цикла создание и закрытие сокета,
                                 //  но тоже не помогло. Пока так оставил, может и в железке дело (hc-05).
 
                                 // Пробуем подключиться к плате
                                 try {
-//                            SystemClock.sleep(500);
                                     btSocket.connect();
                                     Log.d(LOG_TAG, "connect is open");
-//                                    Toast.makeText(getApplicationContext(), "connect is open", Toast.LENGTH_SHORT).show();
                                     // Взводим флаг успешного подключения
                                     btSocketConnectIsOpen = true;
+                                    break;
                                 } catch (IOException e) {
                                     Log.d(LOG_TAG, "Can't connect to device: " + e.getMessage());
-//                                    Toast.makeText(getApplicationContext(), "Can't connect to device, show log", Toast.LENGTH_SHORT).show();
                                 }
+
+                                // Если так и не подключились, то закрываем сокет (пробуем закрыть)
+                                try {
+                                    btSocket.close();
+                                    Log.d(LOG_TAG, "socket is closed");
+                                } catch (IOException e2) {
+//                                    Log.d(LOG_TAG, "Can't close a socket");
+                                    myError("Fatal Error", "Can't close a socket:" + e2.getMessage() + ".");
+                                    return;
+                                }
+
                                 btSocketCountConnectionTries = btSocketCountConnectionTries + 1;
                             }
                             myHandler.obtainMessage(btSocketConnectionThreadData, "btSocketConnectionThread is finished").sendToTarget();
@@ -869,38 +877,31 @@ public class MainActivity extends AppCompatActivity {
 //                        if (msg.obj == ConnectionState.NO_RESPONSE) {
 //                            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
 //                        }
-
-                        // Если так и не подключились, то закрываем сокет (пробуем закрыть)
+                        // Если так и не подключились, то возвращаемся к исходному состоянию
                         if (!btSocketConnectIsOpen) {
-                            try {
-                                btSocket.close();
-                                Log.d(LOG_TAG, "socket is closed");
-                                Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
-                            } catch (IOException e2) {
-//                                Log.d(LOG_TAG, "Can't close a socket");
-                                myError("Fatal Error", "Can't close a socket:" + e2.getMessage() + ".");
-                            }
-
+                            // TODO сменить название кнопки
+                            bt_connect.setText("bt_connect");
+                            // Восстанавливаем доступность кнопки
                             bt_connect.setEnabled(true);
-                            break;
+                            // TODO: 23.08.2020 можно ещё тост вывыести что не смогли подключиться
+                        } else {
+                            // Иначе (всё ок) создаём отдельный поток с подключением
+                            // для дальнейшего обмена информацией и запускаем его
+
+                            // TODO переименовать myThread > btConnectionThread
+                            myThread = new ConnectedThread(btSocket);
+                            myThread.start();
+
+                            // Меняем статус состояния подключения к плате
+                            btDeviceConnectionState = BtDeviceConnectionState.CONNECTED;
+                            // TODO сменить название кнопки
+                            bt_connect.setText("bt_disconnect");
+                            // Восстанавливаем доступность кнопки
+                            bt_connect.setEnabled(true);
+                            // И делаем доступной кнопку соединения с датчиком
+                            connect_to_sensor.setEnabled(true);
                         }
-                        // Иначе (всё ок) создаём отдельный поток с подключением
-                        // для дальнейшего обмена информацией и запускаем его
-                        // TODO переименовать myThread > btConnectionThread
-                        myThread = new ConnectedThread(btSocket);
-                        myThread.start();
-
-                        // Меняем статус состояния подключения к плате
-                        btDeviceConnectionState = BtDeviceConnectionState.CONNECTED;
-                        // TODO сменить название кнопки
-                        bt_connect.setText("bt_disconnect");
-                        // Восстанавливаем доступность кнопки
-                        bt_connect.setEnabled(true);
-                        // И делаем доступной кнопку соединения с датчиком
-                        connect_to_sensor.setEnabled(true);
-
                         break;
-
                 }
             }
         };
@@ -1050,10 +1051,9 @@ public class MainActivity extends AppCompatActivity {
     //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        Log.d(LOG_TAG, "onDestroy()");
-
         closeAllConnections();
+        Log.d(LOG_TAG, "onDestroy()");
+        super.onDestroy();
     }
 
     private void myError(String title, String message) {
