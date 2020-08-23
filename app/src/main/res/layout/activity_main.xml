@@ -6,20 +6,31 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/title_sensor_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="10dp"
+        android:text="Подключение к датчику:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_settings" />
+
     <EditText
         android:id="@+id/input_sensor_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:ems="3"
         android:hint="адрес"
         android:inputType="number"
         android:maxLength="3"
         android:text="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bt_settings" />
+        app:layout_constraintTop_toBottomOf="@+id/title_sensor_connection" />
 
     <Button
         android:id="@+id/connect_to_sensor"
@@ -71,10 +82,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:text="bt_settings"
+        android:layout_marginTop="5dp"
+        android:text="Настройки BT"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/title_bt_connection" />
 
     <Button
         android:id="@+id/bt_connect"
@@ -82,10 +93,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:text="bt_connect"
+        android:text="Подключиться"
         app:layout_constraintStart_toEndOf="@+id/bt_settings"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/bt_settings" />
 
     <TextView
         android:id="@+id/title_sensor_address"
@@ -306,5 +316,16 @@
         android:text="РЕЖИМ: ---"
         app:layout_constraintStart_toStartOf="@+id/sensor_connection_state"
         app:layout_constraintTop_toBottomOf="@+id/sensor_connection_state" />
+
+    <TextView
+        android:id="@+id/title_bt_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Подключение к адаптеру:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
