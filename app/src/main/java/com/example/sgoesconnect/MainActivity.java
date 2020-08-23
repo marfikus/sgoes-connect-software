@@ -674,7 +674,7 @@ public class MainActivity extends AppCompatActivity {
                         resetBtConnectButton();
                         return;
                     }
-                    Toast.makeText(getApplicationContext(), "bluetoothDevice: " + bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(), "bluetoothDevice: " + bluetoothDevice.getName(), Toast.LENGTH_SHORT).show();
                     // Log.d(LOG_TAG, "bluetoothDevice: " + bluetoothDevice.getName());
 
                     if (bluetoothAdapter.isDiscovering()) {
@@ -714,6 +714,11 @@ public class MainActivity extends AppCompatActivity {
                                     break;
                                 } catch (IOException e) {
                                     Log.d(LOG_TAG, "Can't connect to device: " + e.getMessage());
+                                    btSocketCountConnectionTries = btSocketCountConnectionTries + 1;
+                                    // Шлём сообщение главному потоку (кроме последней попытки)
+                                    if (btSocketCountConnectionTries < MAX_BT_SOCKET_CONNECTION_TRIES) {
+                                        myHandler.obtainMessage(btSocketConnectionThreadData, "trying_to_connect_again").sendToTarget();
+                                    }
                                 }
 
                                 // Если так и не подключились, то закрываем сокет (пробуем закрыть)
@@ -726,7 +731,6 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                btSocketCountConnectionTries = btSocketCountConnectionTries + 1;
                             }
                             myHandler.obtainMessage(btSocketConnectionThreadData, "btSocketConnectionThread is finished").sendToTarget();
                         }
@@ -750,6 +754,7 @@ public class MainActivity extends AppCompatActivity {
                     resetBtConnectButton();
                     // Блокируем кнопку соединения с датчиком
                     connect_to_sensor.setEnabled(false);
+                    Toast.makeText(getApplicationContext(), "Связь с адаптером прервана", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -878,16 +883,20 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case btSocketConnectionThreadData:
                         Log.d(LOG_TAG, "msg.obj: " + msg.obj);
-//                        if (msg.obj == ConnectionState.NO_RESPONSE) {
-//                            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
-//                        }
+
+                        // Сообщаем о новой попытке подключения
+                        if (msg.obj == "trying_to_connect_again") {
+//                            Log.d(LOG_TAG, "btSocketCountConnectionTries: " + btSocketCountConnectionTries);
+                            bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА " + (btSocketCountConnectionTries + 1));
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру. Новая попытка", Toast.LENGTH_LONG).show();
+                            break;
+                        }
                         // Если так и не подключились, то возвращаемся к исходному состоянию
                         if (!btSocketConnectIsOpen) {
-                            // TODO сменить название кнопки
-                            bt_connect.setText("bt_connect");
-                            // Восстанавливаем доступность кнопки
+                            btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
+                            bt_connect.setText("ПОДКЛЮЧИТЬСЯ");
                             bt_connect.setEnabled(true);
-                            // TODO: 23.08.2020 можно ещё тост вывыести что не смогли подключиться
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру", Toast.LENGTH_LONG).show();
                         } else {
                             // Иначе (всё ок) создаём отдельный поток с подключением
                             // для дальнейшего обмена информацией и запускаем его
@@ -898,12 +907,12 @@ public class MainActivity extends AppCompatActivity {
 
                             // Меняем статус состояния подключения к плате
                             btDeviceConnectionState = BtDeviceConnectionState.CONNECTED;
-                            // TODO сменить название кнопки
-                            bt_connect.setText("bt_disconnect");
+                            bt_connect.setText("ОТКЛЮЧИТЬСЯ");
                             // Восстанавливаем доступность кнопки
                             bt_connect.setEnabled(true);
                             // И делаем доступной кнопку соединения с датчиком
                             connect_to_sensor.setEnabled(true);
+                            Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
                         }
                         break;
                 }
@@ -1089,7 +1098,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 btSocket.close();
                 Log.d(LOG_TAG, "socket is closed");
-                Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), "socket is closed", Toast.LENGTH_SHORT).show();
             } catch (IOException e2) {
                 myError("Fatal Error", "onDestroy(): Can't close a socket:" + e2.getMessage() + ".");
             }
