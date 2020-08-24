@@ -1032,14 +1032,29 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
             // TODO тут надо передавать значение смеси, посчитать его (перевести...)
-            // пока здесь всё аналогично установке нуля
+                // TODO: 24.08.2020 проверять введённое значение, думаю, чтоб было в диапазоне: 0 < x <= 5
+            // Концентрация газа в объёмных % * 1000
+
+                // todo набросок вычислений, пока так попробовал использовать,
+                //  но потом надо сделать нормально, с проверкой, хранением значения..
+                float c1 = (float)4.15;
+                int c1Int = (int)(c1 * 1000);
+//                System.out.println(c1Int);
+                String c1s = Integer.toHexString(c1Int);
+//                System.out.println(c1s);
+                byte[] arr = hexStringToByteArray(c1s);
+//                System.out.println(arr.length);
+//                System.out.println(arr[0]);
+//                System.out.println(arr[1]);
+//                System.out.println(bytesToHex(arr));
+
                 reqMsg = new byte[] {
                         sensorAddress,
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x02, // firstRegAddressLow
-                        (byte)0x00, // dataHigh
-                        (byte)0x00  // dataLow
+                        (byte)0x04, // firstRegAddressLow
+                        arr[0],     // dataHigh
+                        arr[1]      // dataLow
                 };
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
