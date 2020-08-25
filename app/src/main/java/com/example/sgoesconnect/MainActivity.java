@@ -1023,7 +1023,7 @@ public class MainActivity extends AppCompatActivity {
                         sensorAddress,
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x02, // firstRegAddressLow
+                        (byte)0x01, // firstRegAddressLow
                         (byte)0x00, // dataHigh
                         (byte)0x00  // dataLow
                 };
@@ -1034,6 +1034,9 @@ public class MainActivity extends AppCompatActivity {
             // TODO тут надо передавать значение смеси, посчитать его (перевести...)
                 // TODO: 24.08.2020 проверять введённое значение, думаю, чтоб было в диапазоне: 0 < x <= 5
             // Концентрация газа в объёмных % * 1000
+
+                // TODO: 25.08.2020 сделать взаимоисключение команд: пока делается обнуление, блокировать калибровку и наоборот...
+                //  чтоб не было всяких коллизий..
 
                 // todo набросок вычислений, пока так попробовал использовать,
                 //  но потом надо сделать нормально, с проверкой, хранением значения..
@@ -1052,7 +1055,7 @@ public class MainActivity extends AppCompatActivity {
                         sensorAddress,
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x04, // firstRegAddressLow
+                        (byte)0x03, // firstRegAddressLow
                         arr[0],     // dataHigh
                         arr[1]      // dataLow
                 };
