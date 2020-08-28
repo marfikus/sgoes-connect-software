@@ -329,7 +329,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/main_calibration_conc"
         android:layout_width="100dp"
         android:layout_height="43dp"
         android:ems="6"
@@ -340,7 +340,7 @@
         app:layout_constraintTop_toTopOf="@+id/main_calibration" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/main_calibration_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
@@ -351,7 +351,7 @@
         app:layout_constraintTop_toTopOf="@+id/button2" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/main_calibration_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="52dp"

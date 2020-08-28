@@ -507,9 +507,9 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     Button set_zero;
     Button main_calibration;
-    Button button;
-    Button button2;
-    EditText editText;
+    Button main_calibration_ok;
+    Button main_calibration_cancel;
+    EditText main_calibration_conc;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
     TextView sensor_address;
@@ -942,22 +942,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
+        main_calibration_ok = (Button) findViewById(R.id.main_calibration_ok);
+        main_calibration_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(LOG_TAG, "button is pressed");
+                Log.d(LOG_TAG, "main_calibration_ok is pressed");
 
-                button.setVisibility(View.INVISIBLE);
-                button2.setVisibility(View.INVISIBLE);
-                editText.setVisibility(View.INVISIBLE);
+                main_calibration_ok.setVisibility(View.INVISIBLE);
+                main_calibration_cancel.setVisibility(View.INVISIBLE);
+                main_calibration_conc.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.VISIBLE);
 
             }
         });
 
-        button2 = (Button) findViewById(R.id.button2);
-        editText = (EditText) findViewById(R.id.editText);
+        main_calibration_cancel = (Button) findViewById(R.id.main_calibration_cancel);
+        main_calibration_conc = (EditText) findViewById(R.id.main_calibration_conc);
 
         main_calibration = (Button) findViewById(R.id.main_calibration);
         main_calibration.setOnClickListener(new View.OnClickListener() {
@@ -965,9 +965,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // TODO: 18.04.2020 спросить подтверждение действия
                 main_calibration.setVisibility(View.INVISIBLE);
-                button.setVisibility(View.VISIBLE);
-                button2.setVisibility(View.VISIBLE);
-                editText.setVisibility(View.VISIBLE);
+                main_calibration_ok.setVisibility(View.VISIBLE);
+                main_calibration_cancel.setVisibility(View.VISIBLE);
+                main_calibration_conc.setVisibility(View.VISIBLE);
 
 
 //                commandFromButton = Commands.CALIBRATION_HIGH;
