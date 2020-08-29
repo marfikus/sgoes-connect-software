@@ -1139,6 +1139,44 @@ public class MainActivity extends AppCompatActivity {
 
         return true;
     }
+    
+    private boolean checkInputConcentration(String level) {
+        switch (level) {
+            case "high":
+                String inputConcentration = main_calibration_conc.getText().toString();
+
+                if (inputConcentration.length() == 0) {
+                    Log.d(LOG_TAG, "main_calibration_conc is empty");
+                    Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                //сравнивать со средней ?
+
+                float inputConcentrationFloat = Float.parseFloat(inputConcentration); //проверить это !
+                if (inputConcentrationFloat == (float) 0.0) {
+//                    тоже не уверен, проверить !
+                            Log.d(LOG_TAG, "main_calibration_conc == 0");
+                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                if (inputConcentrationFloat >= (float) 5.0) {
+//                    тоже не уверен, проверить !
+                            Log.d(LOG_TAG, "main_calibration_conc >= 5");
+                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+
+                break;
+            case "middle":
+
+                break;
+        }
+                
+        return true;
+    }
 
 /*    @Override
     public void onPause() {

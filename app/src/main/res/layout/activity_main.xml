@@ -347,8 +347,8 @@
         android:layout_marginRight="5dp"
         android:text="@android:string/ok"
         android:visibility="invisible"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
-        app:layout_constraintTop_toTopOf="@+id/button2" />
+        app:layout_constraintEnd_toStartOf="@+id/main_calibration_cancel"
+        app:layout_constraintTop_toTopOf="@+id/main_calibration_cancel" />
 
     <Button
         android:id="@+id/main_calibration_cancel"
@@ -359,7 +359,7 @@
         android:layout_marginTop="5dp"
         android:text="Отмена"
         android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintStart_toStartOf="@+id/main_calibration_conc"
+        app:layout_constraintTop_toBottomOf="@+id/main_calibration_conc" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
