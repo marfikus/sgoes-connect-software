@@ -525,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
     TextView relay_2;
     TextView sensor_connection_state;
     TextView working_mode;
+    TextView title_main_calibration;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
@@ -947,11 +948,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         main_calibration = (Button) findViewById(R.id.main_calibration);
+        title_main_calibration = (TextView) findViewById(R.id.title_main_calibration);
         main_calibration_conc = (EditText) findViewById(R.id.main_calibration_conc);
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
+                title_main_calibration.setVisibility(View.VISIBLE);
                 main_calibration_conc.setText(Float.toString(HIGH_CONCENTRATION));
                 main_calibration_conc.setVisibility(View.VISIBLE);
                 main_calibration_ok.setVisibility(View.VISIBLE);
@@ -982,6 +985,7 @@ public class MainActivity extends AppCompatActivity {
                     main_calibration_ok.setVisibility(View.INVISIBLE);
                     main_calibration_cancel.setVisibility(View.INVISIBLE);
                     main_calibration_conc.setVisibility(View.INVISIBLE);
+                    title_main_calibration.setVisibility(View.INVISIBLE);
                     main_calibration.setVisibility(View.VISIBLE);
                     set_zero.setVisibility(View.VISIBLE);
                     set_zero.setEnabled(false);
@@ -1000,6 +1004,7 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration_ok.setVisibility(View.INVISIBLE);
                 main_calibration_cancel.setVisibility(View.INVISIBLE);
                 main_calibration_conc.setVisibility(View.INVISIBLE);
+                title_main_calibration.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
             }

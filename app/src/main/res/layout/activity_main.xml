@@ -362,4 +362,15 @@
         app:layout_constraintStart_toStartOf="@+id/main_calibration_conc"
         app:layout_constraintTop_toBottomOf="@+id/main_calibration_conc" />
 
+    <TextView
+        android:id="@+id/title_main_calibration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="Основная калибровка:"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/main_calibration_conc"
+        app:layout_constraintStart_toStartOf="@+id/main_calibration_ok" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
