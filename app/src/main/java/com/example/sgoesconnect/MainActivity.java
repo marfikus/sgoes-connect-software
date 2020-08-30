@@ -507,9 +507,9 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     Button set_zero;
     Button main_calibration;
-    Button main_calibration_ok;
-    Button main_calibration_cancel;
-    EditText main_calibration_conc;
+    Button confirm_dialog_ok;
+    Button confirm_dialog_cancel;
+    EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
     TextView sensor_address;
@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
     TextView relay_2;
     TextView sensor_connection_state;
     TextView working_mode;
-    TextView title_main_calibration;
+    TextView confirm_dialog_title;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
@@ -587,6 +587,18 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice bluetoothDevice = null;
 
     float HIGH_CONCENTRATION = (float)4.15;
+
+    enum ConfirmDialogModes {
+        NONE,
+        SET_ZERO,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
+        SET_THRESHOLD_1,
+        SET_THRESHOLD_2,
+        SET_DEFAULT_SETTINGS,
+        CHANGE_SENSOR_ADDRESS
+    }
+    ConfirmDialogModes confirmDialogMode = ConfirmDialogModes.NONE;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -933,80 +945,116 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO: 18.04.2020 спросить подтверждение действия
-
-                commandFromButton = Commands.SET_ZERO;
-                Log.d(LOG_TAG, commandFromButton.toString());
-
-                workingMode = WorkingMode.SETTING_ZERO;
-                working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
-                set_zero.setEnabled(false);
-
-                main_calibration.setEnabled(false);
-
-                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                set_zero.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setText("Установка нуля:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText("0");
+                confirm_dialog_input.setEnabled(false);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
             }
         });
 
         main_calibration = (Button) findViewById(R.id.main_calibration);
-        title_main_calibration = (TextView) findViewById(R.id.title_main_calibration);
-        main_calibration_conc = (EditText) findViewById(R.id.main_calibration_conc);
+        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
+        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
-                title_main_calibration.setVisibility(View.VISIBLE);
-                main_calibration_conc.setText(Float.toString(HIGH_CONCENTRATION));
-                main_calibration_conc.setVisibility(View.VISIBLE);
-                main_calibration_ok.setVisibility(View.VISIBLE);
-                main_calibration_cancel.setVisibility(View.VISIBLE);
+                confirm_dialog_title.setText("Основная калибровка:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
+                confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
             }
         });
         
-        main_calibration_ok = (Button) findViewById(R.id.main_calibration_ok);
-        main_calibration_ok.setOnClickListener(new View.OnClickListener() {
+        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
+        confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "main_calibration_ok is pressed");
-                String inputConcentration = main_calibration_conc.getText().toString();
+                switch (confirmDialogMode) {
+                    case CALIBRATION_HIGH:
+                        String inputConcentration = confirm_dialog_input.getText().toString();
 
-                if (checkInputConcentration(inputConcentration,"high")) {
-                    HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
-                    // todo: а если значение новое, то его надо сохранить,
-                    //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                        if (checkInputConcentration(inputConcentration, "high")) {
+                            HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
-                    commandFromButton = Commands.CALIBRATION_HIGH;
-                    Log.d(LOG_TAG, commandFromButton.toString());
+                            commandFromButton = Commands.CALIBRATION_HIGH;
+                            Log.d(LOG_TAG, commandFromButton.toString());
 
-                    workingMode = WorkingMode.CALIBRATION_HIGH;
-                    working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
-                    main_calibration.setEnabled(false);
+                            workingMode = WorkingMode.CALIBRATION_HIGH;
+                            working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                            main_calibration.setEnabled(false);
 
-                    main_calibration_ok.setVisibility(View.INVISIBLE);
-                    main_calibration_cancel.setVisibility(View.INVISIBLE);
-                    main_calibration_conc.setVisibility(View.INVISIBLE);
-                    title_main_calibration.setVisibility(View.INVISIBLE);
-                    main_calibration.setVisibility(View.VISIBLE);
-                    set_zero.setVisibility(View.VISIBLE);
-                    set_zero.setEnabled(false);
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
+                    case SET_ZERO:
+                        commandFromButton = Commands.SET_ZERO;
+                        Log.d(LOG_TAG, commandFromButton.toString());
+
+                        workingMode = WorkingMode.SETTING_ZERO;
+                        working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
+                        set_zero.setEnabled(false);
+
+                        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                        confirm_dialog_input.setVisibility(View.INVISIBLE);
+                        confirm_dialog_title.setVisibility(View.INVISIBLE);
+                        set_zero.setVisibility(View.VISIBLE);
+                        main_calibration.setVisibility(View.VISIBLE);
+                        main_calibration.setEnabled(false);
+                        confirmDialogMode = ConfirmDialogModes.NONE;
+
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
                 }
-
-                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
 
-        main_calibration_cancel = (Button) findViewById(R.id.main_calibration_cancel);
-        main_calibration_cancel.setOnClickListener(new View.OnClickListener() {
+        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "main_calibration_cancel is pressed");
+                confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                confirm_dialog_input.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setVisibility(View.INVISIBLE);
 
-                main_calibration_ok.setVisibility(View.INVISIBLE);
-                main_calibration_cancel.setVisibility(View.INVISIBLE);
-                main_calibration_conc.setVisibility(View.INVISIBLE);
-                title_main_calibration.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.VISIBLE);
+                switch (confirmDialogMode) {
+                    case CALIBRATION_HIGH:
+                        main_calibration.setVisibility(View.VISIBLE);
+                        set_zero.setVisibility(View.VISIBLE);
+                        break;
+
+                    case SET_ZERO:
+                        // todo: в этом блоке всё то же самое что и в блоке выше,
+                        //  можно объединить, но чёта пока не придумал как лучше))
+                        set_zero.setVisibility(View.VISIBLE);
+                        main_calibration.setVisibility(View.VISIBLE);
+                        break;
+                }
+                confirmDialogMode = ConfirmDialogModes.NONE;
             }
         });
         
@@ -1145,7 +1193,7 @@ public class MainActivity extends AppCompatActivity {
         switch (level) {
             case "high":
                 if (inputConcentration.length() == 0) {
-                    Log.d(LOG_TAG, "main_calibration_conc is empty");
+                    Log.d(LOG_TAG, "confirm_dialog_input is empty");
                     Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
                     return false;
                 }
@@ -1155,13 +1203,13 @@ public class MainActivity extends AppCompatActivity {
                 float inputConcentrationFloat = Float.parseFloat(inputConcentration);
                 Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
                 if (inputConcentrationFloat == (float)0.0) {
-                    Log.d(LOG_TAG, "main_calibration_conc == 0");
+                    Log.d(LOG_TAG, "confirm_dialog_input == 0");
                     Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
                     return false;
                 }
 
                 if (inputConcentrationFloat >= (float)5.0) {
-                    Log.d(LOG_TAG, "main_calibration_conc >= 5");
+                    Log.d(LOG_TAG, "confirm_dialog_input >= 5");
                     Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
                     return false;
                 }
