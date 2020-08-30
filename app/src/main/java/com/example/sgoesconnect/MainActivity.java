@@ -588,6 +588,18 @@ public class MainActivity extends AppCompatActivity {
 
     float HIGH_CONCENTRATION = (float)4.15;
 
+    enum ConfirmDialogModes {
+        NONE,
+        SET_ZERO,
+        CALIBRATION_MIDDLE,
+        CALIBRATION_HIGH,
+        SET_THRESHOLD_1,
+        SET_THRESHOLD_2,
+        SET_DEFAULT_SETTINGS,
+        CHANGE_SENSOR_ADDRESS
+    }
+    ConfirmDialogModes confirmDialogMode = ConfirmDialogModes.NONE;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -960,6 +972,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
+                confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
             }
         });
         
@@ -967,31 +980,38 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "confirm_dialog_ok is pressed");
-                String inputConcentration = confirm_dialog_input.getText().toString();
+                switch (confirmDialogMode) {
+                    case CALIBRATION_HIGH:
+                        String inputConcentration = confirm_dialog_input.getText().toString();
 
-                if (checkInputConcentration(inputConcentration,"high")) {
-                    HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
-                    // todo: а если значение новое, то его надо сохранить,
-                    //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                        if (checkInputConcentration(inputConcentration, "high")) {
+                            HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
-                    commandFromButton = Commands.CALIBRATION_HIGH;
-                    Log.d(LOG_TAG, commandFromButton.toString());
+                            commandFromButton = Commands.CALIBRATION_HIGH;
+                            Log.d(LOG_TAG, commandFromButton.toString());
 
-                    workingMode = WorkingMode.CALIBRATION_HIGH;
-                    working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
-                    main_calibration.setEnabled(false);
+                            workingMode = WorkingMode.CALIBRATION_HIGH;
+                            working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                            main_calibration.setEnabled(false);
 
-                    confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                    confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                    confirm_dialog_input.setVisibility(View.INVISIBLE);
-                    confirm_dialog_title.setVisibility(View.INVISIBLE);
-                    main_calibration.setVisibility(View.VISIBLE);
-                    set_zero.setVisibility(View.VISIBLE);
-                    set_zero.setEnabled(false);
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
+                    case SET_ZERO:
+                        //
+                        break;
                 }
-
-                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
 
@@ -999,14 +1019,21 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "confirm_dialog_cancel is pressed");
+                switch (confirmDialogMode) {
+                    case CALIBRATION_HIGH:
+                        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                        confirm_dialog_input.setVisibility(View.INVISIBLE);
+                        confirm_dialog_title.setVisibility(View.INVISIBLE);
+                        main_calibration.setVisibility(View.VISIBLE);
+                        set_zero.setVisibility(View.VISIBLE);
+                        confirmDialogMode = ConfirmDialogModes.NONE;
+                        break;
 
-                confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                confirm_dialog_input.setVisibility(View.INVISIBLE);
-                confirm_dialog_title.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.VISIBLE);
+                    case SET_ZERO:
+                        //
+                        break;
+                }
             }
         });
         
