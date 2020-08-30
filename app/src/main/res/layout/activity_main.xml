@@ -329,7 +329,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/main_calibration_conc"
+        android:id="@+id/confirm_dialog_input"
         android:layout_width="100dp"
         android:layout_height="43dp"
         android:ems="6"
@@ -340,18 +340,18 @@
         app:layout_constraintTop_toTopOf="@+id/main_calibration" />
 
     <Button
-        android:id="@+id/main_calibration_ok"
+        android:id="@+id/confirm_dialog_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         android:layout_marginRight="5dp"
         android:text="@android:string/ok"
         android:visibility="invisible"
-        app:layout_constraintEnd_toStartOf="@+id/main_calibration_cancel"
-        app:layout_constraintTop_toTopOf="@+id/main_calibration_cancel" />
+        app:layout_constraintEnd_toStartOf="@+id/confirm_dialog_cancel"
+        app:layout_constraintTop_toTopOf="@+id/confirm_dialog_cancel" />
 
     <Button
-        android:id="@+id/main_calibration_cancel"
+        android:id="@+id/confirm_dialog_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="52dp"
@@ -359,18 +359,18 @@
         android:layout_marginTop="5dp"
         android:text="Отмена"
         android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="@+id/main_calibration_conc"
-        app:layout_constraintTop_toBottomOf="@+id/main_calibration_conc" />
+        app:layout_constraintStart_toStartOf="@+id/confirm_dialog_input"
+        app:layout_constraintTop_toBottomOf="@+id/confirm_dialog_input" />
 
     <TextView
-        android:id="@+id/title_main_calibration"
+        android:id="@+id/confirm_dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:text="Основная калибровка:"
         android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/main_calibration_conc"
-        app:layout_constraintStart_toStartOf="@+id/main_calibration_ok" />
+        app:layout_constraintBottom_toTopOf="@+id/confirm_dialog_input"
+        app:layout_constraintStart_toStartOf="@+id/confirm_dialog_ok" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

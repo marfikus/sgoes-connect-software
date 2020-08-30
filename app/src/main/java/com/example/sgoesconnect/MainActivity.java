@@ -507,9 +507,9 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     Button set_zero;
     Button main_calibration;
-    Button main_calibration_ok;
-    Button main_calibration_cancel;
-    EditText main_calibration_conc;
+    Button confirm_dialog_ok;
+    Button confirm_dialog_cancel;
+    EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
     TextView sensor_address;
@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
     TextView relay_2;
     TextView sensor_connection_state;
     TextView working_mode;
-    TextView title_main_calibration;
+    TextView confirm_dialog_title;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
@@ -948,27 +948,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         main_calibration = (Button) findViewById(R.id.main_calibration);
-        title_main_calibration = (TextView) findViewById(R.id.title_main_calibration);
-        main_calibration_conc = (EditText) findViewById(R.id.main_calibration_conc);
+        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
+        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
-                title_main_calibration.setVisibility(View.VISIBLE);
-                main_calibration_conc.setText(Float.toString(HIGH_CONCENTRATION));
-                main_calibration_conc.setVisibility(View.VISIBLE);
-                main_calibration_ok.setVisibility(View.VISIBLE);
-                main_calibration_cancel.setVisibility(View.VISIBLE);
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
             }
         });
         
-        main_calibration_ok = (Button) findViewById(R.id.main_calibration_ok);
-        main_calibration_ok.setOnClickListener(new View.OnClickListener() {
+        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
+        confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "main_calibration_ok is pressed");
-                String inputConcentration = main_calibration_conc.getText().toString();
+                // Log.d(LOG_TAG, "confirm_dialog_ok is pressed");
+                String inputConcentration = confirm_dialog_input.getText().toString();
 
                 if (checkInputConcentration(inputConcentration,"high")) {
                     HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
@@ -982,10 +982,10 @@ public class MainActivity extends AppCompatActivity {
                     working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
                     main_calibration.setEnabled(false);
 
-                    main_calibration_ok.setVisibility(View.INVISIBLE);
-                    main_calibration_cancel.setVisibility(View.INVISIBLE);
-                    main_calibration_conc.setVisibility(View.INVISIBLE);
-                    title_main_calibration.setVisibility(View.INVISIBLE);
+                    confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                    confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                    confirm_dialog_input.setVisibility(View.INVISIBLE);
+                    confirm_dialog_title.setVisibility(View.INVISIBLE);
                     main_calibration.setVisibility(View.VISIBLE);
                     set_zero.setVisibility(View.VISIBLE);
                     set_zero.setEnabled(false);
@@ -995,16 +995,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        main_calibration_cancel = (Button) findViewById(R.id.main_calibration_cancel);
-        main_calibration_cancel.setOnClickListener(new View.OnClickListener() {
+        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d(LOG_TAG, "main_calibration_cancel is pressed");
+                // Log.d(LOG_TAG, "confirm_dialog_cancel is pressed");
 
-                main_calibration_ok.setVisibility(View.INVISIBLE);
-                main_calibration_cancel.setVisibility(View.INVISIBLE);
-                main_calibration_conc.setVisibility(View.INVISIBLE);
-                title_main_calibration.setVisibility(View.INVISIBLE);
+                confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                confirm_dialog_input.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
             }
@@ -1145,7 +1145,7 @@ public class MainActivity extends AppCompatActivity {
         switch (level) {
             case "high":
                 if (inputConcentration.length() == 0) {
-                    Log.d(LOG_TAG, "main_calibration_conc is empty");
+                    Log.d(LOG_TAG, "confirm_dialog_input is empty");
                     Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
                     return false;
                 }
@@ -1155,13 +1155,13 @@ public class MainActivity extends AppCompatActivity {
                 float inputConcentrationFloat = Float.parseFloat(inputConcentration);
                 Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
                 if (inputConcentrationFloat == (float)0.0) {
-                    Log.d(LOG_TAG, "main_calibration_conc == 0");
+                    Log.d(LOG_TAG, "confirm_dialog_input == 0");
                     Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
                     return false;
                 }
 
                 if (inputConcentrationFloat >= (float)5.0) {
-                    Log.d(LOG_TAG, "main_calibration_conc >= 5");
+                    Log.d(LOG_TAG, "confirm_dialog_input >= 5");
                     Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
                     return false;
                 }
