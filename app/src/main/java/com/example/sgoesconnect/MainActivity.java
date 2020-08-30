@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         working_mode.setText("РЕЖИМ: ОПРОС");
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
+        main_calibration.setEnabled(true);
 
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
@@ -505,6 +506,10 @@ public class MainActivity extends AppCompatActivity {
     Button bt_connect;
     Button connect_to_sensor;
     Button set_zero;
+    Button main_calibration;
+    Button main_calibration_ok;
+    Button main_calibration_cancel;
+    EditText main_calibration_conc;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
     TextView sensor_address;
@@ -520,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
     TextView relay_2;
     TextView sensor_connection_state;
     TextView working_mode;
+    TextView title_main_calibration;
     EditText input_sensor_address;
     Handler myHandler;
     final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
@@ -579,6 +585,8 @@ public class MainActivity extends AppCompatActivity {
 
     BluetoothAdapter bluetoothAdapter = null;
     BluetoothDevice bluetoothDevice = null;
+
+    float HIGH_CONCENTRATION = (float)4.15;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -828,6 +836,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Блокируем кнопки команд:
                     set_zero.setEnabled(false);
+                    main_calibration.setEnabled(false);
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
@@ -924,6 +933,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO: 18.04.2020 спросить подтверждение действия
+
                 commandFromButton = Commands.SET_ZERO;
                 Log.d(LOG_TAG, commandFromButton.toString());
 
@@ -931,9 +941,75 @@ public class MainActivity extends AppCompatActivity {
                 working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
                 set_zero.setEnabled(false);
 
+                main_calibration.setEnabled(false);
+
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
+
+        main_calibration = (Button) findViewById(R.id.main_calibration);
+        title_main_calibration = (TextView) findViewById(R.id.title_main_calibration);
+        main_calibration_conc = (EditText) findViewById(R.id.main_calibration_conc);
+        main_calibration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main_calibration.setVisibility(View.INVISIBLE);
+                title_main_calibration.setVisibility(View.VISIBLE);
+                main_calibration_conc.setText(Float.toString(HIGH_CONCENTRATION));
+                main_calibration_conc.setVisibility(View.VISIBLE);
+                main_calibration_ok.setVisibility(View.VISIBLE);
+                main_calibration_cancel.setVisibility(View.VISIBLE);
+                set_zero.setVisibility(View.INVISIBLE);
+            }
+        });
+        
+        main_calibration_ok = (Button) findViewById(R.id.main_calibration_ok);
+        main_calibration_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Log.d(LOG_TAG, "main_calibration_ok is pressed");
+                String inputConcentration = main_calibration_conc.getText().toString();
+
+                if (checkInputConcentration(inputConcentration,"high")) {
+                    HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
+                    // todo: а если значение новое, то его надо сохранить,
+                    //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+
+                    commandFromButton = Commands.CALIBRATION_HIGH;
+                    Log.d(LOG_TAG, commandFromButton.toString());
+
+                    workingMode = WorkingMode.CALIBRATION_HIGH;
+                    working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                    main_calibration.setEnabled(false);
+
+                    main_calibration_ok.setVisibility(View.INVISIBLE);
+                    main_calibration_cancel.setVisibility(View.INVISIBLE);
+                    main_calibration_conc.setVisibility(View.INVISIBLE);
+                    title_main_calibration.setVisibility(View.INVISIBLE);
+                    main_calibration.setVisibility(View.VISIBLE);
+                    set_zero.setVisibility(View.VISIBLE);
+                    set_zero.setEnabled(false);
+                }
+
+                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+            }
+        });
+
+        main_calibration_cancel = (Button) findViewById(R.id.main_calibration_cancel);
+        main_calibration_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Log.d(LOG_TAG, "main_calibration_cancel is pressed");
+
+                main_calibration_ok.setVisibility(View.INVISIBLE);
+                main_calibration_cancel.setVisibility(View.INVISIBLE);
+                main_calibration_conc.setVisibility(View.INVISIBLE);
+                title_main_calibration.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.VISIBLE);
+                set_zero.setVisibility(View.VISIBLE);
+            }
+        });
+        
     }
     // TODO rename to sensorConnectionCycle()
     private void startSensorConnection() {
@@ -1002,13 +1078,32 @@ public class MainActivity extends AppCompatActivity {
                         sensorAddress,
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x02, // firstRegAddressLow
+                        (byte)0x01, // firstRegAddressLow
                         (byte)0x00, // dataHigh
                         (byte)0x00  // dataLow
                 };
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
                 break;
+            case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
+            // Концентрация газа в объёмных % * 1000
+
+                int concInt = (int)(HIGH_CONCENTRATION * 1000);
+                String concHex = Integer.toHexString(concInt);
+                byte[] concBytes = hexStringToByteArray(concHex);
+
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x03, // firstRegAddressLow
+                        concBytes[0], // dataHigh
+                        concBytes[1]  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
         }
 
         // считаем CRC
@@ -1043,6 +1138,41 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
+        return true;
+    }
+    
+    private boolean checkInputConcentration(String inputConcentration, String level) {
+        switch (level) {
+            case "high":
+                if (inputConcentration.length() == 0) {
+                    Log.d(LOG_TAG, "main_calibration_conc is empty");
+                    Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                //todo: можно сравнивать со средней смесью, когда это будет реализовано..
+
+                float inputConcentrationFloat = Float.parseFloat(inputConcentration);
+                Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
+                if (inputConcentrationFloat == (float)0.0) {
+                    Log.d(LOG_TAG, "main_calibration_conc == 0");
+                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                if (inputConcentrationFloat >= (float)5.0) {
+                    Log.d(LOG_TAG, "main_calibration_conc >= 5");
+                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+
+                break;
+            case "middle":
+
+                break;
+        }
+                
         return true;
     }
 
