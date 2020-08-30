@@ -940,6 +940,8 @@ public class MainActivity extends AppCompatActivity {
                 working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
                 set_zero.setEnabled(false);
 
+                main_calibration.setEnabled(false);
+
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
             }
         });
@@ -965,26 +967,24 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d(LOG_TAG, "main_calibration_ok is pressed");
                 String inputConcentration = main_calibration_conc.getText().toString();
 
-                // TODO: 25.08.2020 сделать взаимоисключение команд: пока делается обнуление, блокировать калибровку и наоборот...
-                //  чтоб не было всяких коллизий..
-
                 if (checkInputConcentration(inputConcentration,"high")) {
                     HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
                     // todo: а если значение новое, то его надо сохранить,
                     //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
-//                    commandFromButton = Commands.CALIBRATION_HIGH;
+                    commandFromButton = Commands.CALIBRATION_HIGH;
                     Log.d(LOG_TAG, commandFromButton.toString());
 
-//                    workingMode = WorkingMode.CALIBRATION_HIGH;
-//                    working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
-//                    main_calibration.setEnabled(false);
+                    workingMode = WorkingMode.CALIBRATION_HIGH;
+                    working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                    main_calibration.setEnabled(false);
 
                     main_calibration_ok.setVisibility(View.INVISIBLE);
                     main_calibration_cancel.setVisibility(View.INVISIBLE);
                     main_calibration_conc.setVisibility(View.INVISIBLE);
                     main_calibration.setVisibility(View.VISIBLE);
                     set_zero.setVisibility(View.VISIBLE);
+                    set_zero.setEnabled(false);
                 }
 
                 // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
