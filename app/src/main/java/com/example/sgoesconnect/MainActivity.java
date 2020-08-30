@@ -945,17 +945,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO: 18.04.2020 спросить подтверждение действия
-
-                commandFromButton = Commands.SET_ZERO;
-                Log.d(LOG_TAG, commandFromButton.toString());
-
-                workingMode = WorkingMode.SETTING_ZERO;
-                working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
-                set_zero.setEnabled(false);
-
-                main_calibration.setEnabled(false);
-
-                // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                set_zero.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setText("Установка нуля:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText("0");
+                confirm_dialog_input.setEnabled(false);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
             }
         });
 
@@ -966,8 +965,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
+                confirm_dialog_input.setEnabled(true);
                 confirm_dialog_input.setVisibility(View.VISIBLE);
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
@@ -1009,7 +1010,23 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case SET_ZERO:
-                        //
+                        commandFromButton = Commands.SET_ZERO;
+                        Log.d(LOG_TAG, commandFromButton.toString());
+
+                        workingMode = WorkingMode.SETTING_ZERO;
+                        working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
+                        set_zero.setEnabled(false);
+
+                        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                        confirm_dialog_input.setVisibility(View.INVISIBLE);
+                        confirm_dialog_title.setVisibility(View.INVISIBLE);
+                        set_zero.setVisibility(View.VISIBLE);
+                        main_calibration.setVisibility(View.VISIBLE);
+                        main_calibration.setEnabled(false);
+                        confirmDialogMode = ConfirmDialogModes.NONE;
+
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                 }
             }
@@ -1019,21 +1036,25 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                confirm_dialog_input.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setVisibility(View.INVISIBLE);
+
                 switch (confirmDialogMode) {
                     case CALIBRATION_HIGH:
-                        confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                        confirm_dialog_input.setVisibility(View.INVISIBLE);
-                        confirm_dialog_title.setVisibility(View.INVISIBLE);
                         main_calibration.setVisibility(View.VISIBLE);
                         set_zero.setVisibility(View.VISIBLE);
-                        confirmDialogMode = ConfirmDialogModes.NONE;
                         break;
 
                     case SET_ZERO:
-                        //
+                        // todo: в этом блоке всё то же самое что и в блоке выше,
+                        //  можно объединить, но чёта пока не придумал как лучше))
+                        set_zero.setVisibility(View.VISIBLE);
+                        main_calibration.setVisibility(View.VISIBLE);
                         break;
                 }
+                confirmDialogMode = ConfirmDialogModes.NONE;
             }
         });
         
