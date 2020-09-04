@@ -368,10 +368,12 @@ public class MainActivity extends AppCompatActivity {
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     threshold_1.setText("1 порог:\n" + Integer.toString(curRegDataHighByte));
+                    valueOfThreshold1 = curRegDataHighByte;
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     threshold_2.setText("2 порог:\n" + Integer.toString(curRegDataLowByte));
+                    valueOfThreshold2 = curRegDataLowByte;
                     break;
 
                 case 4: // D - приведённое
@@ -604,6 +606,9 @@ public class MainActivity extends AppCompatActivity {
         CHANGE_SENSOR_ADDRESS
     }
     ConfirmDialogModes confirmDialogMode = ConfirmDialogModes.NONE;
+
+    int valueOfThreshold1 = 0;
+    int valueOfThreshold2 = 0;
 
     @SuppressLint("HandlerLeak")
     @Override
