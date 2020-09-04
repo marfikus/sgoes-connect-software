@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/set_2_threshold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="2 порог:\nnull"
+        app:layout_constraintStart_toEndOf="@+id/set_1_threshold"
+        app:layout_constraintTop_toTopOf="@+id/set_1_threshold" />
+
     <TextView
         android:id="@+id/title_sensor_connection"
         android:layout_width="wrap_content"
@@ -165,51 +175,13 @@
         app:layout_constraintTop_toBottomOf="@+id/title_gas_level_volume" />
 
     <TextView
-        android:id="@+id/title_threshold_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="1 порог:"
-        app:layout_constraintStart_toStartOf="@+id/title_gas_level_current"
-        app:layout_constraintTop_toBottomOf="@+id/title_gas_level_current" />
-
-    <TextView
-        android:id="@+id/title_threshold_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="2 порог:"
-        app:layout_constraintStart_toStartOf="@+id/title_threshold_1"
-        app:layout_constraintTop_toBottomOf="@+id/title_threshold_1" />
-
-    <TextView
-        android:id="@+id/threshold_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:text="null"
-        app:layout_constraintBottom_toBottomOf="@+id/title_threshold_1"
-        app:layout_constraintStart_toEndOf="@+id/title_threshold_1" />
-
-    <TextView
-        android:id="@+id/threshold_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:text="null"
-        app:layout_constraintBottom_toBottomOf="@+id/title_threshold_2"
-        app:layout_constraintStart_toEndOf="@+id/title_threshold_2" />
-
-    <TextView
         android:id="@+id/title_fault_relay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="Реле неисправности:"
-        app:layout_constraintStart_toStartOf="@+id/title_threshold_2"
-        app:layout_constraintTop_toBottomOf="@+id/title_threshold_2" />
+        app:layout_constraintStart_toStartOf="@+id/set_1_threshold"
+        app:layout_constraintTop_toBottomOf="@+id/set_1_threshold" />
 
     <TextView
         android:id="@+id/title_relay_1"
@@ -370,5 +342,14 @@
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_serial_number" />
+
+    <Button
+        android:id="@+id/set_1_threshold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="1 порог:\nnull"
+        app:layout_constraintStart_toStartOf="@+id/title_gas_level_current"
+        app:layout_constraintTop_toBottomOf="@+id/title_gas_level_current" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
