@@ -189,6 +189,11 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
 
+        if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
+            threshold_1.setEnabled(true);
+            threshold_2.setEnabled(true);
+        }
+
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
         parseResponse(localCopyRequest, localCopyResponse);
@@ -849,6 +854,8 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопки команд:
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
+                    threshold_1.setEnabled(false);
+                    threshold_2.setEnabled(false);
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
@@ -955,6 +962,8 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
             }
         });
 
@@ -974,6 +983,8 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
             }
         });
         
@@ -1005,6 +1016,8 @@ public class MainActivity extends AppCompatActivity {
                             set_zero.setVisibility(View.VISIBLE);
                             set_zero.setEnabled(false);
                             confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1025,6 +1038,8 @@ public class MainActivity extends AppCompatActivity {
                         main_calibration.setVisibility(View.VISIBLE);
                         main_calibration.setEnabled(false);
                         confirmDialogMode = ConfirmDialogModes.NONE;
+                        threshold_1.setEnabled(false);
+                        threshold_2.setEnabled(false);
 
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1055,6 +1070,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
                 confirmDialogMode = ConfirmDialogModes.NONE;
+
+                threshold_1.setEnabled(true);
+                threshold_2.setEnabled(true);
             }
         });
         

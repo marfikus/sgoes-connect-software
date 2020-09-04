@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:enabled="false"
         android:text="2 порог:\nnull"
         app:layout_constraintStart_toEndOf="@+id/threshold_1"
         app:layout_constraintTop_toTopOf="@+id/threshold_1" />
@@ -348,6 +349,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:enabled="false"
         android:text="1 порог:\nnull"
         app:layout_constraintStart_toStartOf="@+id/title_gas_level_current"
         app:layout_constraintTop_toBottomOf="@+id/title_gas_level_current" />
