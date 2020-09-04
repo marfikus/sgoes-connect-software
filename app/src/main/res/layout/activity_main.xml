@@ -7,14 +7,14 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/set_2_threshold"
+        android:id="@+id/threshold_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:text="2 порог:\nnull"
-        app:layout_constraintStart_toEndOf="@+id/set_1_threshold"
-        app:layout_constraintTop_toTopOf="@+id/set_1_threshold" />
+        app:layout_constraintStart_toEndOf="@+id/threshold_1"
+        app:layout_constraintTop_toTopOf="@+id/threshold_1" />
 
     <TextView
         android:id="@+id/title_sensor_connection"
@@ -180,8 +180,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Реле неисправности:"
-        app:layout_constraintStart_toStartOf="@+id/set_1_threshold"
-        app:layout_constraintTop_toBottomOf="@+id/set_1_threshold" />
+        app:layout_constraintStart_toStartOf="@+id/threshold_1"
+        app:layout_constraintTop_toBottomOf="@+id/threshold_1" />
 
     <TextView
         android:id="@+id/title_relay_1"
@@ -344,7 +344,7 @@
         app:layout_constraintTop_toBottomOf="@+id/title_serial_number" />
 
     <Button
-        android:id="@+id/set_1_threshold"
+        android:id="@+id/threshold_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"

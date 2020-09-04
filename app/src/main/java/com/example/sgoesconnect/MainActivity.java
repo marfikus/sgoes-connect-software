@@ -362,11 +362,11 @@ public class MainActivity extends AppCompatActivity {
                 case 3: // старший байт: порог 1, младший: порог 2
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    threshold_1.setText(Integer.toString(curRegDataHighByte));
+                    threshold_1.setText("1 порог:\n" + Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-                    threshold_2.setText(Integer.toString(curRegDataLowByte));
+                    threshold_2.setText("2 порог:\n" + Integer.toString(curRegDataLowByte));
                     break;
 
                 case 4: // D - приведённое
@@ -509,6 +509,8 @@ public class MainActivity extends AppCompatActivity {
     Button main_calibration;
     Button confirm_dialog_ok;
     Button confirm_dialog_cancel;
+    Button threshold_1;
+    Button threshold_2;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
@@ -518,8 +520,6 @@ public class MainActivity extends AppCompatActivity {
     TextView gas_level_nkpr;
     TextView gas_level_volume;
     TextView gas_level_current;
-    TextView threshold_1;
-    TextView threshold_2;
     TextView fault_relay;
     TextView relay_1;
     TextView relay_2;
@@ -619,8 +619,8 @@ public class MainActivity extends AppCompatActivity {
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
         gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
         gas_level_current = (TextView) findViewById(R.id.gas_level_current);
-        threshold_1 = (TextView) findViewById(R.id.threshold_1);
-        threshold_2 = (TextView) findViewById(R.id.threshold_2);
+        threshold_1 = (Button) findViewById(R.id.threshold_1);
+        threshold_2 = (Button) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
