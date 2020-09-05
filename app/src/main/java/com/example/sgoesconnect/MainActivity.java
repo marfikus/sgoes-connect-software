@@ -956,7 +956,6 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 18.04.2020 спросить подтверждение действия
                 set_zero.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Установка нуля:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -988,6 +987,29 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
+        threshold_1 = (Button) findViewById(R.id.threshold_1);
+        threshold_1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Установка порога 1:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setText(Integer.toString(valueOfThreshold1));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
