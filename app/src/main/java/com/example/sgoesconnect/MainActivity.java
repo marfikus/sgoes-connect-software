@@ -368,12 +368,12 @@ public class MainActivity extends AppCompatActivity {
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     threshold_1.setText("1 порог:\n" + Integer.toString(curRegDataHighByte));
-                    valueOfThreshold1 = curRegDataHighByte;
+                    curValueOfThreshold1 = curRegDataHighByte;
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     threshold_2.setText("2 порог:\n" + Integer.toString(curRegDataLowByte));
-                    valueOfThreshold2 = curRegDataLowByte;
+                    curValueOfThreshold2 = curRegDataLowByte;
                     break;
 
                 case 4: // D - приведённое
@@ -607,8 +607,11 @@ public class MainActivity extends AppCompatActivity {
     }
     ConfirmDialogModes confirmDialogMode = ConfirmDialogModes.NONE;
 
-    int valueOfThreshold1 = 0;
-    int valueOfThreshold2 = 0;
+    int curValueOfThreshold1 = 0;
+    int curValueOfThreshold2 = 0;
+
+    int newValueOfThreshold1 = 0;
+    int newValueOfThreshold2 = 0;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -1002,7 +1005,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
-                confirm_dialog_input.setText(Integer.toString(valueOfThreshold1));
+                confirm_dialog_input.setText(Integer.toString(curValueOfThreshold1));
                 confirm_dialog_input.setEnabled(true);
                 confirm_dialog_input.setVisibility(View.VISIBLE);
 
@@ -1070,6 +1073,33 @@ public class MainActivity extends AppCompatActivity {
 
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
+
+                    case SET_THRESHOLD_1:
+                        String inputThreshold = confirm_dialog_input.getText().toString();
+
+//                        if (checkInputThreshold(inputThreshold, 1)) {
+                            newValueOfThreshold1 = Integer.parseInt(inputThreshold);
+
+                            commandFromButton = Commands.SET_THRESHOLD_1;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.SETTING_THRESHOLD_1;
+                            working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
+
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setEnabled(false);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            set_zero.setVisibility(View.VISIBLE);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
+//                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
                 }
             }
         });
@@ -1083,19 +1113,22 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_input.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setVisibility(View.INVISIBLE);
 
-                switch (confirmDialogMode) {
-                    case CALIBRATION_HIGH:
-                        main_calibration.setVisibility(View.VISIBLE);
-                        set_zero.setVisibility(View.VISIBLE);
-                        break;
+                main_calibration.setVisibility(View.VISIBLE);
+                set_zero.setVisibility(View.VISIBLE);
 
-                    case SET_ZERO:
+//                switch (confirmDialogMode) {
+//                    case CALIBRATION_HIGH:
+//                        main_calibration.setVisibility(View.VISIBLE);
+//                        set_zero.setVisibility(View.VISIBLE);
+//                        break;
+
+//                    case SET_ZERO:
                         // todo: в этом блоке всё то же самое что и в блоке выше,
                         //  можно объединить, но чёта пока не придумал как лучше))
-                        set_zero.setVisibility(View.VISIBLE);
-                        main_calibration.setVisibility(View.VISIBLE);
-                        break;
-                }
+//                        set_zero.setVisibility(View.VISIBLE);
+//                        main_calibration.setVisibility(View.VISIBLE);
+//                        break;
+//                }
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
                 threshold_1.setEnabled(true);
@@ -1179,7 +1212,7 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
-            // Концентрация газа в объёмных % * 1000
+                // Концентрация газа в объёмных % * 1000
 
                 int concInt = (int)(HIGH_CONCENTRATION * 1000);
                 String concHex = Integer.toHexString(concInt);
@@ -1205,6 +1238,18 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
 
+            case SET_THRESHOLD_1: // установка порога 1
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x05, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)newValueOfThreshold1  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
         }
 
         // считаем CRC
