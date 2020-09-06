@@ -633,8 +633,6 @@ public class MainActivity extends AppCompatActivity {
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
         gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
         gas_level_current = (TextView) findViewById(R.id.gas_level_current);
-        threshold_1 = (Button) findViewById(R.id.threshold_1);
-        threshold_2 = (Button) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
@@ -1022,7 +1020,31 @@ public class MainActivity extends AppCompatActivity {
                 threshold_2.setEnabled(false);
             }
         });
-        
+
+        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        threshold_2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Установка порога 2:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+                confirm_dialog_input.setText(Integer.toString(curValueOfThreshold2));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
