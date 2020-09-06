@@ -1077,7 +1077,7 @@ public class MainActivity extends AppCompatActivity {
                     case SET_THRESHOLD_1:
                         String inputThreshold = confirm_dialog_input.getText().toString();
 
-//                        if (checkInputThreshold(inputThreshold, 1)) {
+                        if (checkInputThreshold(inputThreshold, 1)) {
                             newValueOfThreshold1 = Integer.parseInt(inputThreshold);
 
                             commandFromButton = Commands.SET_THRESHOLD_1;
@@ -1097,7 +1097,7 @@ public class MainActivity extends AppCompatActivity {
                             confirmDialogMode = ConfirmDialogModes.NONE;
                             threshold_1.setEnabled(false);
                             threshold_2.setEnabled(false);
-//                        }
+                        }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                 }
@@ -1319,6 +1319,66 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
                 
+        return true;
+    }
+
+    private boolean checkInputThreshold(String inputThresholdValue, int threshold) {
+
+        // проверка на пустоту
+        if (inputThresholdValue.length() == 0) {
+            Log.d(LOG_TAG, "confirm_dialog_input is empty");
+            Toast.makeText(getApplicationContext(), "Введите величину порога в % НКПР", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        int inputThresholdValueInt = Integer.parseInt(inputThresholdValue);
+        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
+
+        // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
+        int curThresholdValue = 0;
+        if (threshold == 1) {
+            curThresholdValue = curValueOfThreshold1;
+        } else if (threshold == 2) {
+            curThresholdValue = curValueOfThreshold2;
+        }
+        if (inputThresholdValueInt == curThresholdValue) {
+            Log.d(LOG_TAG, "confirm_dialog_input == curThresholdValue");
+            Toast.makeText(getApplicationContext(), "Введённая величина порога совпадает с текущим значением", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        // проверка на 0
+        if (inputThresholdValueInt == 0) {
+            Log.d(LOG_TAG, "confirm_dialog_input == 0");
+            Toast.makeText(getApplicationContext(), "Величина порога должна быть больше 0", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        // сравнение с другим порогом
+        if (threshold == 1) {
+            if (inputThresholdValueInt > curValueOfThreshold2) {
+                Log.d(LOG_TAG, "confirm_dialog_input > curValueOfThreshold2");
+                Toast.makeText(getApplicationContext(), "Порог 1 не должен быть больше порога 2", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } else if (threshold == 2) {
+            if (inputThresholdValueInt < curValueOfThreshold1) {
+                Log.d(LOG_TAG, "confirm_dialog_input < curValueOfThreshold1");
+                Toast.makeText(getApplicationContext(), "Порог 2 не должен быть меньше порога 1", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        // проверка на максимальное значение (>100)
+        if (inputThresholdValueInt > 100) {
+            Log.d(LOG_TAG, "confirm_dialog_input > 100");
+            Toast.makeText(getApplicationContext(), "Величина порога не должна быть больше 100", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+
+//                на целое число (или изменить режим ввода в поле)
+
         return true;
     }
 
