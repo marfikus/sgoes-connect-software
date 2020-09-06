@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -189,6 +190,11 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
 
+        if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
+            threshold_1.setEnabled(true);
+            threshold_2.setEnabled(true);
+        }
+
         // парсим ответ, выводим данные... (тоже отдельные функции)
 //        Log.d(LOG_TAG, "go to parsing localCopyResponse... " + bytesToHex(localCopyResponse));
         parseResponse(localCopyRequest, localCopyResponse);
@@ -362,11 +368,13 @@ public class MainActivity extends AppCompatActivity {
                 case 3: // старший байт: порог 1, младший: порог 2
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    threshold_1.setText(Integer.toString(curRegDataHighByte));
+                    threshold_1.setText("1 порог:\n" + Integer.toString(curRegDataHighByte));
+                    curValueOfThreshold1 = curRegDataHighByte;
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-                    threshold_2.setText(Integer.toString(curRegDataLowByte));
+                    threshold_2.setText("2 порог:\n" + Integer.toString(curRegDataLowByte));
+                    curValueOfThreshold2 = curRegDataLowByte;
                     break;
 
                 case 4: // D - приведённое
@@ -509,6 +517,8 @@ public class MainActivity extends AppCompatActivity {
     Button main_calibration;
     Button confirm_dialog_ok;
     Button confirm_dialog_cancel;
+    Button threshold_1;
+    Button threshold_2;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
@@ -518,8 +528,6 @@ public class MainActivity extends AppCompatActivity {
     TextView gas_level_nkpr;
     TextView gas_level_volume;
     TextView gas_level_current;
-    TextView threshold_1;
-    TextView threshold_2;
     TextView fault_relay;
     TextView relay_1;
     TextView relay_2;
@@ -600,6 +608,12 @@ public class MainActivity extends AppCompatActivity {
     }
     ConfirmDialogModes confirmDialogMode = ConfirmDialogModes.NONE;
 
+    int curValueOfThreshold1 = 0;
+    int curValueOfThreshold2 = 0;
+
+    int newValueOfThreshold1 = 0;
+    int newValueOfThreshold2 = 0;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -619,8 +633,6 @@ public class MainActivity extends AppCompatActivity {
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
         gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
         gas_level_current = (TextView) findViewById(R.id.gas_level_current);
-        threshold_1 = (TextView) findViewById(R.id.threshold_1);
-        threshold_2 = (TextView) findViewById(R.id.threshold_2);
         fault_relay = (TextView) findViewById(R.id.fault_relay);
         relay_1 = (TextView) findViewById(R.id.relay_1);
         relay_2 = (TextView) findViewById(R.id.relay_2);
@@ -849,6 +861,8 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопки команд:
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
+                    threshold_1.setEnabled(false);
+                    threshold_2.setEnabled(false);
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
@@ -944,7 +958,6 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 18.04.2020 спросить подтверждение действия
                 set_zero.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Установка нуля:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -955,6 +968,8 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
             }
         });
 
@@ -967,26 +982,79 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
                 confirm_dialog_input.setVisibility(View.VISIBLE);
+
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
             }
         });
-        
+
+        threshold_1 = (Button) findViewById(R.id.threshold_1);
+        threshold_1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Установка порога 1:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+                confirm_dialog_input.setText(Integer.toString(curValueOfThreshold1));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
+        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        threshold_2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Установка порога 2:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+                confirm_dialog_input.setText(Integer.toString(curValueOfThreshold2));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String inputValue = confirm_dialog_input.getText().toString();
+
                 switch (confirmDialogMode) {
                     case CALIBRATION_HIGH:
-                        String inputConcentration = confirm_dialog_input.getText().toString();
-
-                        if (checkInputConcentration(inputConcentration, "high")) {
-                            HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
+                        if (checkInputConcentration(inputValue, "high")) {
+                            HIGH_CONCENTRATION = Float.parseFloat(inputValue);
                             // todo: а если значение новое, то его надо сохранить,
                             //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
@@ -1005,6 +1073,8 @@ public class MainActivity extends AppCompatActivity {
                             set_zero.setVisibility(View.VISIBLE);
                             set_zero.setEnabled(false);
                             confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1025,7 +1095,59 @@ public class MainActivity extends AppCompatActivity {
                         main_calibration.setVisibility(View.VISIBLE);
                         main_calibration.setEnabled(false);
                         confirmDialogMode = ConfirmDialogModes.NONE;
+                        threshold_1.setEnabled(false);
+                        threshold_2.setEnabled(false);
 
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
+                    case SET_THRESHOLD_1:
+                        if (checkInputThreshold(inputValue, 1)) {
+                            newValueOfThreshold1 = Integer.parseInt(inputValue);
+
+                            commandFromButton = Commands.SET_THRESHOLD_1;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.SETTING_THRESHOLD_1;
+                            working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
+
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setEnabled(false);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            set_zero.setVisibility(View.VISIBLE);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
+                    case SET_THRESHOLD_2:
+                        if (checkInputThreshold(inputValue, 2)) {
+                            newValueOfThreshold2 = Integer.parseInt(inputValue);
+
+                            commandFromButton = Commands.SET_THRESHOLD_2;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.SETTING_THRESHOLD_2;
+                            working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
+
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setEnabled(false);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            set_zero.setVisibility(View.VISIBLE);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
+                        }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                 }
@@ -1041,20 +1163,26 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_input.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setVisibility(View.INVISIBLE);
 
-                switch (confirmDialogMode) {
-                    case CALIBRATION_HIGH:
-                        main_calibration.setVisibility(View.VISIBLE);
-                        set_zero.setVisibility(View.VISIBLE);
-                        break;
+                main_calibration.setVisibility(View.VISIBLE);
+                set_zero.setVisibility(View.VISIBLE);
 
-                    case SET_ZERO:
+//                switch (confirmDialogMode) {
+//                    case CALIBRATION_HIGH:
+//                        main_calibration.setVisibility(View.VISIBLE);
+//                        set_zero.setVisibility(View.VISIBLE);
+//                        break;
+
+//                    case SET_ZERO:
                         // todo: в этом блоке всё то же самое что и в блоке выше,
                         //  можно объединить, но чёта пока не придумал как лучше))
-                        set_zero.setVisibility(View.VISIBLE);
-                        main_calibration.setVisibility(View.VISIBLE);
-                        break;
-                }
+//                        set_zero.setVisibility(View.VISIBLE);
+//                        main_calibration.setVisibility(View.VISIBLE);
+//                        break;
+//                }
                 confirmDialogMode = ConfirmDialogModes.NONE;
+
+                threshold_1.setEnabled(true);
+                threshold_2.setEnabled(true);
             }
         });
         
@@ -1134,7 +1262,7 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
-            // Концентрация газа в объёмных % * 1000
+                // Концентрация газа в объёмных % * 1000
 
                 int concInt = (int)(HIGH_CONCENTRATION * 1000);
                 String concHex = Integer.toHexString(concInt);
@@ -1160,6 +1288,31 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
 
+            case SET_THRESHOLD_1: // установка порога 1
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x05, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)newValueOfThreshold1  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
+            case SET_THRESHOLD_2: // установка порога 2
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x06, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)newValueOfThreshold2  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
         }
 
         // считаем CRC
@@ -1229,6 +1382,63 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
                 
+        return true;
+    }
+
+    private boolean checkInputThreshold(String inputThresholdValue, int threshold) {
+
+        // проверка на пустоту
+        if (inputThresholdValue.length() == 0) {
+            Log.d(LOG_TAG, "confirm_dialog_input is empty");
+            Toast.makeText(getApplicationContext(), "Введите величину порога в % НКПР", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        int inputThresholdValueInt = Integer.parseInt(inputThresholdValue);
+        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
+
+        // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
+        int curThresholdValue = 0;
+        if (threshold == 1) {
+            curThresholdValue = curValueOfThreshold1;
+        } else if (threshold == 2) {
+            curThresholdValue = curValueOfThreshold2;
+        }
+        if (inputThresholdValueInt == curThresholdValue) {
+            Log.d(LOG_TAG, "confirm_dialog_input == curThresholdValue");
+            Toast.makeText(getApplicationContext(), "Введённая величина порога совпадает с текущим значением", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        // проверка на 0
+        if (inputThresholdValueInt == 0) {
+            Log.d(LOG_TAG, "confirm_dialog_input == 0");
+            Toast.makeText(getApplicationContext(), "Величина порога должна быть больше 0", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        // сравнение с другим порогом
+        if (threshold == 1) {
+            if (inputThresholdValueInt > curValueOfThreshold2) {
+                Log.d(LOG_TAG, "confirm_dialog_input > curValueOfThreshold2");
+                Toast.makeText(getApplicationContext(), "Порог 1 не должен быть больше порога 2", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } else if (threshold == 2) {
+            if (inputThresholdValueInt < curValueOfThreshold1) {
+                Log.d(LOG_TAG, "confirm_dialog_input < curValueOfThreshold1");
+                Toast.makeText(getApplicationContext(), "Порог 2 не должен быть меньше порога 1", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        // проверка на максимальное значение (>100)
+        if (inputThresholdValueInt > 100) {
+            Log.d(LOG_TAG, "confirm_dialog_input > 100");
+            Toast.makeText(getApplicationContext(), "Величина порога не должна быть больше 100", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
         return true;
     }
 
