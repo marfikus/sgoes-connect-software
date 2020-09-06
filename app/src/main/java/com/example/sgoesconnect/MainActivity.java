@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -983,9 +984,12 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
                 confirm_dialog_input.setVisibility(View.VISIBLE);
+
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
@@ -1005,6 +1009,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curValueOfThreshold1));
                 confirm_dialog_input.setEnabled(true);
                 confirm_dialog_input.setVisibility(View.VISIBLE);
@@ -1375,9 +1380,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Величина порога не должна быть больше 100", Toast.LENGTH_LONG).show();
             return false;
         }
-
-
-//                на целое число (или изменить режим ввода в поле)
 
         return true;
     }
