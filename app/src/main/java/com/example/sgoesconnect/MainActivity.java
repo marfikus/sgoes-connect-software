@@ -1049,12 +1049,12 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String inputValue = confirm_dialog_input.getText().toString();
+
                 switch (confirmDialogMode) {
                     case CALIBRATION_HIGH:
-                        String inputConcentration = confirm_dialog_input.getText().toString();
-
-                        if (checkInputConcentration(inputConcentration, "high")) {
-                            HIGH_CONCENTRATION = Float.parseFloat(inputConcentration);
+                        if (checkInputConcentration(inputValue, "high")) {
+                            HIGH_CONCENTRATION = Float.parseFloat(inputValue);
                             // todo: а если значение новое, то его надо сохранить,
                             //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
@@ -1102,16 +1102,39 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case SET_THRESHOLD_1:
-                        String inputThreshold = confirm_dialog_input.getText().toString();
-
-                        if (checkInputThreshold(inputThreshold, 1)) {
-                            newValueOfThreshold1 = Integer.parseInt(inputThreshold);
+                        if (checkInputThreshold(inputValue, 1)) {
+                            newValueOfThreshold1 = Integer.parseInt(inputValue);
 
                             commandFromButton = Commands.SET_THRESHOLD_1;
                             Log.d(LOG_TAG, commandFromButton.toString());
 
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
+
+                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                            confirm_dialog_input.setVisibility(View.INVISIBLE);
+                            confirm_dialog_title.setVisibility(View.INVISIBLE);
+                            main_calibration.setEnabled(false);
+                            main_calibration.setVisibility(View.VISIBLE);
+                            set_zero.setEnabled(false);
+                            set_zero.setVisibility(View.VISIBLE);
+                            confirmDialogMode = ConfirmDialogModes.NONE;
+                            threshold_1.setEnabled(false);
+                            threshold_2.setEnabled(false);
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
+                    case SET_THRESHOLD_2:
+                        if (checkInputThreshold(inputValue, 2)) {
+                            newValueOfThreshold2 = Integer.parseInt(inputValue);
+
+                            commandFromButton = Commands.SET_THRESHOLD_2;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.SETTING_THRESHOLD_2;
+                            working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
 
                             confirm_dialog_ok.setVisibility(View.INVISIBLE);
                             confirm_dialog_cancel.setVisibility(View.INVISIBLE);
@@ -1273,6 +1296,19 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x05, // firstRegAddressLow
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold1  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
+            case SET_THRESHOLD_2: // установка порога 2
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x06, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)newValueOfThreshold2  // dataLow
                 };
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
