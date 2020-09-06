@@ -1138,7 +1138,15 @@ public class MainActivity extends AppCompatActivity {
 
                 int concInt = (int)(HIGH_CONCENTRATION * 1000);
                 String concHex = Integer.toHexString(concInt);
+//                Log.d(LOG_TAG, "concHex: " + concHex);
+                // если ввели маленькое значение, то дополняем спереди нулями
+                if (concHex.length() < 4) {
+                    int numNulls = 4 - concHex.length();
+                    String nulls = new String(new char[numNulls]).replace("\0", "0");
+                    concHex = nulls + concHex;
+                }
                 byte[] concBytes = hexStringToByteArray(concHex);
+//                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
 
                 reqMsg = new byte[] {
                         sensorAddress,
