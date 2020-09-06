@@ -1047,6 +1047,25 @@ public class MainActivity extends AppCompatActivity {
 
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
+
+            public void hideConfirmDialog() {
+                confirm_dialog_ok.setVisibility(View.INVISIBLE);
+                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+                confirm_dialog_input.setVisibility(View.INVISIBLE);
+                confirm_dialog_title.setVisibility(View.INVISIBLE);
+
+                main_calibration.setEnabled(false);
+                main_calibration.setVisibility(View.VISIBLE);
+
+                set_zero.setEnabled(false);
+                set_zero.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.NONE;
+
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+
             @Override
             public void onClick(View v) {
                 String inputValue = confirm_dialog_input.getText().toString();
@@ -1063,18 +1082,8 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
-                            main_calibration.setEnabled(false);
 
-                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                            confirm_dialog_input.setVisibility(View.INVISIBLE);
-                            confirm_dialog_title.setVisibility(View.INVISIBLE);
-                            main_calibration.setVisibility(View.VISIBLE);
-                            set_zero.setVisibility(View.VISIBLE);
-                            set_zero.setEnabled(false);
-                            confirmDialogMode = ConfirmDialogModes.NONE;
-                            threshold_1.setEnabled(false);
-                            threshold_2.setEnabled(false);
+                            hideConfirmDialog();
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1085,19 +1094,8 @@ public class MainActivity extends AppCompatActivity {
 
                         workingMode = WorkingMode.SETTING_ZERO;
                         working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
-                        set_zero.setEnabled(false);
 
-                        confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                        confirm_dialog_input.setVisibility(View.INVISIBLE);
-                        confirm_dialog_title.setVisibility(View.INVISIBLE);
-                        set_zero.setVisibility(View.VISIBLE);
-                        main_calibration.setVisibility(View.VISIBLE);
-                        main_calibration.setEnabled(false);
-                        confirmDialogMode = ConfirmDialogModes.NONE;
-                        threshold_1.setEnabled(false);
-                        threshold_2.setEnabled(false);
-
+                        hideConfirmDialog();
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
@@ -1111,17 +1109,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
 
-                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                            confirm_dialog_input.setVisibility(View.INVISIBLE);
-                            confirm_dialog_title.setVisibility(View.INVISIBLE);
-                            main_calibration.setEnabled(false);
-                            main_calibration.setVisibility(View.VISIBLE);
-                            set_zero.setEnabled(false);
-                            set_zero.setVisibility(View.VISIBLE);
-                            confirmDialogMode = ConfirmDialogModes.NONE;
-                            threshold_1.setEnabled(false);
-                            threshold_2.setEnabled(false);
+                            hideConfirmDialog();
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1136,17 +1124,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_2;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
 
-                            confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                            confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                            confirm_dialog_input.setVisibility(View.INVISIBLE);
-                            confirm_dialog_title.setVisibility(View.INVISIBLE);
-                            main_calibration.setEnabled(false);
-                            main_calibration.setVisibility(View.VISIBLE);
-                            set_zero.setEnabled(false);
-                            set_zero.setVisibility(View.VISIBLE);
-                            confirmDialogMode = ConfirmDialogModes.NONE;
-                            threshold_1.setEnabled(false);
-                            threshold_2.setEnabled(false);
+                            hideConfirmDialog();
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
