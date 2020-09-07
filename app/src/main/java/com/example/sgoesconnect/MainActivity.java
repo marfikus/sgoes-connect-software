@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
+        middle_calibration.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
             threshold_1.setEnabled(true);
@@ -515,6 +516,7 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     Button set_zero;
     Button main_calibration;
+    Button middle_calibration;
     Button confirm_dialog_ok;
     Button confirm_dialog_cancel;
     Button threshold_1;
@@ -595,6 +597,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice bluetoothDevice = null;
 
     float HIGH_CONCENTRATION = (float)4.15;
+    float MIDDLE_CONCENTRATION = (float)2.2;
 
     enum ConfirmDialogModes {
         NONE,
@@ -639,6 +642,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
+        middle_calibration = (Button) findViewById(R.id.middle_calibration);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -861,6 +865,7 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопки команд:
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
+                    middle_calibration.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
 
@@ -967,6 +972,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
@@ -980,6 +986,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
@@ -996,6 +1003,32 @@ public class MainActivity extends AppCompatActivity {
                 threshold_2.setEnabled(false);
             }
         });
+        
+        middle_calibration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
+                
+                confirm_dialog_title.setText("Дополнительная калибровка:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                confirm_dialog_input.setText(Float.toString(MIDDLE_CONCENTRATION));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+                
+                set_zero.setVisibility(View.INVISIBLE);
+                
+                confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
+                
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
 
         threshold_1 = (Button) findViewById(R.id.threshold_1);
         threshold_1.setOnClickListener(new View.OnClickListener() {
@@ -1003,6 +1036,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1027,6 +1061,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 2:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1057,6 +1092,9 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setEnabled(false);
                 main_calibration.setVisibility(View.VISIBLE);
 
+                middle_calibration.setEnabled(false);
+                middle_calibration.setVisibility(View.VISIBLE);                
+
                 set_zero.setEnabled(false);
                 set_zero.setVisibility(View.VISIBLE);
 
@@ -1082,6 +1120,23 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+
+                            hideConfirmDialog();
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+                        
+                    case CALIBRATION_MIDDLE:
+                        if (checkInputConcentration(inputValue, "middle")) {
+                            MIDDLE_CONCENTRATION = Float.parseFloat(inputValue);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+
+                            commandFromButton = Commands.CALIBRATION_MIDDLE;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.CALIBRATION_MIDDLE;
+                            working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
 
                             hideConfirmDialog();
                         }
@@ -1142,6 +1197,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_title.setVisibility(View.INVISIBLE);
 
                 main_calibration.setVisibility(View.VISIBLE);
+                middle_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
 
 //                switch (confirmDialogMode) {
@@ -1215,6 +1271,9 @@ public class MainActivity extends AppCompatActivity {
     private void createRequest(Commands _commandFromButton) {
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
         byte[] reqMsg = {};
+        int concInt = 0;
+        String concHex = "";
+        byte[] concBytes = {};
 
         switch (_commandFromButton) {
             case NONE: // команды с кнопок нет, обычный запрос данных
@@ -1227,6 +1286,7 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x0C  // numRegistersLow
                 };
                 break;
+                
             case SET_ZERO: // установка нуля
                 reqMsg = new byte[] {
                         sensorAddress,
@@ -1239,11 +1299,12 @@ public class MainActivity extends AppCompatActivity {
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
                 break;
+                
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
-                int concInt = (int)(HIGH_CONCENTRATION * 1000);
-                String concHex = Integer.toHexString(concInt);
+                concInt = (int)(HIGH_CONCENTRATION * 1000);
+                concHex = Integer.toHexString(concInt);
 //                Log.d(LOG_TAG, "concHex: " + concHex);
                 // если ввели маленькое значение, то дополняем спереди нулями
                 if (concHex.length() < 4) {
@@ -1251,7 +1312,7 @@ public class MainActivity extends AppCompatActivity {
                     String nulls = new String(new char[numNulls]).replace("\0", "0");
                     concHex = nulls + concHex;
                 }
-                byte[] concBytes = hexStringToByteArray(concHex);
+                concBytes = hexStringToByteArray(concHex);
 //                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
 
                 reqMsg = new byte[] {
@@ -1259,6 +1320,33 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
                         (byte)0x03, // firstRegAddressLow
+                        concBytes[0], // dataHigh
+                        concBytes[1]  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
+            case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
+                // Концентрация газа в объёмных % * 1000
+
+                concInt = (int)(MIDDLE_CONCENTRATION * 1000);
+                concHex = Integer.toHexString(concInt);
+//                Log.d(LOG_TAG, "concHex: " + concHex);
+                // если ввели маленькое значение, то дополняем спереди нулями
+                if (concHex.length() < 4) {
+                    int numNulls = 4 - concHex.length();
+                    String nulls = new String(new char[numNulls]).replace("\0", "0");
+                    concHex = nulls + concHex;
+                }
+                concBytes = hexStringToByteArray(concHex);
+//                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
+
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x02, // firstRegAddressLow
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
@@ -1329,37 +1417,45 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private boolean checkInputConcentration(String inputConcentration, String level) {
-        switch (level) {
-            case "high":
-                if (inputConcentration.length() == 0) {
-                    Log.d(LOG_TAG, "confirm_dialog_input is empty");
-                    Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
-                    return false;
-                }
-
-                //todo: можно сравнивать со средней смесью, когда это будет реализовано..
-
-                float inputConcentrationFloat = Float.parseFloat(inputConcentration);
-                Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
-                if (inputConcentrationFloat == (float)0.0) {
-                    Log.d(LOG_TAG, "confirm_dialog_input == 0");
-                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
-                    return false;
-                }
-
-                if (inputConcentrationFloat >= (float)5.0) {
-                    Log.d(LOG_TAG, "confirm_dialog_input >= 5");
-                    Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0 и меньше 5", Toast.LENGTH_LONG).show();
-                    return false;
-                }
-
-
-                break;
-            case "middle":
-
-                break;
+        // проверка на пустоту
+        if (inputConcentration.length() == 0) {
+            Log.d(LOG_TAG, "confirm_dialog_input is empty");
+            Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
+            return false;
         }
-                
+
+        float inputConcentrationFloat = Float.parseFloat(inputConcentration);
+        Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
+        
+        // проверка на 0
+        if (inputConcentrationFloat == (float)0.0) {
+            Log.d(LOG_TAG, "confirm_dialog_input == 0");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        
+        // сравнение с другой концентрацией
+        if (level == "middle") {
+            if (inputConcentrationFloat >= HIGH_CONCENTRATION) {
+                Log.d(LOG_TAG, "confirm_dialog_input >= HIGH_CONCENTRATION");
+                Toast.makeText(getApplicationContext(), "Средняя концентрация должна быть меньше высокой", Toast.LENGTH_LONG).show();
+                return false;                
+            }
+        } else if (level == "high") {
+            if (inputConcentrationFloat <= MIDDLE_CONCENTRATION) {
+                Log.d(LOG_TAG, "confirm_dialog_input <= MIDDLE_CONCENTRATION");
+                Toast.makeText(getApplicationContext(), "Высокая концентрация должна быть больше средней", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+        
+        // проверка на максимальное значение (>=5)
+        if (inputConcentrationFloat >= (float)5.0) {
+            Log.d(LOG_TAG, "confirm_dialog_input >= 5");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть меньше 5", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        
         return true;
     }
 
