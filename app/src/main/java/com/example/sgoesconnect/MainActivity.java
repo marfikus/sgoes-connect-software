@@ -1271,6 +1271,9 @@ public class MainActivity extends AppCompatActivity {
     private void createRequest(Commands _commandFromButton) {
         byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
         byte[] reqMsg = {};
+        int concInt = 0;
+        String concHex = "";
+        byte[] concBytes = {};
 
         switch (_commandFromButton) {
             case NONE: // команды с кнопок нет, обычный запрос данных
@@ -1300,8 +1303,8 @@ public class MainActivity extends AppCompatActivity {
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
-                int concInt = (int)(HIGH_CONCENTRATION * 1000);
-                String concHex = Integer.toHexString(concInt);
+                concInt = (int)(HIGH_CONCENTRATION * 1000);
+                concHex = Integer.toHexString(concInt);
 //                Log.d(LOG_TAG, "concHex: " + concHex);
                 // если ввели маленькое значение, то дополняем спереди нулями
                 if (concHex.length() < 4) {
@@ -1309,7 +1312,7 @@ public class MainActivity extends AppCompatActivity {
                     String nulls = new String(new char[numNulls]).replace("\0", "0");
                     concHex = nulls + concHex;
                 }
-                byte[] concBytes = hexStringToByteArray(concHex);
+                concBytes = hexStringToByteArray(concHex);
 //                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
 
                 reqMsg = new byte[] {
@@ -1327,8 +1330,8 @@ public class MainActivity extends AppCompatActivity {
             case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
                 // Концентрация газа в объёмных % * 1000
 
-                int concInt = (int)(MIDDLE_CONCENTRATION * 1000);
-                String concHex = Integer.toHexString(concInt);
+                concInt = (int)(MIDDLE_CONCENTRATION * 1000);
+                concHex = Integer.toHexString(concInt);
 //                Log.d(LOG_TAG, "concHex: " + concHex);
                 // если ввели маленькое значение, то дополняем спереди нулями
                 if (concHex.length() < 4) {
@@ -1336,7 +1339,7 @@ public class MainActivity extends AppCompatActivity {
                     String nulls = new String(new char[numNulls]).replace("\0", "0");
                     concHex = nulls + concHex;
                 }
-                byte[] concBytes = hexStringToByteArray(concHex);
+                concBytes = hexStringToByteArray(concHex);
 //                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
 
                 reqMsg = new byte[] {
