@@ -192,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
         middle_calibration.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
+            sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);
         }
@@ -866,6 +867,7 @@ public class MainActivity extends AppCompatActivity {
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
                     middle_calibration.setEnabled(false);
+                    sensor_address.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
 
@@ -998,6 +1000,7 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1023,6 +1026,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1074,6 +1078,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1099,6 +1104,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1124,6 +1130,7 @@ public class MainActivity extends AppCompatActivity {
 
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1133,6 +1140,23 @@ public class MainActivity extends AppCompatActivity {
                 String inputValue = confirm_dialog_input.getText().toString();
 
                 switch (confirmDialogMode) {
+                    case CHANGE_SENSOR_ADDRESS:
+                        if (checkInputAddress()) {
+                            newSensorAddress = Integer.parseInt(inputValue);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+
+                            commandFromButton = Commands.CHANGE_SENSOR_ADDRESS;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
+                            working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
+
+                            hideConfirmDialog();
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+                        
                     case CALIBRATION_HIGH:
                         if (checkInputConcentration(inputValue, "high")) {
                             HIGH_CONCENTRATION = Float.parseFloat(inputValue);
@@ -1239,6 +1263,7 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
+                sensor_address.setEnabled(true);
                 threshold_1.setEnabled(true);
                 threshold_2.setEnabled(true);
             }
