@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
 
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    sensor_address.setText(Integer.toString(curRegDataHighByte));
+                    sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
@@ -521,10 +521,10 @@ public class MainActivity extends AppCompatActivity {
     Button confirm_dialog_cancel;
     Button threshold_1;
     Button threshold_2;
+    Button sensor_address;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
-    TextView sensor_address;
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
@@ -630,7 +630,7 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
 
-        sensor_address = (TextView) findViewById(R.id.sensor_address);
+        sensor_address = (Button) findViewById(R.id.sensor_address);
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
