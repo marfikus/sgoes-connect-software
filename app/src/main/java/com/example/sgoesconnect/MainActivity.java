@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
+        middle_calibration.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
             threshold_1.setEnabled(true);
@@ -515,6 +516,7 @@ public class MainActivity extends AppCompatActivity {
     Button connect_to_sensor;
     Button set_zero;
     Button main_calibration;
+    Button middle_calibration;
     Button confirm_dialog_ok;
     Button confirm_dialog_cancel;
     Button threshold_1;
@@ -595,6 +597,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice bluetoothDevice = null;
 
     float HIGH_CONCENTRATION = (float)4.15;
+    float MIDDLE_CONCENTRATION = (float)2.2;
 
     enum ConfirmDialogModes {
         NONE,
@@ -639,6 +642,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
+        middle_calibration = (Button) findViewById(R.id.middle_calibration);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -861,6 +865,7 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопки команд:
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
+                    middle_calibration.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
 
@@ -967,6 +972,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
@@ -980,6 +986,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
@@ -996,6 +1003,32 @@ public class MainActivity extends AppCompatActivity {
                 threshold_2.setEnabled(false);
             }
         });
+        
+        middle_calibration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
+                
+                confirm_dialog_title.setText("Дополнительная калибровка:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                confirm_dialog_input.setText(Float.toString(MIDDLE_CONCENTRATION));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+                
+                set_zero.setVisibility(View.INVISIBLE);
+                
+                confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
 
         threshold_1 = (Button) findViewById(R.id.threshold_1);
         threshold_1.setOnClickListener(new View.OnClickListener() {
@@ -1003,6 +1036,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1027,6 +1061,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 2:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1056,6 +1091,9 @@ public class MainActivity extends AppCompatActivity {
 
                 main_calibration.setEnabled(false);
                 main_calibration.setVisibility(View.VISIBLE);
+
+                middle_calibration.setEnabled(false);
+                middle_calibration.setVisibility(View.VISIBLE);                
 
                 set_zero.setEnabled(false);
                 set_zero.setVisibility(View.VISIBLE);
@@ -1142,6 +1180,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_title.setVisibility(View.INVISIBLE);
 
                 main_calibration.setVisibility(View.VISIBLE);
+                middle_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
 
 //                switch (confirmDialogMode) {
