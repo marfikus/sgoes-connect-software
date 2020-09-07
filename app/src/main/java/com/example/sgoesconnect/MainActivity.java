@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
         if (reqFuncCode == respFuncCode) {
             // TODO: 17.04.2020 добавить проверку на значение кода функции: если 3, то парсим,
             //  если 6, то пропускаем, ибо незачем тратить время на разбор этого ответа (сообщение в лог выдаём)
-            Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
+            // Log.d(LOG_TAG, "reqFuncCode(" + reqFuncCode + ") == respFuncCode(" + respFuncCode + ") Parsing of data...");
 //          Ответ на этот запрос, без ошибки, переходим далее к разбору данных:
             parseRespData(localCopyRequest, localCopyResponse);
 
@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             int modReqFuncCode = (localCopyRequest[1] | 0b10000000) & 0xFF; // устанавливаем единицу в старший бит
 
             if (respFuncCode == modReqFuncCode) {
-                Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") == modReqFuncCode(" + modReqFuncCode + ")");
+                // Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") == modReqFuncCode(" + modReqFuncCode + ")");
 //              значит ответ на этот запрос, но с ошибкой:
 //              читаем третий байт ответа и выводим информацию об ошибке...
                 int respError = localCopyResponse[2] & 0xFF;
@@ -250,9 +250,9 @@ public class MainActivity extends AppCompatActivity {
 
         // todo: количество регистров и адрес первого пока беру так, а вообще будет формироваться в запросе
         int reqNumRegisters = ((localCopyRequest[4] & 0xFF) << 8) | (localCopyRequest[5] & 0xFF); // склеивание двух байт в одно целое число
-        Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
+        // Log.d(LOG_TAG, "reqNumRegisters: " + reqNumRegisters);
         int reqFirstRegAddress = ((localCopyRequest[2] & 0xFF) << 8) | (localCopyRequest[3] & 0xFF); // склеивание двух байт в одно целое число
-        Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
+        // Log.d(LOG_TAG, "reqFirstRegAddress: " + reqFirstRegAddress);
 
 //            если количество регистров в запросе не равно половине количества байт в ответе (регистры 2х байтные):
         if ((reqNumRegisters * 2) != respNumDataBytes) {
@@ -268,12 +268,12 @@ public class MainActivity extends AppCompatActivity {
 
 //            цикл по количеству регистров:
         for (int i = 0; i < reqNumRegisters; i++) {
-            Log.d(LOG_TAG, "========================");
+//            Log.d(LOG_TAG, "========================");
 //          вычисляем адрес регистра относительно адреса первого регистра из запроса
             curRegAddress = reqFirstRegAddress + i;
-            Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
+//            Log.d(LOG_TAG, "curRegAddress: " + curRegAddress);
             curBytePos = curBytePos + 2;
-            Log.d(LOG_TAG, "curBytePos: " + curBytePos);
+//            Log.d(LOG_TAG, "curBytePos: " + curBytePos);
 
 //          если адрес регистра такой-то:
             switch (curRegAddress) {
@@ -283,18 +283,18 @@ public class MainActivity extends AppCompatActivity {
 //                  преобразовываем их в соответсвии со спецификацией!
 
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     sensor_address.setText(Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+                    // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
 //                  выводим в соответсвующее поле
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
                     break;
 
                 case 1: // старший байт: тип прибора, младший: флаги состояния
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     /* TODO: 14.04.2020 пока вывожу только метан, а остальные в виде номера,
                                         а вообще можно расписать все коды по спецификации... */
                     if (curRegDataHighByte == 1) {
@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                     int flagState = 0;
                     for (int flag = 1; flag <= 8; flag++) {
                         flagState = Character.digit(stFlags.charAt(stFlagsLen - flag), 10);
-                        Log.d(LOG_TAG, "State flag " + flag + ": " + flagState);
+                        // Log.d(LOG_TAG, "State flag " + flag + ": " + flagState);
                         switch (flag) {
                             case 1: // реле отказа (0 - авария 1 - норма)
                                 if (flagState == 1) {
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
 
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 //                    Log.d(LOG_TAG, "curRegDataFull_float: " + Float.intBitsToFloat(curRegDataFull));
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
 
@@ -367,54 +367,54 @@ public class MainActivity extends AppCompatActivity {
 
                 case 3: // старший байт: порог 1, младший: порог 2
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     threshold_1.setText("1 порог:\n" + Integer.toString(curRegDataHighByte));
                     curValueOfThreshold1 = curRegDataHighByte;
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+                    // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     threshold_2.setText("2 порог:\n" + Integer.toString(curRegDataLowByte));
                     curValueOfThreshold2 = curRegDataLowByte;
                     break;
 
                 case 4: // D - приведённое
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 5: // напряжение опорного канала
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 6: // напряжение рабочего канала
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 7: // D - приборное
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 8: // температура, показания встроенного терморезистора
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 9: // серийный номер прибора
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     serial_number.setText(Integer.toString(curRegDataFull));
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
@@ -427,33 +427,33 @@ public class MainActivity extends AppCompatActivity {
 
                     float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     fCurRegDataFull = fCurRegDataFull / 10;
-                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
+                    // Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
                     gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
 
                     // объёмные проценты
                     float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
-                    Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                    // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
                     gas_level_volume.setText(Float.toString(volumePercent));
 
                     // ток в мА
                     float current = nkprPercentToCurrent(fCurRegDataFull);
-                    Log.d(LOG_TAG, "current: " + current);
+                    // Log.d(LOG_TAG, "current: " + current);
                     gas_level_current.setText(Float.toString(current));
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
                     // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 12: // старший байт: тип прибора, младший: модификация прибора
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
+                    // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
-                    Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
+                    // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
 
 //                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
