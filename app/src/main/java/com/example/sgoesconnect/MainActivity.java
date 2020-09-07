@@ -959,6 +959,30 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        sensor_address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Смена адреса датчика:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+                confirm_dialog_input.setText(Integer.toString(curSensorAddress));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
+                sensor_address.setEnabled(false);
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+        
         set_zero = (Button) findViewById(R.id.set_zero);
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
