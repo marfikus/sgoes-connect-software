@@ -966,6 +966,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1052,7 +1053,8 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
-                
+
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
