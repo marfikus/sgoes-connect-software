@@ -1023,7 +1023,7 @@ public class MainActivity extends AppCompatActivity {
                 
                 set_zero.setVisibility(View.INVISIBLE);
                 
-                confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
                 
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
@@ -1120,6 +1120,23 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+
+                            hideConfirmDialog();
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+                        
+                    case CALIBRATION_MIDDLE:
+                        if (checkInputConcentration(inputValue, "middle")) {
+                            MIDDLE_CONCENTRATION = Float.parseFloat(inputValue);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+
+                            commandFromButton = Commands.CALIBRATION_MIDDLE;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.CALIBRATION_MIDDLE;
+                            working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
 
                             hideConfirmDialog();
                         }
