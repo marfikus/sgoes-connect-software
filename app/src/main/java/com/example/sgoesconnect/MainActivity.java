@@ -1283,6 +1283,7 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x0C  // numRegistersLow
                 };
                 break;
+                
             case SET_ZERO: // установка нуля
                 reqMsg = new byte[] {
                         sensorAddress,
@@ -1295,6 +1296,7 @@ public class MainActivity extends AppCompatActivity {
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
                 break;
+                
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
@@ -1315,6 +1317,33 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x06, // funcCode
                         (byte)0x00, // firstRegAddressHigh
                         (byte)0x03, // firstRegAddressLow
+                        concBytes[0], // dataHigh
+                        concBytes[1]  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
+            case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
+                // Концентрация газа в объёмных % * 1000
+
+                int concInt = (int)(MIDDLE_CONCENTRATION * 1000);
+                String concHex = Integer.toHexString(concInt);
+//                Log.d(LOG_TAG, "concHex: " + concHex);
+                // если ввели маленькое значение, то дополняем спереди нулями
+                if (concHex.length() < 4) {
+                    int numNulls = 4 - concHex.length();
+                    String nulls = new String(new char[numNulls]).replace("\0", "0");
+                    concHex = nulls + concHex;
+                }
+                byte[] concBytes = hexStringToByteArray(concHex);
+//                Log.d(LOG_TAG, "concBytes: " + bytesToHex(concBytes));
+
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x02, // firstRegAddressLow
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
