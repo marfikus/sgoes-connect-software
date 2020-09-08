@@ -287,6 +287,7 @@ public class MainActivity extends AppCompatActivity {
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
+                    curSensorAddress = curRegDataHighByte;
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
@@ -617,6 +618,9 @@ public class MainActivity extends AppCompatActivity {
 
     int newValueOfThreshold1 = 0;
     int newValueOfThreshold2 = 0;
+    
+    int curSensorAddress = 0;
+    int newSensorAddress = 0;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -803,7 +807,10 @@ public class MainActivity extends AppCompatActivity {
                 // если подключения нет
                 if (!sensorConnection) {
                     // проверяем поле адреса, если адрес корректный
-                    if (checkInputAddress()) {
+                    String inputAddress = input_sensor_address.getText().toString();
+                    if (checkInputAddress(inputAddress, "connection")) {
+                        curSensorAddress = Integer.parseInt(inputAddress);
+                        
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
 
@@ -1143,7 +1150,7 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (confirmDialogMode) {
                     case CHANGE_SENSOR_ADDRESS:
-                        if (checkInputAddress()) {
+                        if (checkInputAddress(inputValue, "changing")) {
                             newSensorAddress = Integer.parseInt(inputValue);
                             // todo: а если значение новое, то его надо сохранить,
                             //  чтобы потом (при новом запуске приложения) подгружалось уже оно
@@ -1320,7 +1327,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRequest(Commands _commandFromButton) {
-        byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
+        byte sensorAddress = (byte)curSensorAddress;
         byte[] reqMsg = {};
         int concInt = 0;
         String concHex = "";
@@ -1444,22 +1451,21 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "request: " + bytesToHex(request));
     }
 
-    private boolean checkInputAddress() {
+    private boolean checkInputAddress(String inputAddress, String mode) {
         // адрес должен быть в диапазоне 1..247
-        String inputAddress = input_sensor_address.getText().toString();
 
         if (inputAddress.length() == 0) {
-            Log.d(LOG_TAG, "input_sensor_address is empty");
+            Log.d(LOG_TAG, "inputAddress is empty");
             Toast.makeText(getApplicationContext(), "Введите адрес датчика от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
         if (Integer.parseInt(inputAddress) < 1) {
-            Log.d(LOG_TAG, "input_sensor_address < 1");
+            Log.d(LOG_TAG, "inputAddress < 1");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
         if (Integer.parseInt(inputAddress) > 247) {
-            Log.d(LOG_TAG, "input_sensor_address > 247");
+            Log.d(LOG_TAG, "inputAddress > 247");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
