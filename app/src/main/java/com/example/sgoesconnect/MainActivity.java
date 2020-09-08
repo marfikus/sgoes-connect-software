@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
         middle_calibration.setEnabled(true);
+        set_defaults.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
             sensor_address.setEnabled(true);
@@ -525,6 +526,7 @@ public class MainActivity extends AppCompatActivity {
     Button threshold_1;
     Button threshold_2;
     Button sensor_address;
+    Button set_defaults;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
@@ -649,6 +651,7 @@ public class MainActivity extends AppCompatActivity {
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
         middle_calibration = (Button) findViewById(R.id.middle_calibration);
+        set_defaults = (Button) findViewById(R.id.set_defaults);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -875,6 +878,7 @@ public class MainActivity extends AppCompatActivity {
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
                     middle_calibration.setEnabled(false);
+                    set_defaults.setEnabled(false);
                     sensor_address.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
@@ -975,6 +979,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1008,6 +1013,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
                 sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
@@ -1023,6 +1029,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
@@ -1046,6 +1053,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
                 
                 confirm_dialog_title.setText("Дополнительная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1075,6 +1083,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1101,6 +1110,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 2:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1137,6 +1147,9 @@ public class MainActivity extends AppCompatActivity {
 
                 set_zero.setEnabled(false);
                 set_zero.setVisibility(View.VISIBLE);
+
+                set_defaults.setEnabled(false);
+                set_defaults.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
@@ -1257,6 +1270,7 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.VISIBLE);
                 middle_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
+                set_defaults.setVisibility(View.VISIBLE);
 
 //                switch (confirmDialogMode) {
 //                    case CALIBRATION_HIGH:
