@@ -138,6 +138,16 @@ public class MainActivity extends AppCompatActivity {
         // если код функции в текущем запросе == 06, то не обрабатываем пока эти ответы
         int reqFuncCode = _request[1] & 0xFF;
         if (reqFuncCode == 6) {
+            // если ещё и режим сброса настроек датчика, то вероятно, что это его ответ
+            // (!!! если работаем одновременно только с одним датчиком,
+            // иначе может быть и ответ от другого, тогда надо переделывать, но пока норм !!!)
+            if (workingMode == WorkingMode.SETTING_DEFAULT_SETTINGS) {
+                // В этом случае особо делать нечего, поскольку дефолтного адреса мы не знаем, надо искать.
+                // Поэтому просто отключаемся, имитируя нажатие кнопки Стоп
+                connect_to_sensor.performClick();
+                Log.d(LOG_TAG, "apparently response on SETTING_DEFAULT_SETTINGS, stop sensor connection");
+                return;
+            }
             Log.d(LOG_TAG, "checkResponse: reqFuncCode == " + reqFuncCode + ". Skip it.");
             return;
         }
@@ -190,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
         middle_calibration.setEnabled(true);
+        set_defaults.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
             sensor_address.setEnabled(true);
@@ -525,6 +536,7 @@ public class MainActivity extends AppCompatActivity {
     Button threshold_1;
     Button threshold_2;
     Button sensor_address;
+    Button set_defaults;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
@@ -649,6 +661,7 @@ public class MainActivity extends AppCompatActivity {
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
         middle_calibration = (Button) findViewById(R.id.middle_calibration);
+        set_defaults = (Button) findViewById(R.id.set_defaults);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_settings.setOnClickListener(new View.OnClickListener() {
@@ -875,6 +888,7 @@ public class MainActivity extends AppCompatActivity {
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
                     middle_calibration.setEnabled(false);
+                    set_defaults.setEnabled(false);
                     sensor_address.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
@@ -975,6 +989,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -993,12 +1008,16 @@ public class MainActivity extends AppCompatActivity {
                 threshold_2.setEnabled(false);
             }
         });
-        
+
         set_zero = (Button) findViewById(R.id.set_zero);
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
+
                 confirm_dialog_title.setText("Установка нуля:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("0");
@@ -1006,9 +1025,33 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_input.setVisibility(View.VISIBLE);
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+
+                sensor_address.setEnabled(false);
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
+        set_defaults.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
-                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+                set_defaults.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Установка заводских значений:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText("");
+                confirm_dialog_input.setEnabled(false);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_DEFAULT_SETTINGS;
+
                 sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
@@ -1023,6 +1066,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
 
@@ -1046,6 +1090,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
                 
                 confirm_dialog_title.setText("Дополнительная калибровка:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1075,6 +1120,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 1:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1101,6 +1147,7 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
 
                 confirm_dialog_title.setText("Установка порога 2:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
@@ -1137,6 +1184,9 @@ public class MainActivity extends AppCompatActivity {
 
                 set_zero.setEnabled(false);
                 set_zero.setVisibility(View.VISIBLE);
+
+                set_defaults.setEnabled(false);
+                set_defaults.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
@@ -1212,6 +1262,17 @@ public class MainActivity extends AppCompatActivity {
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
+                    case SET_DEFAULT_SETTINGS:
+                        commandFromButton = Commands.SET_DEFAULT_SETTINGS;
+                        Log.d(LOG_TAG, commandFromButton.toString());
+
+                        workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
+                        working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
+
+                        hideConfirmDialog();
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
                     case SET_THRESHOLD_1:
                         if (checkInputThreshold(inputValue, 1)) {
                             newValueOfThreshold1 = Integer.parseInt(inputValue);
@@ -1257,6 +1318,7 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.VISIBLE);
                 middle_calibration.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.VISIBLE);
+                set_defaults.setVisibility(View.VISIBLE);
 
 //                switch (confirmDialogMode) {
 //                    case CALIBRATION_HIGH:
@@ -1359,6 +1421,19 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
                 
+            case SET_DEFAULT_SETTINGS: // установка заводских значений
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x04, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)0x01  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
