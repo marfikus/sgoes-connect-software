@@ -1411,6 +1411,19 @@ public class MainActivity extends AppCompatActivity {
                 commandFromButton = Commands.NONE;
                 break;
                 
+            case SET_DEFAULT_SETTINGS: // установка заводских значений
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x04, // firstRegAddressLow
+                        (byte)0x00, // dataHigh
+                        (byte)0x01  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
