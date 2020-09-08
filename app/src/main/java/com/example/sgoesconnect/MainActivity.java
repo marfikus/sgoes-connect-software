@@ -135,7 +135,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkResponse(byte[] _request, byte[] _response) {
 
-        // если код функции в текущем запросе == 06, то не обрабатываем пока эти ответы
+        // если код функции в текущем запросе == 06, то не обрабатываем пока эти ответы,
+        // кроме нескольких исключений))
         int reqFuncCode = _request[1] & 0xFF;
         if (reqFuncCode == 6) {
             // если ещё и режим сброса настроек датчика, то вероятно, что это его ответ
@@ -147,6 +148,14 @@ public class MainActivity extends AppCompatActivity {
                 connect_to_sensor.performClick();
                 Log.d(LOG_TAG, "apparently response on SETTING_DEFAULT_SETTINGS, stop sensor connection");
                 return;
+            } else if (workingMode == WorkingMode.CHANGING_SENSOR_ADDRESS) {
+                // А если это вероятный ответ на смену адреса датчика, то обновляем переменную текущего адреса
+                if (curSensorAddress != newSensorAddress) {
+                    curSensorAddress = newSensorAddress;
+                    input_sensor_address.setText(Integer.toString(newSensorAddress));
+                    Log.d(LOG_TAG, "apparently response on CHANGING_SENSOR_ADDRESS, change curSensorAddress");
+                    return;
+                }
             }
             Log.d(LOG_TAG, "checkResponse: reqFuncCode == " + reqFuncCode + ". Skip it.");
             return;
@@ -298,8 +307,8 @@ public class MainActivity extends AppCompatActivity {
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
-                    curSensorAddress = curRegDataHighByte;
-                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
+//                    curSensorAddress = curRegDataHighByte;
+//                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
