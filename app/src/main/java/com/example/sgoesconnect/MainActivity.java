@@ -192,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
         middle_calibration.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
+            sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);
         }
@@ -285,7 +286,9 @@ public class MainActivity extends AppCompatActivity {
 
                     curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    sensor_address.setText(Integer.toString(curRegDataHighByte));
+                    sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
+                    curSensorAddress = curRegDataHighByte;
+                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
@@ -521,10 +524,10 @@ public class MainActivity extends AppCompatActivity {
     Button confirm_dialog_cancel;
     Button threshold_1;
     Button threshold_2;
+    Button sensor_address;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
-    TextView sensor_address;
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
@@ -616,6 +619,9 @@ public class MainActivity extends AppCompatActivity {
 
     int newValueOfThreshold1 = 0;
     int newValueOfThreshold2 = 0;
+    
+    int curSensorAddress = 0;
+    int newSensorAddress = 0;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -630,7 +636,7 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
 
-        sensor_address = (TextView) findViewById(R.id.sensor_address);
+        sensor_address = (Button) findViewById(R.id.sensor_address);
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
@@ -802,7 +808,10 @@ public class MainActivity extends AppCompatActivity {
                 // если подключения нет
                 if (!sensorConnection) {
                     // проверяем поле адреса, если адрес корректный
-                    if (checkInputAddress()) {
+                    String inputAddress = input_sensor_address.getText().toString();
+                    if (checkInputAddress(inputAddress, "connection")) {
+                        curSensorAddress = Integer.parseInt(inputAddress);
+                        
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
 
@@ -866,6 +875,7 @@ public class MainActivity extends AppCompatActivity {
                     set_zero.setEnabled(false);
                     main_calibration.setEnabled(false);
                     middle_calibration.setEnabled(false);
+                    sensor_address.setEnabled(false);
                     threshold_1.setEnabled(false);
                     threshold_2.setEnabled(false);
 
@@ -959,6 +969,31 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        sensor_address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
+
+                confirm_dialog_title.setText("Смена адреса датчика:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+
+                confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+                confirm_dialog_input.setText(Integer.toString(curSensorAddress));
+                confirm_dialog_input.setEnabled(true);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
+                sensor_address.setEnabled(false);
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+        
         set_zero = (Button) findViewById(R.id.set_zero);
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -974,6 +1009,7 @@ public class MainActivity extends AppCompatActivity {
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -999,6 +1035,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
                 set_zero.setVisibility(View.INVISIBLE);
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1024,7 +1061,8 @@ public class MainActivity extends AppCompatActivity {
                 set_zero.setVisibility(View.INVISIBLE);
                 
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
-                
+
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1050,6 +1088,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1075,6 +1114,7 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1100,6 +1140,7 @@ public class MainActivity extends AppCompatActivity {
 
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
+                sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
             }
@@ -1109,6 +1150,23 @@ public class MainActivity extends AppCompatActivity {
                 String inputValue = confirm_dialog_input.getText().toString();
 
                 switch (confirmDialogMode) {
+                    case CHANGE_SENSOR_ADDRESS:
+                        if (checkInputAddress(inputValue, "changing")) {
+                            newSensorAddress = Integer.parseInt(inputValue);
+                            // todo: а если значение новое, то его надо сохранить,
+                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+
+                            commandFromButton = Commands.CHANGE_SENSOR_ADDRESS;
+                            Log.d(LOG_TAG, commandFromButton.toString());
+
+                            workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
+                            working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
+
+                            hideConfirmDialog();
+                        }
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+                        
                     case CALIBRATION_HIGH:
                         if (checkInputConcentration(inputValue, "high")) {
                             HIGH_CONCENTRATION = Float.parseFloat(inputValue);
@@ -1215,6 +1273,7 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 confirmDialogMode = ConfirmDialogModes.NONE;
 
+                sensor_address.setEnabled(true);
                 threshold_1.setEnabled(true);
                 threshold_2.setEnabled(true);
             }
@@ -1269,7 +1328,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRequest(Commands _commandFromButton) {
-        byte sensorAddress = (byte)Integer.parseInt(input_sensor_address.getText().toString());
+        byte sensorAddress = (byte)curSensorAddress;
         byte[] reqMsg = {};
         int concInt = 0;
         String concHex = "";
@@ -1379,6 +1438,19 @@ public class MainActivity extends AppCompatActivity {
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
                 break;
+
+            case CHANGE_SENSOR_ADDRESS: // смена адреса датчика
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x00, // firstRegAddressLow
+                        (byte)newSensorAddress, // dataHigh
+                        (byte)0x08  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
         }
 
         // считаем CRC
@@ -1393,22 +1465,38 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "request: " + bytesToHex(request));
     }
 
-    private boolean checkInputAddress() {
+    private boolean checkInputAddress(String inputAddress, String mode) {
         // адрес должен быть в диапазоне 1..247
-        String inputAddress = input_sensor_address.getText().toString();
 
+        // проверка на пустоту
         if (inputAddress.length() == 0) {
-            Log.d(LOG_TAG, "input_sensor_address is empty");
+            Log.d(LOG_TAG, "inputAddress is empty");
             Toast.makeText(getApplicationContext(), "Введите адрес датчика от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (Integer.parseInt(inputAddress) < 1) {
-            Log.d(LOG_TAG, "input_sensor_address < 1");
+        
+        int inputAddressInt = Integer.parseInt(inputAddress);
+        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
+        
+        // проверка на 0
+        if (inputAddressInt < 1) {
+            Log.d(LOG_TAG, "inputAddressInt < 1");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (Integer.parseInt(inputAddress) > 247) {
-            Log.d(LOG_TAG, "input_sensor_address > 247");
+
+        // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
+        if (mode == "changing") {
+            if (inputAddressInt == curSensorAddress) {
+                Log.d(LOG_TAG, "inputAddressInt == curSensorAddress");
+                Toast.makeText(getApplicationContext(), "Введённый адрес совпадает с текущим значением", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        // проверка на максимальное значение
+        if (inputAddressInt > 247) {
+            Log.d(LOG_TAG, "inputAddressInt > 247");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
