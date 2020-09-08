@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
                     curSensorAddress = curRegDataHighByte;
+                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
@@ -1433,6 +1434,19 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x06, // firstRegAddressLow
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold2  // dataLow
+                };
+                // сбрасываем глобальную команду
+                commandFromButton = Commands.NONE;
+                break;
+
+            case CHANGE_SENSOR_ADDRESS: // смена адреса датчика
+                reqMsg = new byte[] {
+                        sensorAddress,
+                        (byte)0x06, // funcCode
+                        (byte)0x00, // firstRegAddressHigh
+                        (byte)0x00, // firstRegAddressLow
+                        (byte)newSensorAddress, // dataHigh
+                        (byte)0x08  // dataLow
                 };
                 // сбрасываем глобальную команду
                 commandFromButton = Commands.NONE;
