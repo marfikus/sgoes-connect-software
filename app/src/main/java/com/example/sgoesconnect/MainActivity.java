@@ -1454,18 +1454,35 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkInputAddress(String inputAddress, String mode) {
         // адрес должен быть в диапазоне 1..247
 
+        // проверка на пустоту
         if (inputAddress.length() == 0) {
             Log.d(LOG_TAG, "inputAddress is empty");
             Toast.makeText(getApplicationContext(), "Введите адрес датчика от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (Integer.parseInt(inputAddress) < 1) {
-            Log.d(LOG_TAG, "inputAddress < 1");
+        
+        int inputAddressInt = Integer.parseInt(inputAddress);
+        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
+        
+        // проверка на 0
+        if (inputAddressInt < 1) {
+            Log.d(LOG_TAG, "inputAddressInt < 1");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (Integer.parseInt(inputAddress) > 247) {
-            Log.d(LOG_TAG, "inputAddress > 247");
+
+        // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
+        if (mode == "changing") {
+            if (inputAddressInt == curSensorAddress) {
+                Log.d(LOG_TAG, "inputAddressInt == curSensorAddress");
+                Toast.makeText(getApplicationContext(), "Введённый адрес совпадает с текущим значением", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        // проверка на максимальное значение
+        if (inputAddressInt > 247) {
+            Log.d(LOG_TAG, "inputAddressInt > 247");
             Toast.makeText(getApplicationContext(), "Адрес датчика может быть от 1 до 247", Toast.LENGTH_LONG).show();
             return false;
         }
