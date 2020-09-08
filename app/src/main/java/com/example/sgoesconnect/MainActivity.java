@@ -1252,6 +1252,17 @@ public class MainActivity extends AppCompatActivity {
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
+                    case SET_DEFAULT_SETTINGS:
+                        commandFromButton = Commands.SET_DEFAULT_SETTINGS;
+                        Log.d(LOG_TAG, commandFromButton.toString());
+
+                        workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
+                        working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
+
+                        hideConfirmDialog();
+                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
+                        break;
+
                     case SET_THRESHOLD_1:
                         if (checkInputThreshold(inputValue, 1)) {
                             newValueOfThreshold1 = Integer.parseInt(inputValue);
