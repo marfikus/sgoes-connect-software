@@ -998,12 +998,16 @@ public class MainActivity extends AppCompatActivity {
                 threshold_2.setEnabled(false);
             }
         });
-        
+
         set_zero = (Button) findViewById(R.id.set_zero);
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 set_zero.setVisibility(View.INVISIBLE);
+                main_calibration.setVisibility(View.INVISIBLE);
+                middle_calibration.setVisibility(View.INVISIBLE);
+                set_defaults.setVisibility(View.INVISIBLE);
+
                 confirm_dialog_title.setText("Установка нуля:");
                 confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("0");
@@ -1011,10 +1015,33 @@ public class MainActivity extends AppCompatActivity {
                 confirm_dialog_input.setVisibility(View.VISIBLE);
                 confirm_dialog_ok.setVisibility(View.VISIBLE);
                 confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+
+                sensor_address.setEnabled(false);
+                threshold_1.setEnabled(false);
+                threshold_2.setEnabled(false);
+            }
+        });
+
+        set_defaults.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_zero.setVisibility(View.INVISIBLE);
                 main_calibration.setVisibility(View.INVISIBLE);
                 middle_calibration.setVisibility(View.INVISIBLE);
                 set_defaults.setVisibility(View.INVISIBLE);
-                confirmDialogMode = ConfirmDialogModes.SET_ZERO;
+
+                confirm_dialog_title.setText("Установка заводских значений:");
+                confirm_dialog_title.setVisibility(View.VISIBLE);
+                confirm_dialog_input.setText("");
+                confirm_dialog_input.setEnabled(false);
+                confirm_dialog_input.setVisibility(View.VISIBLE);
+                confirm_dialog_ok.setVisibility(View.VISIBLE);
+                confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+                confirmDialogMode = ConfirmDialogModes.SET_DEFAULT_SETTINGS;
+
                 sensor_address.setEnabled(false);
                 threshold_1.setEnabled(false);
                 threshold_2.setEnabled(false);
