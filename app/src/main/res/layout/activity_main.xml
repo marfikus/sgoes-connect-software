@@ -101,7 +101,7 @@
         android:id="@+id/set_defaults"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="45dp"
         android:enabled="false"
         android:text="Завод.\nуст."
         app:layout_constraintStart_toStartOf="@+id/middle_calibration"
