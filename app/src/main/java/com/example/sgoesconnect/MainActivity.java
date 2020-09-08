@@ -138,6 +138,16 @@ public class MainActivity extends AppCompatActivity {
         // если код функции в текущем запросе == 06, то не обрабатываем пока эти ответы
         int reqFuncCode = _request[1] & 0xFF;
         if (reqFuncCode == 6) {
+            // если ещё и режим сброса настроек датчика, то вероятно, что это его ответ
+            // (!!! если работаем одновременно только с одним датчиком,
+            // иначе может быть и ответ от другого, тогда надо переделывать, но пока норм !!!)
+            if (workingMode == WorkingMode.SETTING_DEFAULT_SETTINGS) {
+                // В этом случае особо делать нечего, поскольку дефолтного адреса мы не знаем, надо искать.
+                // Поэтому просто отключаемся, имитируя нажатие кнопки Стоп
+                connect_to_sensor.performClick();
+                Log.d(LOG_TAG, "apparently response on SETTING_DEFAULT_SETTINGS, stop sensor connection");
+                return;
+            }
             Log.d(LOG_TAG, "checkResponse: reqFuncCode == " + reqFuncCode + ". Skip it.");
             return;
         }
