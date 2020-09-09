@@ -1260,8 +1260,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private byte getSensorAddress() {
+        switch (appMode) {
+            case WORK:
+                return (byte)curSensorAddress;
+                // break;
+            case SEARCH_SENSORS:
+                // В режиме поиска каждая команда будет с новым адресом датчика
+                // Пока не дошли до правой границы поиска, увеличиваем текущий адрес
+                if (curAddressOfSearchRange <= endAddressOfSearchRange) {
+                    curAddressOfSearchRange = curAddressOfSearchRange + 1;
+                    return (byte)curAddressOfSearchRange;
+                } else {
+                    // Если нет отметки о поиске по кругу, то останавливаемся
+                    // todo: добавить эту проверку, когда будет чекбокс
+                    // if () {
+                        // Имитация нажатия Стоп
+                        connect_to_sensor.performClick();
+                        // Чтобы не было ошибок, отдаём ещё раз тот же адрес
+                        return (byte)curAddressOfSearchRange;
+                    // }
+                }                
+                // break;
+        }
+    }
+    
     private void createRequest(Commands _commandFromButton) {
-        byte sensorAddress = (byte)curSensorAddress;
+        byte sensorAddress = getSensorAddress();
         byte[] reqMsg = {};
         int concInt = 0;
         String concHex = "";
