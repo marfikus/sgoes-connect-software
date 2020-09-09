@@ -1267,21 +1267,21 @@ public class MainActivity extends AppCompatActivity {
                 // break;
             case SEARCH_SENSORS:
                 // В режиме поиска каждая команда будет с новым адресом датчика
-                // Пока не дошли до правой границы поиска, увеличиваем текущий адрес
-                if (curAddressOfSearchRange <= endAddressOfSearchRange) {
-                    curAddressOfSearchRange = curAddressOfSearchRange + 1;
-                    return (byte)curAddressOfSearchRange;
-                } else {
+                // Если дошли до конца диапазона поиска
+                if (curAddressOfSearchRange > endAddressOfSearchRange) {
                     // Если нет отметки о поиске по кругу, то останавливаемся
                     // todo: добавить эту проверку, когда будет чекбокс
                     // if () {
                         // Имитация нажатия Стоп
                         connect_to_sensor.performClick();
                         // Чтобы не было ошибок, отдаём ещё раз тот же адрес
-                        return (byte)curAddressOfSearchRange;
+                        return (byte)curAddressOfSearchRange - 1;
                     // }
-                }                
-                // break;
+                }
+                // Иначе отдаём новый адрес
+                address = curAddressOfSearchRange;
+                curAddressOfSearchRange = curAddressOfSearchRange + 1;
+                return (byte)address;
         }
     }
     
