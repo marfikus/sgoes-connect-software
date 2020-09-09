@@ -1106,7 +1106,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
                             working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1123,7 +1123,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1140,7 +1140,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CALIBRATION_MIDDLE;
                             working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1152,7 +1152,7 @@ public class MainActivity extends AppCompatActivity {
                         workingMode = WorkingMode.SETTING_ZERO;
                         working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
 
-                        hideConfirmDialog();
+                        hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
@@ -1163,7 +1163,7 @@ public class MainActivity extends AppCompatActivity {
                         workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
                         working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
 
-                        hideConfirmDialog();
+                        hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
@@ -1177,7 +1177,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1192,7 +1192,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_2;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1204,34 +1204,7 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                confirm_dialog_input.setVisibility(View.INVISIBLE);
-                confirm_dialog_title.setVisibility(View.INVISIBLE);
-
-                main_calibration.setVisibility(View.VISIBLE);
-                middle_calibration.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.VISIBLE);
-                set_defaults.setVisibility(View.VISIBLE);
-
-//                switch (confirmDialogMode) {
-//                    case CALIBRATION_HIGH:
-//                        main_calibration.setVisibility(View.VISIBLE);
-//                        set_zero.setVisibility(View.VISIBLE);
-//                        break;
-
-//                    case SET_ZERO:
-                        // todo: в этом блоке всё то же самое что и в блоке выше,
-                        //  можно объединить, но чёта пока не придумал как лучше))
-//                        set_zero.setVisibility(View.VISIBLE);
-//                        main_calibration.setVisibility(View.VISIBLE);
-//                        break;
-//                }
-                confirmDialogMode = ConfirmDialogModes.NONE;
-
-                sensor_address.setEnabled(true);
-                threshold_1.setEnabled(true);
-                threshold_2.setEnabled(true);
+                hideConfirmDialog("cancel");
             }
         });
         
@@ -1253,29 +1226,34 @@ public class MainActivity extends AppCompatActivity {
         threshold_2.setEnabled(false);
     }
 
-    public void hideConfirmDialog() {
+    public void hideConfirmDialog(String mode) {
         confirm_dialog_ok.setVisibility(View.INVISIBLE);
         confirm_dialog_cancel.setVisibility(View.INVISIBLE);
         confirm_dialog_input.setVisibility(View.INVISIBLE);
         confirm_dialog_title.setVisibility(View.INVISIBLE);
+        
+        if (mode == "ok") {
+            set_zero.setEnabled(false);
+            main_calibration.setEnabled(false);
+            middle_calibration.setEnabled(false);
+            set_defaults.setEnabled(false);
+            
+            sensor_address.setEnabled(false);
+            threshold_1.setEnabled(false);
+            threshold_2.setEnabled(false);
+            
+        } else if (mode == "cancel") {
+            sensor_address.setEnabled(true);
+            threshold_1.setEnabled(true);
+            threshold_2.setEnabled(true);            
+        }
 
-        main_calibration.setEnabled(false);
-        main_calibration.setVisibility(View.VISIBLE);
-
-        middle_calibration.setEnabled(false);
-        middle_calibration.setVisibility(View.VISIBLE);
-
-        set_zero.setEnabled(false);
         set_zero.setVisibility(View.VISIBLE);
-
-        set_defaults.setEnabled(false);
+        main_calibration.setVisibility(View.VISIBLE);
+        middle_calibration.setVisibility(View.VISIBLE);
         set_defaults.setVisibility(View.VISIBLE);
 
         confirmDialogMode = ConfirmDialogModes.NONE;
-
-        sensor_address.setEnabled(false);
-        threshold_1.setEnabled(false);
-        threshold_2.setEnabled(false);
     }
 
     // TODO rename to sensorConnectionCycle()
