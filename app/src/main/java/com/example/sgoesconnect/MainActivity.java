@@ -312,8 +312,6 @@ public class MainActivity extends AppCompatActivity {
 
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-//                  выводим в соответсвующее поле
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
                     break;
 
                 case 1: // старший байт: тип прибора, младший: флаги состояния
@@ -372,21 +370,6 @@ public class MainActivity extends AppCompatActivity {
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-//                    Log.d(LOG_TAG, "curRegDataFull_float: " + Float.intBitsToFloat(curRegDataFull));
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataFull));
-
-//                    float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
-//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
-
-//                    float fCurRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
-//                    Log.d(LOG_TAG, "fCurRegDataHighByte: " + fCurRegDataHighByte);
-//                    float fCurRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
-//                    Log.d(LOG_TAG, "fCurRegDataLowByte: " + fCurRegDataLowByte);
-//                    float fCurRegDataFull = fCurRegDataHighByte + fCurRegDataLowByte;
-//                    Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
-//                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
-
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
@@ -404,50 +387,37 @@ public class MainActivity extends AppCompatActivity {
                 case 4: // D - приведённое
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 5: // напряжение опорного канала
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 6: // напряжение рабочего канала
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 7: // D - приборное
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 8: // температура, показания встроенного терморезистора
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 9: // серийный номер прибора
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     serial_number.setText(Integer.toString(curRegDataFull));
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
 //                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
 
                     float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     fCurRegDataFull = fCurRegDataFull / 10;
@@ -469,8 +439,6 @@ public class MainActivity extends AppCompatActivity {
                     // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
                 case 12: // старший байт: тип прибора, младший: модификация прибора
@@ -478,8 +446,6 @@ public class MainActivity extends AppCompatActivity {
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
                     curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
-
-//                    gas_level_nkpr.setText(Integer.toString(curRegDataHighByte));
                     break;
 
             }
@@ -1314,8 +1280,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)0x00  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
                 
             case SET_DEFAULT_SETTINGS: // установка заводских значений
@@ -1327,8 +1291,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)0x01  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
@@ -1354,8 +1316,6 @@ public class MainActivity extends AppCompatActivity {
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
@@ -1381,8 +1341,6 @@ public class MainActivity extends AppCompatActivity {
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case SET_THRESHOLD_1: // установка порога 1
@@ -1394,8 +1352,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold1  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case SET_THRESHOLD_2: // установка порога 2
@@ -1407,8 +1363,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold2  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CHANGE_SENSOR_ADDRESS: // смена адреса датчика
@@ -1420,11 +1374,12 @@ public class MainActivity extends AppCompatActivity {
                         (byte)newSensorAddress, // dataHigh
                         (byte)0x08  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
         }
 
+        // сбрасываем глобальную команду
+        commandFromButton = Commands.NONE;
+        
         // считаем CRC
         byte[] reqCRC = calcCRC(reqMsg);
 
