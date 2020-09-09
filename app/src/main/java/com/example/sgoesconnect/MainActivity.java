@@ -657,7 +657,6 @@ public class MainActivity extends AppCompatActivity {
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
 
 
-        sensor_address = (Button) findViewById(R.id.sensor_address);
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
@@ -669,10 +668,22 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
-        middle_calibration = (Button) findViewById(R.id.middle_calibration);
-        set_defaults = (Button) findViewById(R.id.set_defaults);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
+        bt_connect = (Button) findViewById(R.id.bt_connect);
+        connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        sensor_address = (Button) findViewById(R.id.sensor_address);
+        set_zero = (Button) findViewById(R.id.set_zero);
+        main_calibration = (Button) findViewById(R.id.main_calibration);
+        middle_calibration = (Button) findViewById(R.id.middle_calibration);
+        threshold_1 = (Button) findViewById(R.id.threshold_1);
+        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        set_defaults = (Button) findViewById(R.id.set_defaults);
+        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
+        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
+        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
+        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -680,8 +691,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
             }
         });
-
-        bt_connect = (Button) findViewById(R.id.bt_connect);
+        
         bt_connect.setOnClickListener(new View.OnClickListener() {
             // Процедура приведения кнопки в исходное состояние
             public void resetBtConnectButton() {
@@ -822,8 +832,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1004,8 +1013,7 @@ public class MainActivity extends AppCompatActivity {
                 showConfirmDialog();
             }
         });
-
-        set_zero = (Button) findViewById(R.id.set_zero);
+        
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1030,9 +1038,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        main_calibration = (Button) findViewById(R.id.main_calibration);
-        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
-        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1059,7 +1064,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        threshold_1 = (Button) findViewById(R.id.threshold_1);
         threshold_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1073,7 +1077,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        threshold_2 = (Button) findViewById(R.id.threshold_2);
         threshold_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1087,7 +1090,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1200,7 +1202,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
