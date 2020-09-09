@@ -899,14 +899,8 @@ public class MainActivity extends AppCompatActivity {
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
 
-                    // Блокируем кнопки команд:
-                    set_zero.setEnabled(false);
-                    main_calibration.setEnabled(false);
-                    middle_calibration.setEnabled(false);
-                    set_defaults.setEnabled(false);
-                    sensor_address.setEnabled(false);
-                    threshold_1.setEnabled(false);
-                    threshold_2.setEnabled(false);
+                    // Блокируем кнопки команд, скрываем диалог подтверждения:
+                    hideConfirmDialog("ok");
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
