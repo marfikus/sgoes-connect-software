@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                     numBytes = inStream.read(buffer);
                     byte[] data = Arrays.copyOf(buffer, numBytes);
                     //Log.d(LOG_TAG, "data:" + bytesToHex(data));
-                    myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
+                    myHandler.obtainMessage(SENSOR_DATA, numBytes, -1, data).sendToTarget();
                 } catch (IOException e) {
                     break;
                 }
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 copyBtSocket.close();
             } catch (IOException e) {
-                myError("Fatal Error", "не могу закрыть сокет" + e.getMessage() + ".");
+                myError("Fatal Error", "Can't close a socket" + e.getMessage() + ".");
             }
         }
 
@@ -562,9 +562,11 @@ public class MainActivity extends AppCompatActivity {
     TextView confirm_dialog_title;
     EditText input_sensor_address;
     Handler myHandler;
-    final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
-    final int sensorConnectionThreadData = 2;
-    final int btSocketConnectionThreadData = 3;
+    
+    final int SENSOR_DATA = 1;
+    final int SENSOR_CONNECTION_THREAD_DATA = 2;
+    final int BT_SOCKET_CONNECTION_THREAD_DATA = 3;
+    
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -652,12 +654,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-
-//        byte[] respMsg = hexStringToByteArray("0103030105A0");
-//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
-
-
-        sensor_address = (Button) findViewById(R.id.sensor_address);
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
@@ -669,10 +665,22 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
-        middle_calibration = (Button) findViewById(R.id.middle_calibration);
-        set_defaults = (Button) findViewById(R.id.set_defaults);
 
         bt_settings = (Button) findViewById(R.id.bt_settings);
+        bt_connect = (Button) findViewById(R.id.bt_connect);
+        connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        sensor_address = (Button) findViewById(R.id.sensor_address);
+        set_zero = (Button) findViewById(R.id.set_zero);
+        main_calibration = (Button) findViewById(R.id.main_calibration);
+        middle_calibration = (Button) findViewById(R.id.middle_calibration);
+        threshold_1 = (Button) findViewById(R.id.threshold_1);
+        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        set_defaults = (Button) findViewById(R.id.set_defaults);
+        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
+        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
+        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
+        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -680,8 +688,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS));
             }
         });
-
-        bt_connect = (Button) findViewById(R.id.bt_connect);
+        
         bt_connect.setOnClickListener(new View.OnClickListener() {
             // Процедура приведения кнопки в исходное состояние
             public void resetBtConnectButton() {
@@ -781,7 +788,7 @@ public class MainActivity extends AppCompatActivity {
                                     btSocketCountConnectionTries = btSocketCountConnectionTries + 1;
                                     // Шлём сообщение главному потоку (кроме последней попытки)
                                     if (btSocketCountConnectionTries < MAX_BT_SOCKET_CONNECTION_TRIES) {
-                                        myHandler.obtainMessage(btSocketConnectionThreadData, "trying_to_connect_again").sendToTarget();
+                                        myHandler.obtainMessage(BT_SOCKET_CONNECTION_THREAD_DATA, "trying_to_connect_again").sendToTarget();
                                     }
                                 }
 
@@ -796,7 +803,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                             }
-                            myHandler.obtainMessage(btSocketConnectionThreadData, "btSocketConnectionThread is finished").sendToTarget();
+                            myHandler.obtainMessage(BT_SOCKET_CONNECTION_THREAD_DATA, "btSocketConnectionThread is finished").sendToTarget();
                         }
                     };
                     btSocketConnectionThread = new Thread(btConnection);
@@ -822,8 +829,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -905,22 +911,13 @@ public class MainActivity extends AppCompatActivity {
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }
-
-//                String outputHexString = "010300000001840A";
-//                String outputHexString = "010300010001840A";
-//                String outputHexString = "010300000002840A";
-//                String outputHexString = "01030000000C45CF";
-//                request = hexStringToByteArray(outputHexString);
-//                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
-
-                //myThread.sendData(request);
             }
         });
 
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
-                    case arduinoData:
+                    case SENSOR_DATA:
                         // если остановили подключение, то не надо уже обрабатывать ответ
                         // (предотвращение "инерции")
                         if (!sensorConnection) {
@@ -948,13 +945,13 @@ public class MainActivity extends AppCompatActivity {
 
                         checkResponse(request, response);
                         break;
-                    case sensorConnectionThreadData:
+                    case SENSOR_CONNECTION_THREAD_DATA:
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
                         if (msg.obj == ConnectionState.NO_RESPONSE) {
                             sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
                         }
                         break;
-                    case btSocketConnectionThreadData:
+                    case BT_SOCKET_CONNECTION_THREAD_DATA:
                         Log.d(LOG_TAG, "msg.obj: " + msg.obj);
 
                         // Сообщаем о новой попытке подключения
@@ -995,215 +992,93 @@ public class MainActivity extends AppCompatActivity {
         sensor_address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Смена адреса датчика:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curSensorAddress));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
-
-        set_zero = (Button) findViewById(R.id.set_zero);
+        
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка нуля:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("0");
                 confirm_dialog_input.setEnabled(false);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
         set_defaults.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка заводских значений:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("");
                 confirm_dialog_input.setEnabled(false);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_DEFAULT_SETTINGS;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
-        main_calibration = (Button) findViewById(R.id.main_calibration);
-        confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
-        confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.INVISIBLE);
+                
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
         
         middle_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-                
                 confirm_dialog_title.setText("Дополнительная калибровка:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(MIDDLE_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
 
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-                
-                set_zero.setVisibility(View.INVISIBLE);
-                
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
-        threshold_1 = (Button) findViewById(R.id.threshold_1);
         threshold_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка порога 1:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curValueOfThreshold1));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
-        threshold_2 = (Button) findViewById(R.id.threshold_2);
         threshold_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка порога 2:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curValueOfThreshold2));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
-        confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
-
-            public void hideConfirmDialog() {
-                confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                confirm_dialog_input.setVisibility(View.INVISIBLE);
-                confirm_dialog_title.setVisibility(View.INVISIBLE);
-
-                main_calibration.setEnabled(false);
-                main_calibration.setVisibility(View.VISIBLE);
-
-                middle_calibration.setEnabled(false);
-                middle_calibration.setVisibility(View.VISIBLE);                
-
-                set_zero.setEnabled(false);
-                set_zero.setVisibility(View.VISIBLE);
-
-                set_defaults.setEnabled(false);
-                set_defaults.setVisibility(View.VISIBLE);
-
-                confirmDialogMode = ConfirmDialogModes.NONE;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
-            }
-
             @Override
             public void onClick(View v) {
                 String inputValue = confirm_dialog_input.getText().toString();
@@ -1221,7 +1096,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
                             working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1238,7 +1113,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1255,7 +1130,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.CALIBRATION_MIDDLE;
                             working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1267,7 +1142,7 @@ public class MainActivity extends AppCompatActivity {
                         workingMode = WorkingMode.SETTING_ZERO;
                         working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
 
-                        hideConfirmDialog();
+                        hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
@@ -1278,7 +1153,7 @@ public class MainActivity extends AppCompatActivity {
                         workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
                         working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
 
-                        hideConfirmDialog();
+                        hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
@@ -1292,7 +1167,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1307,7 +1182,7 @@ public class MainActivity extends AppCompatActivity {
                             workingMode = WorkingMode.SETTING_THRESHOLD_2;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
 
-                            hideConfirmDialog();
+                            hideConfirmDialog("ok");
                         }
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
@@ -1315,42 +1190,61 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                confirm_dialog_input.setVisibility(View.INVISIBLE);
-                confirm_dialog_title.setVisibility(View.INVISIBLE);
-
-                main_calibration.setVisibility(View.VISIBLE);
-                middle_calibration.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.VISIBLE);
-                set_defaults.setVisibility(View.VISIBLE);
-
-//                switch (confirmDialogMode) {
-//                    case CALIBRATION_HIGH:
-//                        main_calibration.setVisibility(View.VISIBLE);
-//                        set_zero.setVisibility(View.VISIBLE);
-//                        break;
-
-//                    case SET_ZERO:
-                        // todo: в этом блоке всё то же самое что и в блоке выше,
-                        //  можно объединить, но чёта пока не придумал как лучше))
-//                        set_zero.setVisibility(View.VISIBLE);
-//                        main_calibration.setVisibility(View.VISIBLE);
-//                        break;
-//                }
-                confirmDialogMode = ConfirmDialogModes.NONE;
-
-                sensor_address.setEnabled(true);
-                threshold_1.setEnabled(true);
-                threshold_2.setEnabled(true);
+                hideConfirmDialog("cancel");
             }
         });
         
     }
+
+    public void showConfirmDialog() {
+        set_zero.setVisibility(View.INVISIBLE);
+        main_calibration.setVisibility(View.INVISIBLE);
+        middle_calibration.setVisibility(View.INVISIBLE);
+        set_defaults.setVisibility(View.INVISIBLE);
+        
+        confirm_dialog_title.setVisibility(View.VISIBLE);
+        confirm_dialog_input.setVisibility(View.VISIBLE);
+        confirm_dialog_ok.setVisibility(View.VISIBLE);
+        confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+        sensor_address.setEnabled(false);
+        threshold_1.setEnabled(false);
+        threshold_2.setEnabled(false);
+    }
+
+    public void hideConfirmDialog(String mode) {
+        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+        confirm_dialog_input.setVisibility(View.INVISIBLE);
+        confirm_dialog_title.setVisibility(View.INVISIBLE);
+        
+        if (mode == "ok") {
+            set_zero.setEnabled(false);
+            main_calibration.setEnabled(false);
+            middle_calibration.setEnabled(false);
+            set_defaults.setEnabled(false);
+            
+            sensor_address.setEnabled(false);
+            threshold_1.setEnabled(false);
+            threshold_2.setEnabled(false);
+            
+        } else if (mode == "cancel") {
+            sensor_address.setEnabled(true);
+            threshold_1.setEnabled(true);
+            threshold_2.setEnabled(true);            
+        }
+
+        set_zero.setVisibility(View.VISIBLE);
+        main_calibration.setVisibility(View.VISIBLE);
+        middle_calibration.setVisibility(View.VISIBLE);
+        set_defaults.setVisibility(View.VISIBLE);
+
+        confirmDialogMode = ConfirmDialogModes.NONE;
+    }
+
     // TODO rename to sensorConnectionCycle()
     private void startSensorConnection() {
         Log.d(LOG_TAG, "Start Sensor Connection");
@@ -1372,7 +1266,7 @@ public class MainActivity extends AppCompatActivity {
                 connectionState = ConnectionState.NO_RESPONSE;
                 Log.d(LOG_TAG, "connectionState: " + connectionState.toString());
                 // сообщаем главному потоку, чтобы он сменил статус на экране
-                myHandler.obtainMessage(sensorConnectionThreadData, connectionState).sendToTarget();
+                myHandler.obtainMessage(SENSOR_CONNECTION_THREAD_DATA, connectionState).sendToTarget();
             }
 
             // ждём некоторое время
@@ -1687,21 +1581,6 @@ public class MainActivity extends AppCompatActivity {
 
         return true;
     }
-
-/*    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (myThread.status_outStream() != null) {
-            myThread.cancel();
-        }
-
-        try {
-            btSocket.close();
-        } catch (IOException e2) {
-            myError("Fatal Error", "В onPause() Не могу закрыть сокет" + e2.getMessage() + ".");
-        }
-    }*/
 
     //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
