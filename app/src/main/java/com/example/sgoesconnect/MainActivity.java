@@ -995,26 +995,13 @@ public class MainActivity extends AppCompatActivity {
         sensor_address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Смена адреса датчика:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curSensorAddress));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
@@ -1022,48 +1009,24 @@ public class MainActivity extends AppCompatActivity {
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка нуля:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("0");
                 confirm_dialog_input.setEnabled(false);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_ZERO;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
         set_defaults.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка заводских значений:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
                 confirm_dialog_input.setText("");
                 confirm_dialog_input.setEnabled(false);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_DEFAULT_SETTINGS;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
@@ -1073,52 +1036,26 @@ public class MainActivity extends AppCompatActivity {
         main_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
                 confirm_dialog_title.setText("Основная калибровка:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-                set_zero.setVisibility(View.INVISIBLE);
+                
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
         
         middle_calibration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-                
                 confirm_dialog_title.setText("Дополнительная калибровка:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                 confirm_dialog_input.setText(Float.toString(MIDDLE_CONCENTRATION));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
 
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-                
-                set_zero.setVisibility(View.INVISIBLE);
-                
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
@@ -1126,26 +1063,13 @@ public class MainActivity extends AppCompatActivity {
         threshold_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка порога 1:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curValueOfThreshold1));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_1;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
@@ -1153,57 +1077,18 @@ public class MainActivity extends AppCompatActivity {
         threshold_2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                set_zero.setVisibility(View.INVISIBLE);
-                main_calibration.setVisibility(View.INVISIBLE);
-                middle_calibration.setVisibility(View.INVISIBLE);
-                set_defaults.setVisibility(View.INVISIBLE);
-
                 confirm_dialog_title.setText("Установка порога 2:");
-                confirm_dialog_title.setVisibility(View.VISIBLE);
-
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curValueOfThreshold2));
                 confirm_dialog_input.setEnabled(true);
-                confirm_dialog_input.setVisibility(View.VISIBLE);
-
-                confirm_dialog_ok.setVisibility(View.VISIBLE);
-                confirm_dialog_cancel.setVisibility(View.VISIBLE);
-
+                
                 confirmDialogMode = ConfirmDialogModes.SET_THRESHOLD_2;
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
+                showConfirmDialog();
             }
         });
 
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_ok.setOnClickListener(new View.OnClickListener() {
-
-            public void hideConfirmDialog() {
-                confirm_dialog_ok.setVisibility(View.INVISIBLE);
-                confirm_dialog_cancel.setVisibility(View.INVISIBLE);
-                confirm_dialog_input.setVisibility(View.INVISIBLE);
-                confirm_dialog_title.setVisibility(View.INVISIBLE);
-
-                main_calibration.setEnabled(false);
-                main_calibration.setVisibility(View.VISIBLE);
-
-                middle_calibration.setEnabled(false);
-                middle_calibration.setVisibility(View.VISIBLE);                
-
-                set_zero.setEnabled(false);
-                set_zero.setVisibility(View.VISIBLE);
-
-                set_defaults.setEnabled(false);
-                set_defaults.setVisibility(View.VISIBLE);
-
-                confirmDialogMode = ConfirmDialogModes.NONE;
-
-                sensor_address.setEnabled(false);
-                threshold_1.setEnabled(false);
-                threshold_2.setEnabled(false);
-            }
-
             @Override
             public void onClick(View v) {
                 String inputValue = confirm_dialog_input.getText().toString();
@@ -1351,6 +1236,48 @@ public class MainActivity extends AppCompatActivity {
         });
         
     }
+
+    public void showConfirmDialog() {
+        set_zero.setVisibility(View.INVISIBLE);
+        main_calibration.setVisibility(View.INVISIBLE);
+        middle_calibration.setVisibility(View.INVISIBLE);
+        set_defaults.setVisibility(View.INVISIBLE);
+        
+        confirm_dialog_title.setVisibility(View.VISIBLE);
+        confirm_dialog_input.setVisibility(View.VISIBLE);
+        confirm_dialog_ok.setVisibility(View.VISIBLE);
+        confirm_dialog_cancel.setVisibility(View.VISIBLE);
+
+        sensor_address.setEnabled(false);
+        threshold_1.setEnabled(false);
+        threshold_2.setEnabled(false);
+    }
+
+    public void hideConfirmDialog() {
+        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+        confirm_dialog_input.setVisibility(View.INVISIBLE);
+        confirm_dialog_title.setVisibility(View.INVISIBLE);
+
+        main_calibration.setEnabled(false);
+        main_calibration.setVisibility(View.VISIBLE);
+
+        middle_calibration.setEnabled(false);
+        middle_calibration.setVisibility(View.VISIBLE);
+
+        set_zero.setEnabled(false);
+        set_zero.setVisibility(View.VISIBLE);
+
+        set_defaults.setEnabled(false);
+        set_defaults.setVisibility(View.VISIBLE);
+
+        confirmDialogMode = ConfirmDialogModes.NONE;
+
+        sensor_address.setEnabled(false);
+        threshold_1.setEnabled(false);
+        threshold_2.setEnabled(false);
+    }
+
     // TODO rename to sensorConnectionCycle()
     private void startSensorConnection() {
         Log.d(LOG_TAG, "Start Sensor Connection");
