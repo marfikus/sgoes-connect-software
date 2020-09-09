@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 copyBtSocket.close();
             } catch (IOException e) {
-                myError("Fatal Error", "не могу закрыть сокет" + e.getMessage() + ".");
+                myError("Fatal Error", "Can't close a socket" + e.getMessage() + ".");
             }
         }
 
@@ -654,11 +654,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-
-//        byte[] respMsg = hexStringToByteArray("0103030105A0");
-//        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
-
-
         serial_number = (TextView) findViewById(R.id.serial_number);
         sensor_type = (TextView) findViewById(R.id.sensor_type);
         gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
@@ -916,15 +911,6 @@ public class MainActivity extends AppCompatActivity {
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }
-
-//                String outputHexString = "010300000001840A";
-//                String outputHexString = "010300010001840A";
-//                String outputHexString = "010300000002840A";
-//                String outputHexString = "01030000000C45CF";
-//                request = hexStringToByteArray(outputHexString);
-//                Log.d(LOG_TAG, "outputHexString: " + outputHexString);
-
-                //myThread.sendData(request);
             }
         });
 
@@ -1595,21 +1581,6 @@ public class MainActivity extends AppCompatActivity {
 
         return true;
     }
-
-/*    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (myThread.status_outStream() != null) {
-            myThread.cancel();
-        }
-
-        try {
-            btSocket.close();
-        } catch (IOException e2) {
-            myError("Fatal Error", "В onPause() Не могу закрыть сокет" + e2.getMessage() + ".");
-        }
-    }*/
 
     //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
