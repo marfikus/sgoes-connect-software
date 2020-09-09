@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                     numBytes = inStream.read(buffer);
                     byte[] data = Arrays.copyOf(buffer, numBytes);
                     //Log.d(LOG_TAG, "data:" + bytesToHex(data));
-                    myHandler.obtainMessage(arduinoData, numBytes, -1, data).sendToTarget();
+                    myHandler.obtainMessage(SENSOR_DATA, numBytes, -1, data).sendToTarget();
                 } catch (IOException e) {
                     break;
                 }
@@ -562,9 +562,11 @@ public class MainActivity extends AppCompatActivity {
     TextView confirm_dialog_title;
     EditText input_sensor_address;
     Handler myHandler;
-    final int arduinoData = 1; // TODO: 08.04.2020 константа заглавными буквами
-    final int sensorConnectionThreadData = 2;
-    final int btSocketConnectionThreadData = 3;
+    
+    final int SENSOR_DATA = 1;
+    final int SENSOR_CONNECTION_THREAD_DATA = 2;
+    final int BT_SOCKET_CONNECTION_THREAD_DATA = 3;
+    
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -791,7 +793,7 @@ public class MainActivity extends AppCompatActivity {
                                     btSocketCountConnectionTries = btSocketCountConnectionTries + 1;
                                     // Шлём сообщение главному потоку (кроме последней попытки)
                                     if (btSocketCountConnectionTries < MAX_BT_SOCKET_CONNECTION_TRIES) {
-                                        myHandler.obtainMessage(btSocketConnectionThreadData, "trying_to_connect_again").sendToTarget();
+                                        myHandler.obtainMessage(BT_SOCKET_CONNECTION_THREAD_DATA, "trying_to_connect_again").sendToTarget();
                                     }
                                 }
 
@@ -806,7 +808,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                             }
-                            myHandler.obtainMessage(btSocketConnectionThreadData, "btSocketConnectionThread is finished").sendToTarget();
+                            myHandler.obtainMessage(BT_SOCKET_CONNECTION_THREAD_DATA, "btSocketConnectionThread is finished").sendToTarget();
                         }
                     };
                     btSocketConnectionThread = new Thread(btConnection);
@@ -929,7 +931,7 @@ public class MainActivity extends AppCompatActivity {
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
-                    case arduinoData:
+                    case SENSOR_DATA:
                         // если остановили подключение, то не надо уже обрабатывать ответ
                         // (предотвращение "инерции")
                         if (!sensorConnection) {
@@ -957,13 +959,13 @@ public class MainActivity extends AppCompatActivity {
 
                         checkResponse(request, response);
                         break;
-                    case sensorConnectionThreadData:
+                    case SENSOR_CONNECTION_THREAD_DATA:
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
                         if (msg.obj == ConnectionState.NO_RESPONSE) {
                             sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
                         }
                         break;
-                    case btSocketConnectionThreadData:
+                    case BT_SOCKET_CONNECTION_THREAD_DATA:
                         Log.d(LOG_TAG, "msg.obj: " + msg.obj);
 
                         // Сообщаем о новой попытке подключения
@@ -1278,7 +1280,7 @@ public class MainActivity extends AppCompatActivity {
                 connectionState = ConnectionState.NO_RESPONSE;
                 Log.d(LOG_TAG, "connectionState: " + connectionState.toString());
                 // сообщаем главному потоку, чтобы он сменил статус на экране
-                myHandler.obtainMessage(sensorConnectionThreadData, connectionState).sendToTarget();
+                myHandler.obtainMessage(SENSOR_CONNECTION_THREAD_DATA, connectionState).sendToTarget();
             }
 
             // ждём некоторое время
