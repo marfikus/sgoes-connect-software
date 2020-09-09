@@ -565,6 +565,14 @@ public class MainActivity extends AppCompatActivity {
         CONNECTED
     }
     BtDeviceConnectionState btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
+    
+    enum AppMode { // режимы работы приложения
+        WORK, // рабочий режим
+        SEARCH_SENSORS, // режим поиска датчиков
+        SETTINGS // режим настроек
+    }
+    AppMode appMode = AppMode.WORK;
+    
     enum WorkingMode { // режим работы
         READING_DATA,
         SETTING_ZERO,
