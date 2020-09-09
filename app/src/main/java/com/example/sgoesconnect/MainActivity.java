@@ -1314,8 +1314,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)0x00  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
                 
             case SET_DEFAULT_SETTINGS: // установка заводских значений
@@ -1327,8 +1325,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)0x01  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
@@ -1354,8 +1350,6 @@ public class MainActivity extends AppCompatActivity {
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
@@ -1381,8 +1375,6 @@ public class MainActivity extends AppCompatActivity {
                         concBytes[0], // dataHigh
                         concBytes[1]  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case SET_THRESHOLD_1: // установка порога 1
@@ -1394,8 +1386,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold1  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case SET_THRESHOLD_2: // установка порога 2
@@ -1407,8 +1397,6 @@ public class MainActivity extends AppCompatActivity {
                         (byte)0x00, // dataHigh
                         (byte)newValueOfThreshold2  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
 
             case CHANGE_SENSOR_ADDRESS: // смена адреса датчика
@@ -1420,11 +1408,12 @@ public class MainActivity extends AppCompatActivity {
                         (byte)newSensorAddress, // dataHigh
                         (byte)0x08  // dataLow
                 };
-                // сбрасываем глобальную команду
-                commandFromButton = Commands.NONE;
                 break;
         }
 
+        // сбрасываем глобальную команду
+        commandFromButton = Commands.NONE;
+        
         // считаем CRC
         byte[] reqCRC = calcCRC(reqMsg);
 
