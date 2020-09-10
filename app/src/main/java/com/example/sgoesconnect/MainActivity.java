@@ -205,6 +205,13 @@ public class MainActivity extends AppCompatActivity {
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
         working_mode.setText("РЕЖИМ: ОПРОС");
+
+        if (appMode == AppMode.SEARCH_SENSORS) {
+            // добавляем текущий адрес поиска в массив найденных датчиков и выходим
+            
+            return;
+        }
+
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
@@ -833,6 +840,7 @@ public class MainActivity extends AppCompatActivity {
                                 startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
                                 endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
                                 curAddressOfSearchRange = startAddressOfSearchRange;
+                                curSensorAddress = startAddressOfSearchRange;
                             } else {
                                 return;
                             }
@@ -1291,32 +1299,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private byte getSensorAddress() {
-        switch (appMode) {
-            case WORK:
-                return (byte)curSensorAddress;
-                // break;
-            case SEARCH_SENSORS:
-                // В режиме поиска каждая команда будет с новым адресом датчика
-                // Если дошли до конца диапазона поиска
-                if (curAddressOfSearchRange > endAddressOfSearchRange) {
-                    // Если выбран чекбокс о поиске по кругу, 
-                    // то отдаём первый адрес диапазона и увеличиваем текущий.
-                    // todo: добавить эту проверку, когда будет чекбокс
-                    boolean checkbox = false; // temp!!!
-                    if (checkbox) {
-                        curAddressOfSearchRange = startAddressOfSearchRange + 1;
-                        return (byte)startAddressOfSearchRange;
-                    }
+        if (appMode == AppMode.SEARCH_SENSORS) {
+            // В режиме поиска каждая команда будет с новым адресом датчика
+            // Если дошли до конца диапазона поиска
+            if (curAddressOfSearchRange > endAddressOfSearchRange) {
+                // Если выбран чекбокс о поиске по кругу, 
+                // то отдаём первый адрес диапазона и увеличиваем текущий.
+                // todo: добавить эту проверку, когда будет чекбокс
+                boolean checkbox = false; // temp!!!
+                if (checkbox) {
+                    curAddressOfSearchRange = startAddressOfSearchRange + 1;
+                    curSensorAddress = startAddressOfSearchRange;
+                } else {
                     // Иначе останавливаемся, имитируя нажатие Стоп
                     connect_to_sensor.performClick();
                     // Чтобы не было ошибок, отдаём ещё раз тот же адрес
-                    return (byte)curAddressOfSearchRange - 1;
+                    curSensorAddress = curAddressOfSearchRange - 1;
                 }
+            } else {
                 // Иначе отдаём новый адрес и увеличиваем текущий в диапазоне
-                address = curAddressOfSearchRange;
+                curSensorAddress = curAddressOfSearchRange;
                 curAddressOfSearchRange = curAddressOfSearchRange + 1;
-                return (byte)address;
+            }
         }
+        return (byte)curSensorAddress;
     }
     
     private void createRequest(Commands _commandFromButton) {
