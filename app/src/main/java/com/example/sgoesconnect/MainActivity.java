@@ -620,6 +620,8 @@ public class MainActivity extends AppCompatActivity {
     int curSensorAddress = 0;
     int newSensorAddress = 0;
     
+    String inputSearchStart = "";
+    String inputSearchEnd = "";
     int startAddressOfSearchRange = 0;
     int endAddressOfSearchRange = 0;
     int curAddressOfSearchRange = 0;
@@ -825,8 +827,8 @@ public class MainActivity extends AppCompatActivity {
                             break;
 
                         case SEARCH_SENSORS:
-                            String inputSearchStart = input_search_start.getText().toString();
-                            String inputSearchEnd = input_search_end.getText().toString();
+                            inputSearchStart = input_search_start.getText().toString();
+                            inputSearchEnd = input_search_end.getText().toString();
                             if ((checkInputAddress(inputSearchStart, "searchStart")) && (checkInputAddress(inputSearchEnd, "searchEnd"))) {
                                 startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
                                 endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
@@ -1486,6 +1488,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // сравнение с другой границей диапазона
+        if (mode == "searchStart") {
+            int inputSearchEndInt = Integer.parseInt(inputSearchEnd);
+            if (inputAddressInt >= inputSearchEndInt) {
+                Log.d(LOG_TAG, "inputSearchStart >= inputSearchEnd");
+                Toast.makeText(getApplicationContext(), "Адрес начала поиска должен быть меньше адреса окончания", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } else if (mode == "searchEnd") {
+            int inputSearchStartInt = Integer.parseInt(inputSearchStart);
+            if (inputAddressInt <= inputSearchStartInt) {
+                Log.d(LOG_TAG, "inputSearchStart <= inputSearchStart");
+                Toast.makeText(getApplicationContext(), "Адрес окончания поиска должен быть больше адреса начала", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } 
+        
         // проверка на максимальное значение
         if (inputAddressInt > 247) {
             Log.d(LOG_TAG, "inputAddressInt > 247");
