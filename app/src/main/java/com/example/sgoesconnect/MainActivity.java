@@ -619,6 +619,10 @@ public class MainActivity extends AppCompatActivity {
     
     int curSensorAddress = 0;
     int newSensorAddress = 0;
+    
+    int startAddressOfSearchRange = 0;
+    int endAddressOfSearchRange = 0;
+    int curAddressOfSearchRange = 0;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -1269,16 +1273,20 @@ public class MainActivity extends AppCompatActivity {
                 // В режиме поиска каждая команда будет с новым адресом датчика
                 // Если дошли до конца диапазона поиска
                 if (curAddressOfSearchRange > endAddressOfSearchRange) {
-                    // Если нет отметки о поиске по кругу, то останавливаемся
+                    // Если выбран чекбокс о поиске по кругу, 
+                    // то отдаём первый адрес диапазона и увеличиваем текущий.
                     // todo: добавить эту проверку, когда будет чекбокс
-                    // if () {
-                        // Имитация нажатия Стоп
-                        connect_to_sensor.performClick();
-                        // Чтобы не было ошибок, отдаём ещё раз тот же адрес
-                        return (byte)curAddressOfSearchRange - 1;
-                    // }
+                    boolean checkbox = false; // temp!!!
+                    if (checkbox) {
+                        curAddressOfSearchRange = startAddressOfSearchRange + 1;
+                        return (byte)startAddressOfSearchRange;
+                    }
+                    // Иначе останавливаемся, имитируя нажатие Стоп
+                    connect_to_sensor.performClick();
+                    // Чтобы не было ошибок, отдаём ещё раз тот же адрес
+                    return (byte)curAddressOfSearchRange - 1;
                 }
-                // Иначе отдаём новый адрес
+                // Иначе отдаём новый адрес и увеличиваем текущий в диапазоне
                 address = curAddressOfSearchRange;
                 curAddressOfSearchRange = curAddressOfSearchRange + 1;
                 return (byte)address;
