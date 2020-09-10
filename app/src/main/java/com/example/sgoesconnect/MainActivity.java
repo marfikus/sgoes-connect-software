@@ -813,10 +813,34 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // если подключения нет
                 if (!sensorConnection) {
+                    switch (appMode) {
+                        case WORK:
+                            // проверяем поле адреса, если адрес корректный
+                            String inputAddress = input_sensor_address.getText().toString();
+                            if (checkInputAddress(inputAddress, "connection")) {
+                                curSensorAddress = Integer.parseInt(inputAddress);
+                            } else {
+                                return;
+                            }
+                            break;
+
+                        case SEARCH_SENSORS:
+                            String inputSearchStart = input_search_start.getText().toString();
+                            String inputSearchEnd = input_search_end.getText().toString();
+                            if ((checkInputAddress(inputSearchStart, "searchStart")) && (checkInputAddress(inputSearchEnd, "searchEnd"))) {
+                                startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
+                                endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
+                                curAddressOfSearchRange = startAddressOfSearchRange;
+                            } else {
+                                return;
+                            }
+                            break;
+                    }
+
                     // проверяем поле адреса, если адрес корректный
-                    String inputAddress = input_sensor_address.getText().toString();
-                    if (checkInputAddress(inputAddress, "connection")) {
-                        curSensorAddress = Integer.parseInt(inputAddress);
+                    // String inputAddress = input_sensor_address.getText().toString();
+                    // if (checkInputAddress(inputAddress, "connection")) {
+                        // curSensorAddress = Integer.parseInt(inputAddress);
                         
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
@@ -855,7 +879,7 @@ public class MainActivity extends AppCompatActivity {
 
                         // Запускаем поток
                         sensorConnectionThread.start();
-                    }
+                    // }
                 } else {
                     // останавливаем поток отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
