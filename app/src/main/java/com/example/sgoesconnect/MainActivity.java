@@ -936,9 +936,8 @@ public class MainActivity extends AppCompatActivity {
                             break;
 
                         case SEARCH_SENSORS:
-//                            todo: раскоментить когда будут готовы
-//                            inputSearchStart = input_search_start.getText().toString();
-//                            inputSearchEnd = input_search_end.getText().toString();
+                           inputSearchStart = input_search_start.getText().toString();
+                           inputSearchEnd = input_search_end.getText().toString();
                             if ((checkInputAddress(inputSearchStart, "searchStart")) &&
                                     (checkInputAddress(inputSearchEnd, "searchEnd"))) {
                                 startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
@@ -950,14 +949,20 @@ public class MainActivity extends AppCompatActivity {
                             }
                             break;
                     }
-
+                    // todo: поправить отступ, когда уже проверю, что норм работает
+                    
                     // проверяем поле адреса, если адрес корректный
                     // String inputAddress = input_sensor_address.getText().toString();
                     // if (checkInputAddress(inputAddress, "connection")) {
                         // curSensorAddress = Integer.parseInt(inputAddress);
                         
+                        rg_app_modes.setEnabled(false);
+                        
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
+                        
+                        input_search_start.setEnabled(false);
+                        input_search_end.setEnabled(false);
 
                         // сбрасываем команду с кнопок в дефолтное состояние
                         // (на случай, если команда сменилась, а потом остановили соединение)
@@ -1012,8 +1017,13 @@ public class MainActivity extends AppCompatActivity {
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ---");
 
+                    rg_app_modes.setEnabled(true);
+                    
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
+                    
+                    input_search_start.setEnabled(true);
+                    input_search_end.setEnabled(true);
 
                     // Блокируем кнопки команд, скрываем диалог подтверждения:
                     hideConfirmDialog("ok");
