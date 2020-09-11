@@ -525,6 +525,17 @@ public class MainActivity extends AppCompatActivity {
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
+    
+    TextView title_sensor_connection;
+    TextView title_serial_number;
+    TextView title_sensor_type;
+    TextView title_gas_level_nkpr;
+    TextView title_gas_level_volume;
+    TextView title_gas_level_current;
+    TextView title_fault_relay;
+    TextView title_relay_1;
+    TextView title_relay_2;
+    
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
@@ -539,6 +550,18 @@ public class MainActivity extends AppCompatActivity {
     EditText input_sensor_address;
     RadioGroup rg_app_modes;
     Handler myHandler;
+    
+    TextView title_search_range;
+    TextView title_search_start;
+    EditText input_search_start;
+    TextView title_search_end;
+    EditText input_search_end;
+    
+    TextView title_cur_search_address;
+    TextView cur_search_address;
+    
+    TextView title_finded_sensors;
+    TextView finded_sensors;
     
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
@@ -652,6 +675,7 @@ public class MainActivity extends AppCompatActivity {
         bt_connect = (Button) findViewById(R.id.bt_connect);
         RadioGroup rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
         
+        // work screen
         title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
         connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
@@ -696,6 +720,19 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        
+        // search screen
+        title_search_range = (TextView) findViewById(R.id.title_search_range);
+        title_search_start = (TextView) findViewById(R.id.title_search_start);
+        input_search_start = (EditText) findViewById(R.id.input_search_start);
+        title_search_end = (TextView) findViewById(R.id.title_search_end);
+        input_search_end = (EditText) findViewById(R.id.input_search_end);
+        
+        title_cur_search_address = (TextView) findViewById(R.id.title_cur_search_address);
+        cur_search_address = (TextView) findViewById(R.id.cur_search_address);
+        
+        title_finded_sensors = (TextView) findViewById(R.id.title_finded_sensors);
+        finded_sensors = (TextView) findViewById(R.id.finded_sensors);
         
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
