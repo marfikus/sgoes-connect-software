@@ -855,8 +855,11 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.rb_work:
-                        Toast.makeText(getApplicationContext(), "Первый переключатель",
-                                Toast.LENGTH_SHORT).show();
+                        // Toast.makeText(getApplicationContext(), "Первый переключатель",
+                                // Toast.LENGTH_SHORT).show();
+                        
+                        showWorkScreen();
+                        
                         break;
                     case R.id.rb_search:
                         // Toast.makeText(getApplicationContext(), "Режим поиска датчиков",
@@ -1268,9 +1271,59 @@ public class MainActivity extends AppCompatActivity {
         
     }
 
+    public void showWorkScreen() {
+        // todo: а здесь возвращать кнопку обратно
+        // connect_to_sensor
+
+        title_sensor_connection.setVisibility(View.VISIBLE);
+        input_sensor_address.setVisibility(View.VISIBLE);
+        
+        sensor_connection_state.setVisibility(View.VISIBLE);
+        working_mode.setVisibility(View.VISIBLE);
+        
+        sensor_address.setVisibility(View.VISIBLE);
+        
+        title_serial_number.setVisibility(View.VISIBLE);
+        serial_number.setVisibility(View.VISIBLE);
+        
+        title_sensor_type.setVisibility(View.VISIBLE);
+        sensor_type.setVisibility(View.VISIBLE);
+        
+        title_gas_level_nkpr.setVisibility(View.VISIBLE);
+        gas_level_nkpr.setVisibility(View.VISIBLE);
+        
+        title_gas_level_volume.setVisibility(View.VISIBLE);
+        gas_level_volume.setVisibility(View.VISIBLE);
+        
+        title_gas_level_current.setVisibility(View.VISIBLE);
+        gas_level_current.setVisibility(View.VISIBLE);
+        
+        set_zero.setVisibility(View.VISIBLE);
+        main_calibration.setVisibility(View.VISIBLE);
+        middle_calibration.setVisibility(View.VISIBLE);
+        threshold_1.setVisibility(View.VISIBLE);
+        threshold_2.setVisibility(View.VISIBLE);
+        
+        title_fault_relay.setVisibility(View.VISIBLE);
+        fault_relay.setVisibility(View.VISIBLE);
+        
+        title_relay_1.setVisibility(View.VISIBLE);
+        relay_1.setVisibility(View.VISIBLE);
+        
+        title_relay_2.setVisibility(View.VISIBLE);
+        relay_2.setVisibility(View.VISIBLE);
+        
+        set_defaults.setVisibility(View.VISIBLE);
+
+        confirm_dialog_title.setVisibility(View.VISIBLE);
+        confirm_dialog_input.setVisibility(View.VISIBLE);
+        confirm_dialog_ok.setVisibility(View.VISIBLE);
+        confirm_dialog_cancel.setVisibility(View.VISIBLE);
+    }
+
     public void hideWorkScreen() {
-        // эту кнопку надо сдвинуть наверное...
-        // connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        // todo: эту кнопку надо сдвинуть
+        // connect_to_sensor
 
         title_sensor_connection.setVisibility(View.INVISIBLE);
         input_sensor_address.setVisibility(View.INVISIBLE);
