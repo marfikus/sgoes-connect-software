@@ -208,7 +208,9 @@ public class MainActivity extends AppCompatActivity {
         working_mode.setText("РЕЖИМ: ОПРОС");
 
         if (appMode == AppMode.SEARCH_SENSORS) {
-            // добавляем текущий адрес поиска в массив найденных датчиков и выходим
+            // добавляем текущий адрес поиска в массив найденных датчиков
+            findedSensors.add(curSensorAddress);
+            // увеличиваем счётчики на экране
             
             return;
         }
@@ -634,6 +636,8 @@ public class MainActivity extends AppCompatActivity {
     int startAddressOfSearchRange = 0;
     int endAddressOfSearchRange = 0;
     int curAddressOfSearchRange = 0;
+    
+    Set<Integer> findedSensors = new LinkedHashSet<>();
 
     @SuppressLint("HandlerLeak")
     @Override
