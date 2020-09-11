@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -534,6 +535,7 @@ public class MainActivity extends AppCompatActivity {
     TextView working_mode;
     TextView confirm_dialog_title;
     EditText input_sensor_address;
+    RadioGroup rg_app_modes;
     Handler myHandler;
     
     final int SENSOR_DATA = 1;
@@ -667,6 +669,7 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
+        RadioGroup rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
         
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -816,7 +819,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        
+
+        rg_app_modes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case -1:
+                        Toast.makeText(getApplicationContext(), "Ничего не выбрано",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.rb_work:
+                        Toast.makeText(getApplicationContext(), "Первый переключатель",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.rb_search:
+                        Toast.makeText(getApplicationContext(), "Второй переключатель",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.rb_settings:
+                        Toast.makeText(getApplicationContext(), "Третий переключатель",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        });
+
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -834,9 +864,11 @@ public class MainActivity extends AppCompatActivity {
                             break;
 
                         case SEARCH_SENSORS:
-                            inputSearchStart = input_search_start.getText().toString();
-                            inputSearchEnd = input_search_end.getText().toString();
-                            if ((checkInputAddress(inputSearchStart, "searchStart")) && (checkInputAddress(inputSearchEnd, "searchEnd"))) {
+//                            todo: раскоментить когда будут готовы
+//                            inputSearchStart = input_search_start.getText().toString();
+//                            inputSearchEnd = input_search_end.getText().toString();
+                            if ((checkInputAddress(inputSearchStart, "searchStart")) &&
+                                    (checkInputAddress(inputSearchEnd, "searchEnd"))) {
                                 startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
                                 endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
                                 curAddressOfSearchRange = startAddressOfSearchRange;

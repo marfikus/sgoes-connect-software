@@ -23,10 +23,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:text="Подключение к датчику:"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bt_settings" />
+        app:layout_constraintTop_toBottomOf="@+id/rg_app_modes" />
 
     <EditText
         android:id="@+id/input_sensor_address"
@@ -49,8 +49,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:text="Старт"
         android:enabled="false"
+        android:text="Старт"
         app:layout_constraintBottom_toBottomOf="@+id/input_sensor_address"
         app:layout_constraintStart_toEndOf="@+id/input_sensor_address" />
 
@@ -364,5 +364,37 @@
         android:text="1 порог:\nnull"
         app:layout_constraintStart_toStartOf="@+id/title_gas_level_current"
         app:layout_constraintTop_toBottomOf="@+id/title_gas_level_current" />
+
+    <RadioGroup
+        android:id="@+id/rg_app_modes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_settings">
+
+        <RadioButton
+            android:id="@+id/rb_work"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Работа" />
+
+        <RadioButton
+            android:id="@+id/rb_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Поиск" />
+
+        <RadioButton
+            android:id="@+id/rb_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Настройки" />
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
