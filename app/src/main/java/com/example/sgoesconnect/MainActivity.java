@@ -647,33 +647,55 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-        serial_number = (TextView) findViewById(R.id.serial_number);
-        sensor_type = (TextView) findViewById(R.id.sensor_type);
-        gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
-        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
-        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
-        fault_relay = (TextView) findViewById(R.id.fault_relay);
-        relay_1 = (TextView) findViewById(R.id.relay_1);
-        relay_2 = (TextView) findViewById(R.id.relay_2);
-        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
-        working_mode = (TextView) findViewById(R.id.working_mode);
-        input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
-
+        
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
+        RadioGroup rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
+        
+        title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
+        input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
         connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
+        working_mode = (TextView) findViewById(R.id.working_mode);
+        
         sensor_address = (Button) findViewById(R.id.sensor_address);
+        
+        title_serial_number = (TextView) findViewById(R.id.title_serial_number);
+        serial_number = (TextView) findViewById(R.id.serial_number);
+        
+        title_sensor_type = (TextView) findViewById(R.id.title_sensor_type);
+        sensor_type = (TextView) findViewById(R.id.sensor_type);
+        
+        title_gas_level_nkpr = (TextView) findViewById(R.id.title_gas_level_nkpr);
+        gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
+        
+        title_gas_level_volume = (TextView) findViewById(R.id.title_gas_level_volume);
+        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
+        
+        title_gas_level_current = (TextView) findViewById(R.id.title_gas_level_current);
+        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
+        
         set_zero = (Button) findViewById(R.id.set_zero);
         main_calibration = (Button) findViewById(R.id.main_calibration);
         middle_calibration = (Button) findViewById(R.id.middle_calibration);
         threshold_1 = (Button) findViewById(R.id.threshold_1);
-        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        threshold_2 = (Button) findViewById(R.id.threshold_2);        
+        
+        title_fault_relay = (TextView) findViewById(R.id.title_fault_relay);
+        fault_relay = (TextView) findViewById(R.id.fault_relay);
+        
+        title_relay_1 = (TextView) findViewById(R.id.title_relay_1);
+        relay_1 = (TextView) findViewById(R.id.relay_1);
+        
+        title_relay_2 = (TextView) findViewById(R.id.title_relay_2);
+        relay_2 = (TextView) findViewById(R.id.relay_2);
+        
         set_defaults = (Button) findViewById(R.id.set_defaults);
+
         confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
         confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
-        RadioGroup rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
         
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -837,12 +859,17 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.rb_search:
-                        Toast.makeText(getApplicationContext(), "Второй переключатель",
-                                Toast.LENGTH_SHORT).show();
+                        // Toast.makeText(getApplicationContext(), "Режим поиска датчиков",
+                                // Toast.LENGTH_SHORT).show();
+                        
+                        hideWorkScreen();
+                        
                         break;
                     case R.id.rb_settings:
-                        Toast.makeText(getApplicationContext(), "Третий переключатель",
-                                Toast.LENGTH_SHORT).show();
+                        // Toast.makeText(getApplicationContext(), "Третий переключатель",
+                                // Toast.LENGTH_SHORT).show();
+                        
+                        hideWorkScreen();
                         break;
 
                     default:
@@ -1241,6 +1268,56 @@ public class MainActivity extends AppCompatActivity {
         
     }
 
+    public void hideWorkScreen() {
+        // эту кнопку надо сдвинуть наверное...
+        // connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+
+        title_sensor_connection.setVisibility(View.INVISIBLE);
+        input_sensor_address.setVisibility(View.INVISIBLE);
+        
+        sensor_connection_state.setVisibility(View.INVISIBLE);
+        working_mode.setVisibility(View.INVISIBLE);
+        
+        sensor_address.setVisibility(View.INVISIBLE);
+        
+        title_serial_number.setVisibility(View.INVISIBLE);
+        serial_number.setVisibility(View.INVISIBLE);
+        
+        title_sensor_type.setVisibility(View.INVISIBLE);
+        sensor_type.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_nkpr.setVisibility(View.INVISIBLE);
+        gas_level_nkpr.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_volume.setVisibility(View.INVISIBLE);
+        gas_level_volume.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_current.setVisibility(View.INVISIBLE);
+        gas_level_current.setVisibility(View.INVISIBLE);
+        
+        set_zero.setVisibility(View.INVISIBLE);
+        main_calibration.setVisibility(View.INVISIBLE);
+        middle_calibration.setVisibility(View.INVISIBLE);
+        threshold_1.setVisibility(View.INVISIBLE);
+        threshold_2.setVisibility(View.INVISIBLE);
+        
+        title_fault_relay.setVisibility(View.INVISIBLE);
+        fault_relay.setVisibility(View.INVISIBLE);
+        
+        title_relay_1.setVisibility(View.INVISIBLE);
+        relay_1.setVisibility(View.INVISIBLE);
+        
+        title_relay_2.setVisibility(View.INVISIBLE);
+        relay_2.setVisibility(View.INVISIBLE);
+        
+        set_defaults.setVisibility(View.INVISIBLE);
+
+        confirm_dialog_title.setVisibility(View.INVISIBLE);
+        confirm_dialog_input.setVisibility(View.INVISIBLE);
+        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+    }
+    
     public void showConfirmDialog() {
         set_zero.setVisibility(View.INVISIBLE);
         main_calibration.setVisibility(View.INVISIBLE);
