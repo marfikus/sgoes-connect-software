@@ -1370,13 +1370,19 @@ public class MainActivity extends AppCompatActivity {
 
         switch (_commandFromButton) {
             case NONE: // команды с кнопок нет, обычный запрос данных
+            // обычно запрашиваем 0x0C (12) регистров, 
+            // но если в режиме поиска, то достаточно и одного 
+            byte numRegisters = (byte)0x0C;
+            if (appMode == AppMode.SEARCH_SENSORS) {
+                numRegisters = (byte)0x01;
+            }
                 reqMsg = new byte[] {
                         sensorAddress,
                         (byte)0x03, // funcCode
                         (byte)0x00, // firstRegAddressHigh
                         (byte)0x00, // firstRegAddressLow
                         (byte)0x00, // numRegistersHigh
-                        (byte)0x0C  // numRegistersLow
+                        numRegisters  // numRegistersLow
                 };
                 break;
                 
