@@ -894,7 +894,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.rb_work:
                         // Toast.makeText(getApplicationContext(), "Первый переключатель",
                                 // Toast.LENGTH_SHORT).show();
-                        
+                        hideSearchScreen();
                         showWorkScreen();
                         
                         break;
@@ -903,13 +903,14 @@ public class MainActivity extends AppCompatActivity {
                                 // Toast.LENGTH_SHORT).show();
                         
                         hideWorkScreen();
-                        
+                        showSearchScreen();
                         break;
                     case R.id.rb_settings:
                         // Toast.makeText(getApplicationContext(), "Третий переключатель",
                                 // Toast.LENGTH_SHORT).show();
                         
                         hideWorkScreen();
+                        hideSearchScreen();
                         break;
 
                     default:
@@ -1406,6 +1407,34 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_input.setVisibility(View.INVISIBLE);
         confirm_dialog_ok.setVisibility(View.INVISIBLE);
         confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+    }
+
+    public void showSearchScreen() {
+        title_search_range.setVisibility(View.VISIBLE);
+        title_search_start.setVisibility(View.VISIBLE);
+        input_search_start.setVisibility(View.VISIBLE);
+        title_search_end.setVisibility(View.VISIBLE);
+        input_search_end.setVisibility(View.VISIBLE);
+        
+        title_cur_search_address.setVisibility(View.VISIBLE);
+        cur_search_address.setVisibility(View.VISIBLE);
+        
+        title_finded_sensors.setVisibility(View.VISIBLE);
+        finded_sensors.setVisibility(View.VISIBLE);
+    }
+
+    public void hideSearchScreen() {
+        title_search_range.setVisibility(View.INVISIBLE);
+        title_search_start.setVisibility(View.INVISIBLE);
+        input_search_start.setVisibility(View.INVISIBLE);
+        title_search_end.setVisibility(View.INVISIBLE);
+        input_search_end.setVisibility(View.INVISIBLE);
+        
+        title_cur_search_address.setVisibility(View.INVISIBLE);
+        cur_search_address.setVisibility(View.INVISIBLE);
+        
+        title_finded_sensors.setVisibility(View.INVISIBLE);
+        finded_sensors.setVisibility(View.INVISIBLE);
     }
     
     public void showConfirmDialog() {
