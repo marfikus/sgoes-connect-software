@@ -902,7 +902,9 @@ public class MainActivity extends AppCompatActivity {
                                 // Toast.LENGTH_SHORT).show();
                         hideSearchScreen();
                         showWorkScreen();
-                        
+                        hideConfirmDialog("ok");
+
+                        appMode = AppMode.WORK;
                         break;
                     case R.id.rb_search:
                         // Toast.makeText(getApplicationContext(), "Режим поиска датчиков",
@@ -910,6 +912,8 @@ public class MainActivity extends AppCompatActivity {
                         
                         hideWorkScreen();
                         showSearchScreen();
+
+                        appMode = AppMode.SEARCH_SENSORS;
                         break;
                     case R.id.rb_settings:
                         // Toast.makeText(getApplicationContext(), "Третий переключатель",
@@ -917,6 +921,8 @@ public class MainActivity extends AppCompatActivity {
                         
                         hideWorkScreen();
                         hideSearchScreen();
+
+                        appMode = AppMode.SETTINGS;
                         break;
 
                     default:
@@ -969,7 +975,8 @@ public class MainActivity extends AppCompatActivity {
                         
                         input_sensor_address.setEnabled(false);
                         connect_to_sensor.setText("Стоп");
-                        
+                        search_sensors.setText("Стоп");
+
                         input_search_start.setEnabled(false);
                         input_search_end.setEnabled(false);
 
@@ -1029,13 +1036,16 @@ public class MainActivity extends AppCompatActivity {
                     rg_app_modes.setEnabled(true);
                     
                     connect_to_sensor.setText("Старт");
+                    search_sensors.setText("Старт");
                     input_sensor_address.setEnabled(true);
                     
                     input_search_start.setEnabled(true);
                     input_search_end.setEnabled(true);
 
-                    // Блокируем кнопки команд, скрываем диалог подтверждения:
-                    hideConfirmDialog("ok");
+                    if (appMode == AppMode.WORK) {
+                        // Блокируем кнопки команд, скрываем диалог подтверждения:
+                        hideConfirmDialog("ok");
+                    }
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
@@ -1127,6 +1137,11 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case SEARCH_SENSORS_DATA:
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+                        if (msg.obj.toString() == "stop_search") {
+                            connect_to_sensor.performClick();
+                            break;
+                        }
+
                         cur_search_address.setText(msg.obj.toString());
                         break;
                 }
@@ -1386,10 +1401,10 @@ public class MainActivity extends AppCompatActivity {
         
         set_defaults.setVisibility(View.VISIBLE);
 
-        confirm_dialog_title.setVisibility(View.VISIBLE);
-        confirm_dialog_input.setVisibility(View.VISIBLE);
-        confirm_dialog_ok.setVisibility(View.VISIBLE);
-        confirm_dialog_cancel.setVisibility(View.VISIBLE);
+//        confirm_dialog_title.setVisibility(View.VISIBLE);
+//        confirm_dialog_input.setVisibility(View.VISIBLE);
+//        confirm_dialog_ok.setVisibility(View.VISIBLE);
+//        confirm_dialog_cancel.setVisibility(View.VISIBLE);
     }
 
     public void hideWorkScreen() {
@@ -1435,10 +1450,10 @@ public class MainActivity extends AppCompatActivity {
         
         set_defaults.setVisibility(View.INVISIBLE);
 
-        confirm_dialog_title.setVisibility(View.INVISIBLE);
-        confirm_dialog_input.setVisibility(View.INVISIBLE);
-        confirm_dialog_ok.setVisibility(View.INVISIBLE);
-        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+//        confirm_dialog_title.setVisibility(View.INVISIBLE);
+//        confirm_dialog_input.setVisibility(View.INVISIBLE);
+//        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+//        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
     }
 
     public void showSearchScreen() {
@@ -1579,8 +1594,10 @@ public class MainActivity extends AppCompatActivity {
                     curAddressOfSearchRange = startAddressOfSearchRange + 1;
                     curSensorAddress = startAddressOfSearchRange;
                 } else {
-                    // Иначе останавливаемся, имитируя нажатие Стоп
-                    connect_to_sensor.performClick();
+                    // Иначе останавливаемся,
+                    // сообщаем главному потоку, чтобы он остановил поиск (нажал Стоп)
+                    myHandler.obtainMessage(SEARCH_SENSORS_DATA, "stop_search").sendToTarget();
+
                     // Чтобы не было ошибок, отдаём ещё раз тот же адрес
                     curSensorAddress = curAddressOfSearchRange - 1;
                 }
