@@ -15,10 +15,13 @@ import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -569,6 +572,7 @@ public class MainActivity extends AppCompatActivity {
     TextView title_finded_sensors;
     TextView finded_sensors;
     Button search_sensors;
+    Spinner address_list;
 
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
@@ -669,7 +673,8 @@ public class MainActivity extends AppCompatActivity {
     int curAddressOfSearchRange = 0;
 
     LinkedHashSet<Integer> findedSensors = new LinkedHashSet<>();
-
+    ArrayAdapter<String> address_list_adapter;
+    
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -745,6 +750,28 @@ public class MainActivity extends AppCompatActivity {
         title_finded_sensors = (TextView) findViewById(R.id.title_finded_sensors);
         finded_sensors = (TextView) findViewById(R.id.finded_sensors);
         search_sensors = (Button) findViewById(R.id.search_sensors);
+
+        address_list = (Spinner) findViewById(R.id.address_list);
+
+        String[] data = {"one", "two", "three", "four", "five"};
+
+        address_list_adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
+        address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        address_list.setAdapter(address_list_adapter);
+        address_list.setPrompt("Адреса:");
+        address_list.setSelection(0);
+        address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                // показываем позиция нажатого элемента
+                Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
 
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -971,7 +998,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             break;
                     }
-                    
+
                     rg_app_modes.setEnabled(false);
                     rb_work.setEnabled(false);
                     rb_search.setEnabled(false);
