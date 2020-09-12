@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.ToDoubleBiFunction;
 import java.util.zip.Checksum;
@@ -211,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             // добавляем текущий адрес поиска в массив найденных датчиков
             findedSensors.add(curSensorAddress);
             // увеличиваем счётчики на экране
-            
+            finded_sensors.setText(Integer.toString(findedSensors.size()));
             return;
         }
 
@@ -659,8 +661,8 @@ public class MainActivity extends AppCompatActivity {
     int startAddressOfSearchRange = 0;
     int endAddressOfSearchRange = 0;
     int curAddressOfSearchRange = 0;
-    
-    Set<Integer> findedSensors = new LinkedHashSet<>();
+
+    LinkedHashSet<Integer> findedSensors = new LinkedHashSet<>();
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -673,7 +675,7 @@ public class MainActivity extends AppCompatActivity {
         
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
-        RadioGroup rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
+        rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
         
         // work screen
         title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
@@ -944,6 +946,9 @@ public class MainActivity extends AppCompatActivity {
                                 endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
                                 curAddressOfSearchRange = startAddressOfSearchRange;
                                 curSensorAddress = startAddressOfSearchRange;
+
+                                findedSensors.clear();
+                                finded_sensors.setText("0");
                             } else {
                                 return;
                             }
@@ -1564,6 +1569,8 @@ public class MainActivity extends AppCompatActivity {
                 curAddressOfSearchRange = curAddressOfSearchRange + 1;
             }
         }
+        
+        cur_search_address.setText(Integer.toString(curSensorAddress));
         return (byte)curSensorAddress;
     }
     
