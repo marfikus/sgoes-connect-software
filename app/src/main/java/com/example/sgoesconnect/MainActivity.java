@@ -569,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
     final int BT_SOCKET_CONNECTION_THREAD_DATA = 3;
+    final int SEARCH_SENSORS_DATA = 4;
 
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
@@ -1124,6 +1125,10 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
                         }
                         break;
+                    case SEARCH_SENSORS_DATA:
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+                        cur_search_address.setText(msg.obj.toString());
+                        break;
                 }
             }
         };
@@ -1584,9 +1589,10 @@ public class MainActivity extends AppCompatActivity {
                 curSensorAddress = curAddressOfSearchRange;
                 curAddressOfSearchRange = curAddressOfSearchRange + 1;
             }
+            // сообщаем главному потоку, чтобы он изменил текущий адрес на экране
+            myHandler.obtainMessage(SEARCH_SENSORS_DATA, curSensorAddress).sendToTarget();
         }
-        
-        cur_search_address.setText(Integer.toString(curSensorAddress));
+
         return (byte)curSensorAddress;
     }
     
