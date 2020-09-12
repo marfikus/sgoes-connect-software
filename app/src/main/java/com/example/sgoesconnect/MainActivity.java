@@ -527,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
-    
+
     TextView title_sensor_connection;
     TextView title_serial_number;
     TextView title_sensor_type;
@@ -537,7 +537,7 @@ public class MainActivity extends AppCompatActivity {
     TextView title_fault_relay;
     TextView title_relay_1;
     TextView title_relay_2;
-    
+
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
@@ -552,23 +552,24 @@ public class MainActivity extends AppCompatActivity {
     EditText input_sensor_address;
     RadioGroup rg_app_modes;
     Handler myHandler;
-    
+
     TextView title_search_range;
     TextView title_search_start;
     EditText input_search_start;
     TextView title_search_end;
     EditText input_search_end;
-    
+
     TextView title_cur_search_address;
     TextView cur_search_address;
-    
+
     TextView title_finded_sensors;
     TextView finded_sensors;
-    
+    Button search_sensors;
+
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
     final int BT_SOCKET_CONNECTION_THREAD_DATA = 3;
-    
+
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -722,20 +723,21 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
-        
+
         // search screen
         title_search_range = (TextView) findViewById(R.id.title_search_range);
         title_search_start = (TextView) findViewById(R.id.title_search_start);
         input_search_start = (EditText) findViewById(R.id.input_search_start);
         title_search_end = (TextView) findViewById(R.id.title_search_end);
         input_search_end = (EditText) findViewById(R.id.input_search_end);
-        
+
         title_cur_search_address = (TextView) findViewById(R.id.title_cur_search_address);
         cur_search_address = (TextView) findViewById(R.id.cur_search_address);
-        
+
         title_finded_sensors = (TextView) findViewById(R.id.title_finded_sensors);
         finded_sensors = (TextView) findViewById(R.id.finded_sensors);
-        
+        search_sensors = (Button) findViewById(R.id.search_sensors);
+
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1325,12 +1327,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showWorkScreen() {
-        // todo: а здесь возвращать кнопку обратно
-        // connect_to_sensor
-
         title_sensor_connection.setVisibility(View.VISIBLE);
         input_sensor_address.setVisibility(View.VISIBLE);
-        
+
+        connect_to_sensor.setVisibility(View.VISIBLE);
+
         sensor_connection_state.setVisibility(View.VISIBLE);
         working_mode.setVisibility(View.VISIBLE);
         
@@ -1375,12 +1376,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void hideWorkScreen() {
-        // todo: эту кнопку надо сдвинуть
-        // connect_to_sensor
-
         title_sensor_connection.setVisibility(View.INVISIBLE);
         input_sensor_address.setVisibility(View.INVISIBLE);
-        
+
+        connect_to_sensor.setVisibility(View.INVISIBLE);
+
         sensor_connection_state.setVisibility(View.INVISIBLE);
         working_mode.setVisibility(View.INVISIBLE);
         
@@ -1436,6 +1436,8 @@ public class MainActivity extends AppCompatActivity {
         
         title_finded_sensors.setVisibility(View.VISIBLE);
         finded_sensors.setVisibility(View.VISIBLE);
+
+        search_sensors.setVisibility(View.VISIBLE);
     }
 
     public void hideSearchScreen() {
@@ -1450,6 +1452,8 @@ public class MainActivity extends AppCompatActivity {
         
         title_finded_sensors.setVisibility(View.INVISIBLE);
         finded_sensors.setVisibility(View.INVISIBLE);
+
+        search_sensors.setVisibility(View.INVISIBLE);
     }
     
     public void showConfirmDialog() {
