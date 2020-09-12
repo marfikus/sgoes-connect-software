@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -551,6 +552,9 @@ public class MainActivity extends AppCompatActivity {
     TextView confirm_dialog_title;
     EditText input_sensor_address;
     RadioGroup rg_app_modes;
+    RadioButton rb_work;
+    RadioButton rb_search;
+    RadioButton rb_settings;
     Handler myHandler;
 
     TextView title_search_range;
@@ -678,7 +682,10 @@ public class MainActivity extends AppCompatActivity {
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
         rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
-        
+        rb_work = (RadioButton) findViewById(R.id.rb_work);
+        rb_search = (RadioButton) findViewById(R.id.rb_search);
+        rb_settings = (RadioButton) findViewById(R.id.rb_settings);
+
         // work screen
         title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
         input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
@@ -964,57 +971,53 @@ public class MainActivity extends AppCompatActivity {
                             }
                             break;
                     }
-                    // todo: поправить отступ, когда уже проверю, что норм работает
                     
-                    // проверяем поле адреса, если адрес корректный
-                    // String inputAddress = input_sensor_address.getText().toString();
-                    // if (checkInputAddress(inputAddress, "connection")) {
-                        // curSensorAddress = Integer.parseInt(inputAddress);
-                        
-                        rg_app_modes.setEnabled(false);
-                        
-                        input_sensor_address.setEnabled(false);
-                        connect_to_sensor.setText("Стоп");
-                        search_sensors.setText("Стоп");
+                    rg_app_modes.setEnabled(false);
+                    rb_work.setEnabled(false);
+                    rb_search.setEnabled(false);
+                    rb_settings.setEnabled(false);
 
-                        input_search_start.setEnabled(false);
-                        input_search_end.setEnabled(false);
+                    input_sensor_address.setEnabled(false);
+                    connect_to_sensor.setText("Стоп");
+                    search_sensors.setText("Стоп");
 
-                        // сбрасываем команду с кнопок в дефолтное состояние
-                        // (на случай, если команда сменилась, а потом остановили соединение)
-                        commandFromButton = Commands.NONE;
+                    input_search_start.setEnabled(false);
+                    input_search_end.setEnabled(false);
 
-                        // устанавливаем статусы
-                        connectionState = ConnectionState.WAITING_FOR_RESPONSE;
-                        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
-                        workingMode = WorkingMode.READING_DATA;
-                        working_mode.setText("РЕЖИМ: ОПРОС");
+                    // сбрасываем команду с кнопок в дефолтное состояние
+                    // (на случай, если команда сменилась, а потом остановили соединение)
+                    commandFromButton = Commands.NONE;
 
-                        requestCounter = 0;
+                    // устанавливаем статусы
+                    connectionState = ConnectionState.WAITING_FOR_RESPONSE;
+                    sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
+                    workingMode = WorkingMode.READING_DATA;
+                    working_mode.setText("РЕЖИМ: ОПРОС");
 
-                        // переключаем флаг текущего подключения
-                        sensorConnection = true;
+                    requestCounter = 0;
 
-                        // Создаём задачу, которую будем выполнять в отдельном потоке.
-                        // Практика показала, что нужно именно каждый раз выполнять эти действия,
-                        // поскольку после остановки потока, он уже недоступен
-                        // (насколько я это понимаю на данный момент).
-                        Runnable task = new Runnable() {
-                            @Override
-                            public void run() {
-                                startSensorConnection();
-                            }
-                        };
-                        // Создаём отдельный поток с этой задачей
-                        sensorConnectionThread = new Thread(task);
+                    // переключаем флаг текущего подключения
+                    sensorConnection = true;
 
-                        // вроде как с этой строкой поток должен завершиться
-                        // при завершении главного потока, но что-то оно не работает...
-                        //sensorConnectionThread.setDaemon(true);
+                    // Создаём задачу, которую будем выполнять в отдельном потоке.
+                    // Практика показала, что нужно именно каждый раз выполнять эти действия,
+                    // поскольку после остановки потока, он уже недоступен
+                    // (насколько я это понимаю на данный момент).
+                    Runnable task = new Runnable() {
+                        @Override
+                        public void run() {
+                            startSensorConnection();
+                        }
+                    };
+                    // Создаём отдельный поток с этой задачей
+                    sensorConnectionThread = new Thread(task);
 
-                        // Запускаем поток
-                        sensorConnectionThread.start();
-                    // }
+                    // вроде как с этой строкой поток должен завершиться
+                    // при завершении главного потока, но что-то оно не работает...
+                    //sensorConnectionThread.setDaemon(true);
+
+                    // Запускаем поток
+                    sensorConnectionThread.start();
                 } else {
                     // останавливаем поток отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
@@ -1034,6 +1037,9 @@ public class MainActivity extends AppCompatActivity {
                     working_mode.setText("РЕЖИМ: ---");
 
                     rg_app_modes.setEnabled(true);
+                    rb_work.setEnabled(true);
+                    rb_search.setEnabled(true);
+                    rb_settings.setEnabled(true);
                     
                     connect_to_sensor.setText("Старт");
                     search_sensors.setText("Старт");
