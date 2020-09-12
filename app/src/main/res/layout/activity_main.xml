@@ -415,12 +415,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="8dp"
         android:text="От:"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_search_range" />
-        
+
     <EditText
         android:id="@+id/input_search_start"
         android:layout_width="wrap_content"
@@ -432,8 +432,9 @@
         android:maxLength="3"
         android:text="1"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/title_search_start"
-        app:layout_constraintBottom_toBottomOf="@+id/title_search_start" />
+        app:layout_constraintTop_toTopOf="@+id/title_search_start"
+        app:layout_constraintBottom_toBottomOf="@+id/title_search_start"
+        app:layout_constraintStart_toEndOf="@+id/title_search_start" />
 
     <TextView
         android:id="@+id/title_search_end"
@@ -458,15 +459,16 @@
         android:text="247"
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/title_search_end"
+        app:layout_constraintTop_toTopOf="@+id/title_search_end"
         app:layout_constraintBottom_toBottomOf="@+id/title_search_end" />
-        
+
     <TextView
         android:id="@+id/title_cur_search_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="20dp"
         android:text="Текущий адрес поиска:"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
@@ -514,6 +516,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginTop="5dp"
         android:enabled="false"
+        android:visibility="invisible"
         android:text="Старт"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_finded_sensors"  />
