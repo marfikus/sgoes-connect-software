@@ -882,6 +882,7 @@ public class MainActivity extends AppCompatActivity {
                     resetBtConnectButton();
                     // Блокируем кнопку соединения с датчиком
                     connect_to_sensor.setEnabled(false);
+                    search_sensors.setEnabled(false);
                     Toast.makeText(getApplicationContext(), "Связь с адаптером прервана", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -1041,6 +1042,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        search_sensors.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Как-то неудобно программно перемещать кнопку на экране,
+                // поэтому сделал другую, а клик на неё будет вызывать клик на первую)
+                // (да, очередной костыль=))
+                connect_to_sensor.performClick();
+            }
+        });
+
         myHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
@@ -1109,6 +1120,7 @@ public class MainActivity extends AppCompatActivity {
                             bt_connect.setEnabled(true);
                             // И делаем доступной кнопку соединения с датчиком
                             connect_to_sensor.setEnabled(true);
+                            search_sensors.setEnabled(true);
                             Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
                         }
                         break;
