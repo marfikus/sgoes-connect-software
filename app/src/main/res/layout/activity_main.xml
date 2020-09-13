@@ -518,8 +518,20 @@
         android:enabled="false"
         android:visibility="invisible"
         android:text="Старт"
+        app:layout_constraintStart_toEndOf="@+id/input_search_end"
+        app:layout_constraintBottom_toBottomOf="@+id/input_search_end" />
+
+    <TextView
+        android:id="@+id/title_address_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:text="Адреса найденных датчиков:"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_finded_sensors"  />
+        app:layout_constraintTop_toBottomOf="@+id/title_finded_sensors" />
 
     <Spinner
         android:id="@+id/address_list"
@@ -527,10 +539,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="80dp"
-        android:enabled="true"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_finded_sensors"  />
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/title_address_list"
+        app:layout_constraintTop_toTopOf="@id/title_address_list"
+        app:layout_constraintBottom_toBottomOf="@+id/title_address_list" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

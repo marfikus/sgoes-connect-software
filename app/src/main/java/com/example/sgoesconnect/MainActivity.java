@@ -673,6 +673,7 @@ public class MainActivity extends AppCompatActivity {
 
     LinkedHashSet<Integer> findedSensors = new LinkedHashSet<>();
     ArrayAdapter<String> address_list_adapter;
+    TextView title_address_list;
     Spinner address_list;
 
     @SuppressLint("HandlerLeak")
@@ -751,14 +752,13 @@ public class MainActivity extends AppCompatActivity {
         finded_sensors = (TextView) findViewById(R.id.finded_sensors);
         search_sensors = (Button) findViewById(R.id.search_sensors);
 
+        title_address_list = (TextView) findViewById(R.id.title_address_list);
         address_list = (Spinner) findViewById(R.id.address_list);
 
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view,
-                                       int position, long id) {
-                // показываем позиция нажатого элемента
-                Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
@@ -975,6 +975,11 @@ public class MainActivity extends AppCompatActivity {
 
                                 findedSensors.clear();
                                 finded_sensors.setText("0");
+
+//                                String[] s = {""};
+//                                address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, s);
+//                                address_list.setAdapter(address_list_adapter);
+                                address_list.setVisibility(View.INVISIBLE);
                             } else {
                                 return;
                             }
@@ -1065,6 +1070,7 @@ public class MainActivity extends AppCompatActivity {
                     if (appMode == AppMode.SEARCH_SENSORS) {
                         if (findedSensors.size() > 0) {
                             // todo: покаказать сообщение: Список адресов найденных датчиков доступен в разделе \"Работа\"
+                            //  (когда буду это делать)
 
                             // преобразовываем множество в массив строк для выпадухи
                             Object[] arr = findedSensors.toArray();
@@ -1080,6 +1086,7 @@ public class MainActivity extends AppCompatActivity {
                             address_list.setAdapter(address_list_adapter);
                             address_list.setPrompt("Адреса:");
                             address_list.setSelection(0);
+                            address_list.setVisibility(View.VISIBLE);
                         }
                     }
 
@@ -1506,6 +1513,9 @@ public class MainActivity extends AppCompatActivity {
         finded_sensors.setVisibility(View.VISIBLE);
 
         search_sensors.setVisibility(View.VISIBLE);
+
+        title_address_list.setVisibility(View.VISIBLE);
+        address_list.setVisibility(View.VISIBLE);
     }
 
     public void hideSearchScreen() {
@@ -1522,6 +1532,9 @@ public class MainActivity extends AppCompatActivity {
         finded_sensors.setVisibility(View.INVISIBLE);
 
         search_sensors.setVisibility(View.INVISIBLE);
+
+        title_address_list.setVisibility(View.INVISIBLE);
+        address_list.setVisibility(View.INVISIBLE);
     }
     
     public void showConfirmDialog() {
