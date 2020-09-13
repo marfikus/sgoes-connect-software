@@ -636,7 +636,7 @@ public class MainActivity extends AppCompatActivity {
     // Счётчик попыток подключения.
     int btSocketCountConnectionTries = 0;
     // Максимальное количество попыток
-    final int MAX_BT_SOCKET_CONNECTION_TRIES = 3;
+    final int MAX_BT_SOCKET_CONNECTION_TRIES = 1;
 
     BluetoothAdapter bluetoothAdapter = null;
     BluetoothDevice bluetoothDevice = null;
@@ -892,10 +892,9 @@ public class MainActivity extends AppCompatActivity {
                     };
                     btSocketConnectionThread = new Thread(btConnection);
                     btSocketConnectionThread.start();
-                }
 
-                // Если есть подключение к плате, то отключаемся
-                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                // иначе, если есть подключение к плате, то отключаемся
+                } else if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
                     // Блокируем кнопку
                     bt_connect.setEnabled(false);
                     // Останавливаем подключение к датчику, если оно есть
