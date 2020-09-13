@@ -214,8 +214,8 @@ public class MainActivity extends AppCompatActivity {
         working_mode.setText("РЕЖИМ: ОПРОС");
 
         if (appMode == AppMode.SEARCH_SENSORS) {
-            // добавляем текущий адрес поиска в массив найденных датчиков
-            findedSensors.add(curSensorAddress);
+            // добавляем адрес из ответа в массив найденных датчиков
+            findedSensors.add(localCopyResponse[0] & 0xFF);
             // увеличиваем счётчик на экране
             finded_sensors.setText(Integer.toString(findedSensors.size()));
             return;
