@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         if (appMode == AppMode.SEARCH_SENSORS) {
             // добавляем текущий адрес поиска в массив найденных датчиков
             findedSensors.add(curSensorAddress);
-            // увеличиваем счётчики на экране
+            // увеличиваем счётчик на экране
             finded_sensors.setText(Integer.toString(findedSensors.size()));
             return;
         }
@@ -572,7 +572,6 @@ public class MainActivity extends AppCompatActivity {
     TextView title_finded_sensors;
     TextView finded_sensors;
     Button search_sensors;
-    Spinner address_list;
 
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
@@ -674,7 +673,8 @@ public class MainActivity extends AppCompatActivity {
 
     LinkedHashSet<Integer> findedSensors = new LinkedHashSet<>();
     ArrayAdapter<String> address_list_adapter;
-    
+    Spinner address_list;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -753,14 +753,6 @@ public class MainActivity extends AppCompatActivity {
 
         address_list = (Spinner) findViewById(R.id.address_list);
 
-        String[] data = {"one", "two", "three", "four", "five"};
-
-        address_list_adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
-        address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        address_list.setAdapter(address_list_adapter);
-        address_list.setPrompt("Адреса:");
-        address_list.setSelection(0);
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view,
@@ -927,36 +919,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
-                    case -1:
-                        Toast.makeText(getApplicationContext(), "Ничего не выбрано",
-                                Toast.LENGTH_SHORT).show();
-                        break;
                     case R.id.rb_work:
-                        // Toast.makeText(getApplicationContext(), "Первый переключатель",
-                                // Toast.LENGTH_SHORT).show();
+                        appMode = AppMode.WORK;
                         hideSearchScreen();
                         showWorkScreen();
                         hideConfirmDialog("ok");
 
-                        appMode = AppMode.WORK;
                         break;
+
                     case R.id.rb_search:
-                        // Toast.makeText(getApplicationContext(), "Режим поиска датчиков",
-                                // Toast.LENGTH_SHORT).show();
-                        
+                        appMode = AppMode.SEARCH_SENSORS;
                         hideWorkScreen();
                         showSearchScreen();
 
-                        appMode = AppMode.SEARCH_SENSORS;
                         break;
+
                     case R.id.rb_settings:
-                        // Toast.makeText(getApplicationContext(), "Третий переключатель",
-                                // Toast.LENGTH_SHORT).show();
-                        
+                        appMode = AppMode.SETTINGS;
                         hideWorkScreen();
                         hideSearchScreen();
 
-                        appMode = AppMode.SETTINGS;
                         break;
 
                     default:
@@ -1069,15 +1051,36 @@ public class MainActivity extends AppCompatActivity {
                     rb_settings.setEnabled(true);
                     
                     connect_to_sensor.setText("Старт");
-                    search_sensors.setText("Старт");
                     input_sensor_address.setEnabled(true);
-                    
+
+                    search_sensors.setText("Старт");
                     input_search_start.setEnabled(true);
                     input_search_end.setEnabled(true);
 
                     if (appMode == AppMode.WORK) {
                         // Блокируем кнопки команд, скрываем диалог подтверждения:
                         hideConfirmDialog("ok");
+                    }
+
+                    if (appMode == AppMode.SEARCH_SENSORS) {
+                        if (findedSensors.size() > 0) {
+                            // todo: покаказать сообщение: Список адресов найденных датчиков доступен в разделе \"Работа\"
+
+                            // преобразовываем множество в массив строк для выпадухи
+                            Object[] arr = findedSensors.toArray();
+                            String[] str_arr = new String[arr.length];
+                            for (int i = 0; i < arr.length; i++) {
+                                str_arr[i] = arr[i].toString();
+                                Log.d(LOG_TAG, str_arr[i]);
+                            }
+
+                            // заполняем выпадуху
+                            address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, str_arr);
+                            address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            address_list.setAdapter(address_list_adapter);
+                            address_list.setPrompt("Адреса:");
+                            address_list.setSelection(0);
+                        }
                     }
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
