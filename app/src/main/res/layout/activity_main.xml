@@ -544,4 +544,31 @@
         app:layout_constraintTop_toTopOf="@id/title_address_list"
         app:layout_constraintBottom_toBottomOf="@+id/title_address_list" />
 
+    <TextView
+        android:id="@+id/title_request_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="10dp"
+        android:text="Пауза между запросами (мс):"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rg_app_modes" />
+
+    <EditText
+        android:id="@+id/input_request_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:ems="5"
+        android:inputType="number"
+        android:maxLength="5"
+        android:text="2000"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_request_pause" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
