@@ -643,6 +643,7 @@ public class MainActivity extends AppCompatActivity {
 
     float HIGH_CONCENTRATION = (float)4.15;
     float MIDDLE_CONCENTRATION = (float)2.2;
+    int requestPause = 2000;
 
     enum ConfirmDialogModes {
         NONE,
@@ -678,6 +679,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView title_request_pause;
     EditText input_request_pause;
+    Button save_settings;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -761,6 +763,10 @@ public class MainActivity extends AppCompatActivity {
         // settings screen
         title_request_pause = (TextView) findViewById(R.id.title_request_pause);
         input_request_pause = (EditText) findViewById(R.id.input_request_pause);
+        input_request_pause.setText(Integer.toString(requestPause));
+
+        save_settings = (Button) findViewById(R.id.save_settings);
+
 
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -947,6 +953,7 @@ public class MainActivity extends AppCompatActivity {
                         hideWorkScreen();
                         hideSearchScreen();
                         showSettingsScreen();
+//                        todo: обновить значения в полях ввода (на случай если раньше меняли, но не сохранили)
 
                         break;
 
@@ -1632,7 +1639,7 @@ public class MainActivity extends AppCompatActivity {
 
             // ждём некоторое время
             try {
-                Thread.sleep(2000);
+                Thread.sleep(requestPause);
             } catch (InterruptedException e) {
                 // если есть внешнее прерывание, то прерываем цикл
                 e.printStackTrace();
