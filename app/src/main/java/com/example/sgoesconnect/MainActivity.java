@@ -767,6 +767,18 @@ public class MainActivity extends AppCompatActivity {
 
         save_settings = (Button) findViewById(R.id.save_settings);
 
+        save_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // todo: проверить значение
+                String inputRequestPause = input_request_pause.getText().toString();
+                if (checkInputRequestPause(inputRequestPause)) {
+                    requestPause = Integer.parseInt(inputRequestPause);
+                    // todo: сохранение...
+                }
+                // todo: вывести тост "Сохранено", если нет ошибок
+            }
+        });
 
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -953,7 +965,7 @@ public class MainActivity extends AppCompatActivity {
                         hideWorkScreen();
                         hideSearchScreen();
                         showSettingsScreen();
-//                        todo: обновить значения в полях ввода (на случай если раньше меняли, но не сохранили)
+//                        todo: обновлять значения в полях ввода (на случай если раньше меняли, но не сохранили)
 
                         break;
 
@@ -1555,7 +1567,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void showSettingsScreen() {
         title_request_pause.setVisibility(View.VISIBLE);
+        input_request_pause.setText(Integer.toString(requestPause));
         input_request_pause.setVisibility(View.VISIBLE);
+
+        save_settings.setVisibility(View.VISIBLE);
 
 
     }
@@ -1563,6 +1578,8 @@ public class MainActivity extends AppCompatActivity {
     public void hideSettingsScreen() {
         title_request_pause.setVisibility(View.INVISIBLE);
         input_request_pause.setVisibility(View.INVISIBLE);
+
+        save_settings.setVisibility(View.INVISIBLE);
 
 
     }
