@@ -15,8 +15,13 @@ import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +32,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.ToDoubleBiFunction;
 import java.util.zip.Checksum;
@@ -205,6 +212,15 @@ public class MainActivity extends AppCompatActivity {
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
         working_mode.setText("РЕЖИМ: ОПРОС");
+
+        if (appMode == AppMode.SEARCH_SENSORS) {
+            // добавляем адрес из ответа в массив найденных датчиков
+            findedSensors.add(localCopyResponse[0] & 0xFF);
+            // увеличиваем счётчик на экране
+            finded_sensors.setText(Integer.toString(findedSensors.size()));
+            return;
+        }
+
         // Разблокируем кнопки посылки команд:
         set_zero.setEnabled(true);
         main_calibration.setEnabled(true);
@@ -515,6 +531,17 @@ public class MainActivity extends AppCompatActivity {
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
     final String LOG_TAG = "myLogs";
+
+    TextView title_sensor_connection;
+    TextView title_serial_number;
+    TextView title_sensor_type;
+    TextView title_gas_level_nkpr;
+    TextView title_gas_level_volume;
+    TextView title_gas_level_current;
+    TextView title_fault_relay;
+    TextView title_relay_1;
+    TextView title_relay_2;
+
     TextView serial_number;
     TextView sensor_type;
     TextView gas_level_nkpr;
@@ -527,12 +554,30 @@ public class MainActivity extends AppCompatActivity {
     TextView working_mode;
     TextView confirm_dialog_title;
     EditText input_sensor_address;
+    RadioGroup rg_app_modes;
+    RadioButton rb_work;
+    RadioButton rb_search;
+    RadioButton rb_settings;
     Handler myHandler;
-    
+
+    TextView title_search_range;
+    TextView title_search_start;
+    EditText input_search_start;
+    TextView title_search_end;
+    EditText input_search_end;
+
+    TextView title_cur_search_address;
+    TextView cur_search_address;
+
+    TextView title_finded_sensors;
+    TextView finded_sensors;
+    Button search_sensors;
+
     final int SENSOR_DATA = 1;
     final int SENSOR_CONNECTION_THREAD_DATA = 2;
     final int BT_SOCKET_CONNECTION_THREAD_DATA = 3;
-    
+    final int SEARCH_SENSORS_DATA = 4;
+
     byte[] request; // текущий запрос
     byte[] response; // текущий ответ
     //int numResponseBytes = 0;  // счётчик байт, полученных в текущем ответе
@@ -565,6 +610,14 @@ public class MainActivity extends AppCompatActivity {
         CONNECTED
     }
     BtDeviceConnectionState btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
+    
+    enum AppMode { // режимы работы приложения
+        WORK, // рабочий режим
+        SEARCH_SENSORS, // режим поиска датчиков
+        SETTINGS // режим настроек
+    }
+    AppMode appMode = AppMode.WORK;
+    
     enum WorkingMode { // режим работы
         READING_DATA,
         SETTING_ZERO,
@@ -611,6 +664,17 @@ public class MainActivity extends AppCompatActivity {
     
     int curSensorAddress = 0;
     int newSensorAddress = 0;
+    
+    String inputSearchStart = "";
+    String inputSearchEnd = "";
+    int startAddressOfSearchRange = 0;
+    int endAddressOfSearchRange = 0;
+    int curAddressOfSearchRange = 0;
+
+    LinkedHashSet<Integer> findedSensors = new LinkedHashSet<>();
+    ArrayAdapter<String> address_list_adapter;
+    TextView title_address_list;
+    Spinner address_list;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -620,33 +684,87 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-        serial_number = (TextView) findViewById(R.id.serial_number);
-        sensor_type = (TextView) findViewById(R.id.sensor_type);
-        gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
-        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
-        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
-        fault_relay = (TextView) findViewById(R.id.fault_relay);
-        relay_1 = (TextView) findViewById(R.id.relay_1);
-        relay_2 = (TextView) findViewById(R.id.relay_2);
-        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
-        working_mode = (TextView) findViewById(R.id.working_mode);
-        input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
-
+        
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
+        rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
+        rb_work = (RadioButton) findViewById(R.id.rb_work);
+        rb_search = (RadioButton) findViewById(R.id.rb_search);
+        rb_settings = (RadioButton) findViewById(R.id.rb_settings);
+
+        // work screen
+        title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
+        input_sensor_address = (EditText) findViewById(R.id.input_sensor_address);
         connect_to_sensor = (Button) findViewById(R.id.connect_to_sensor);
+        sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
+        working_mode = (TextView) findViewById(R.id.working_mode);
+        
         sensor_address = (Button) findViewById(R.id.sensor_address);
+        
+        title_serial_number = (TextView) findViewById(R.id.title_serial_number);
+        serial_number = (TextView) findViewById(R.id.serial_number);
+        
+        title_sensor_type = (TextView) findViewById(R.id.title_sensor_type);
+        sensor_type = (TextView) findViewById(R.id.sensor_type);
+        
+        title_gas_level_nkpr = (TextView) findViewById(R.id.title_gas_level_nkpr);
+        gas_level_nkpr = (TextView) findViewById(R.id.gas_level_nkpr);
+        
+        title_gas_level_volume = (TextView) findViewById(R.id.title_gas_level_volume);
+        gas_level_volume = (TextView) findViewById(R.id.gas_level_volume);
+        
+        title_gas_level_current = (TextView) findViewById(R.id.title_gas_level_current);
+        gas_level_current = (TextView) findViewById(R.id.gas_level_current);
+        
         set_zero = (Button) findViewById(R.id.set_zero);
         main_calibration = (Button) findViewById(R.id.main_calibration);
         middle_calibration = (Button) findViewById(R.id.middle_calibration);
         threshold_1 = (Button) findViewById(R.id.threshold_1);
-        threshold_2 = (Button) findViewById(R.id.threshold_2);
+        threshold_2 = (Button) findViewById(R.id.threshold_2);        
+        
+        title_fault_relay = (TextView) findViewById(R.id.title_fault_relay);
+        fault_relay = (TextView) findViewById(R.id.fault_relay);
+        
+        title_relay_1 = (TextView) findViewById(R.id.title_relay_1);
+        relay_1 = (TextView) findViewById(R.id.relay_1);
+        
+        title_relay_2 = (TextView) findViewById(R.id.title_relay_2);
+        relay_2 = (TextView) findViewById(R.id.relay_2);
+        
         set_defaults = (Button) findViewById(R.id.set_defaults);
+
         confirm_dialog_title = (TextView) findViewById(R.id.confirm_dialog_title);
         confirm_dialog_input = (EditText) findViewById(R.id.confirm_dialog_input);
         confirm_dialog_ok = (Button) findViewById(R.id.confirm_dialog_ok);
         confirm_dialog_cancel = (Button) findViewById(R.id.confirm_dialog_cancel);
-        
+
+        // search screen
+        title_search_range = (TextView) findViewById(R.id.title_search_range);
+        title_search_start = (TextView) findViewById(R.id.title_search_start);
+        input_search_start = (EditText) findViewById(R.id.input_search_start);
+        title_search_end = (TextView) findViewById(R.id.title_search_end);
+        input_search_end = (EditText) findViewById(R.id.input_search_end);
+
+        title_cur_search_address = (TextView) findViewById(R.id.title_cur_search_address);
+        cur_search_address = (TextView) findViewById(R.id.cur_search_address);
+
+        title_finded_sensors = (TextView) findViewById(R.id.title_finded_sensors);
+        finded_sensors = (TextView) findViewById(R.id.finded_sensors);
+        search_sensors = (Button) findViewById(R.id.search_sensors);
+
+        title_address_list = (TextView) findViewById(R.id.title_address_list);
+        address_list = (Spinner) findViewById(R.id.address_list);
+
+        address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+
         bt_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -791,59 +909,129 @@ public class MainActivity extends AppCompatActivity {
                     resetBtConnectButton();
                     // Блокируем кнопку соединения с датчиком
                     connect_to_sensor.setEnabled(false);
+                    search_sensors.setEnabled(false);
                     Toast.makeText(getApplicationContext(), "Связь с адаптером прервана", Toast.LENGTH_SHORT).show();
                 }
             }
         });
-        
+
+        rg_app_modes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.rb_work:
+                        appMode = AppMode.WORK;
+                        hideSearchScreen();
+                        showWorkScreen();
+                        hideConfirmDialog("ok");
+
+                        break;
+
+                    case R.id.rb_search:
+                        appMode = AppMode.SEARCH_SENSORS;
+                        hideWorkScreen();
+                        showSearchScreen();
+
+                        break;
+
+                    case R.id.rb_settings:
+                        appMode = AppMode.SETTINGS;
+                        hideWorkScreen();
+                        hideSearchScreen();
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        });
+
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // если подключения нет
                 if (!sensorConnection) {
-                    // проверяем поле адреса, если адрес корректный
-                    String inputAddress = input_sensor_address.getText().toString();
-                    if (checkInputAddress(inputAddress, "connection")) {
-                        curSensorAddress = Integer.parseInt(inputAddress);
-                        
-                        input_sensor_address.setEnabled(false);
-                        connect_to_sensor.setText("Стоп");
-
-                        // сбрасываем команду с кнопок в дефолтное состояние
-                        // (на случай, если команда сменилась, а потом остановили соединение)
-                        commandFromButton = Commands.NONE;
-
-                        // устанавливаем статусы
-                        connectionState = ConnectionState.WAITING_FOR_RESPONSE;
-                        sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
-                        workingMode = WorkingMode.READING_DATA;
-                        working_mode.setText("РЕЖИМ: ОПРОС");
-
-                        requestCounter = 0;
-
-                        // переключаем флаг текущего подключения
-                        sensorConnection = true;
-
-                        // Создаём задачу, которую будем выполнять в отдельном потоке.
-                        // Практика показала, что нужно именно каждый раз выполнять эти действия,
-                        // поскольку после остановки потока, он уже недоступен
-                        // (насколько я это понимаю на данный момент).
-                        Runnable task = new Runnable() {
-                            @Override
-                            public void run() {
-                                startSensorConnection();
+                    switch (appMode) {
+                        case WORK:
+                            // проверяем поле адреса, если адрес корректный
+                            String inputAddress = input_sensor_address.getText().toString();
+                            if (checkInputAddress(inputAddress, "connection")) {
+                                curSensorAddress = Integer.parseInt(inputAddress);
+                            } else {
+                                return;
                             }
-                        };
-                        // Создаём отдельный поток с этой задачей
-                        sensorConnectionThread = new Thread(task);
+                            break;
 
-                        // вроде как с этой строкой поток должен завершиться
-                        // при завершении главного потока, но что-то оно не работает...
-                        //sensorConnectionThread.setDaemon(true);
+                        case SEARCH_SENSORS:
+                           inputSearchStart = input_search_start.getText().toString();
+                           inputSearchEnd = input_search_end.getText().toString();
+                            if ((checkInputAddress(inputSearchStart, "searchStart")) &&
+                                    (checkInputAddress(inputSearchEnd, "searchEnd"))) {
+                                startAddressOfSearchRange = Integer.parseInt(inputSearchStart);
+                                endAddressOfSearchRange = Integer.parseInt(inputSearchEnd);
+                                curAddressOfSearchRange = startAddressOfSearchRange;
+                                curSensorAddress = startAddressOfSearchRange;
 
-                        // Запускаем поток
-                        sensorConnectionThread.start();
+                                findedSensors.clear();
+                                finded_sensors.setText("0");
+
+//                                String[] s = {""};
+//                                address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, s);
+//                                address_list.setAdapter(address_list_adapter);
+                                address_list.setVisibility(View.INVISIBLE);
+                            } else {
+                                return;
+                            }
+                            break;
                     }
+
+                    rg_app_modes.setEnabled(false);
+                    rb_work.setEnabled(false);
+                    rb_search.setEnabled(false);
+                    rb_settings.setEnabled(false);
+
+                    input_sensor_address.setEnabled(false);
+                    connect_to_sensor.setText("Стоп");
+                    search_sensors.setText("Стоп");
+
+                    input_search_start.setEnabled(false);
+                    input_search_end.setEnabled(false);
+
+                    // сбрасываем команду с кнопок в дефолтное состояние
+                    // (на случай, если команда сменилась, а потом остановили соединение)
+                    commandFromButton = Commands.NONE;
+
+                    // устанавливаем статусы
+                    connectionState = ConnectionState.WAITING_FOR_RESPONSE;
+                    sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
+                    workingMode = WorkingMode.READING_DATA;
+                    working_mode.setText("РЕЖИМ: ОПРОС");
+
+                    requestCounter = 0;
+
+                    // переключаем флаг текущего подключения
+                    sensorConnection = true;
+
+                    // Создаём задачу, которую будем выполнять в отдельном потоке.
+                    // Практика показала, что нужно именно каждый раз выполнять эти действия,
+                    // поскольку после остановки потока, он уже недоступен
+                    // (насколько я это понимаю на данный момент).
+                    Runnable task = new Runnable() {
+                        @Override
+                        public void run() {
+                            startSensorConnection();
+                        }
+                    };
+                    // Создаём отдельный поток с этой задачей
+                    sensorConnectionThread = new Thread(task);
+
+                    // вроде как с этой строкой поток должен завершиться
+                    // при завершении главного потока, но что-то оно не работает...
+                    //sensorConnectionThread.setDaemon(true);
+
+                    // Запускаем поток
+                    sensorConnectionThread.start();
                 } else {
                     // останавливаем поток отправки запроса
                     // (он останавливается сам, когда sensorConnection == false)
@@ -862,15 +1050,59 @@ public class MainActivity extends AppCompatActivity {
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ---");
 
+                    rg_app_modes.setEnabled(true);
+                    rb_work.setEnabled(true);
+                    rb_search.setEnabled(true);
+                    rb_settings.setEnabled(true);
+                    
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
 
-                    // Блокируем кнопки команд, скрываем диалог подтверждения:
-                    hideConfirmDialog("ok");
+                    search_sensors.setText("Старт");
+                    input_search_start.setEnabled(true);
+                    input_search_end.setEnabled(true);
+
+                    if (appMode == AppMode.WORK) {
+                        // Блокируем кнопки команд, скрываем диалог подтверждения:
+                        hideConfirmDialog("ok");
+                    }
+
+                    if (appMode == AppMode.SEARCH_SENSORS) {
+                        if (findedSensors.size() > 0) {
+                            // todo: покаказать сообщение: Список адресов найденных датчиков доступен в разделе \"Работа\"
+                            //  (когда буду это делать)
+
+                            // преобразовываем множество в массив строк для выпадухи
+                            Object[] arr = findedSensors.toArray();
+                            String[] str_arr = new String[arr.length];
+                            for (int i = 0; i < arr.length; i++) {
+                                str_arr[i] = arr[i].toString();
+                                Log.d(LOG_TAG, str_arr[i]);
+                            }
+
+                            // заполняем выпадуху
+                            address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, str_arr);
+                            address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            address_list.setAdapter(address_list_adapter);
+                            address_list.setPrompt("Адреса:");
+                            address_list.setSelection(0);
+                            address_list.setVisibility(View.VISIBLE);
+                        }
+                    }
 
                     // TODO: 16.04.2020 обнулить поля данных, добавить индикатор состояния (отключено\нет ответа\подключено)
                     //  а может поля не обнулять, иногда полезно может быть, будто на паузу поставил...
                 }
+            }
+        });
+
+        search_sensors.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Как-то неудобно программно перемещать кнопку на экране,
+                // поэтому сделал другую, а клик на неё будет вызывать клик на первую)
+                // (да, очередной костыль=))
+                connect_to_sensor.performClick();
             }
         });
 
@@ -942,8 +1174,18 @@ public class MainActivity extends AppCompatActivity {
                             bt_connect.setEnabled(true);
                             // И делаем доступной кнопку соединения с датчиком
                             connect_to_sensor.setEnabled(true);
+                            search_sensors.setEnabled(true);
                             Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
                         }
+                        break;
+                    case SEARCH_SENSORS_DATA:
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+                        if (msg.obj.toString() == "stop_search") {
+                            connect_to_sensor.performClick();
+                            break;
+                        }
+
+                        cur_search_address.setText(msg.obj.toString());
                         break;
                 }
             }
@@ -1159,6 +1401,142 @@ public class MainActivity extends AppCompatActivity {
         
     }
 
+    public void showWorkScreen() {
+        title_sensor_connection.setVisibility(View.VISIBLE);
+        input_sensor_address.setVisibility(View.VISIBLE);
+
+        connect_to_sensor.setVisibility(View.VISIBLE);
+
+        sensor_connection_state.setVisibility(View.VISIBLE);
+        working_mode.setVisibility(View.VISIBLE);
+        
+        sensor_address.setVisibility(View.VISIBLE);
+        
+        title_serial_number.setVisibility(View.VISIBLE);
+        serial_number.setVisibility(View.VISIBLE);
+        
+        title_sensor_type.setVisibility(View.VISIBLE);
+        sensor_type.setVisibility(View.VISIBLE);
+        
+        title_gas_level_nkpr.setVisibility(View.VISIBLE);
+        gas_level_nkpr.setVisibility(View.VISIBLE);
+        
+        title_gas_level_volume.setVisibility(View.VISIBLE);
+        gas_level_volume.setVisibility(View.VISIBLE);
+        
+        title_gas_level_current.setVisibility(View.VISIBLE);
+        gas_level_current.setVisibility(View.VISIBLE);
+        
+        set_zero.setVisibility(View.VISIBLE);
+        main_calibration.setVisibility(View.VISIBLE);
+        middle_calibration.setVisibility(View.VISIBLE);
+        threshold_1.setVisibility(View.VISIBLE);
+        threshold_2.setVisibility(View.VISIBLE);
+        
+        title_fault_relay.setVisibility(View.VISIBLE);
+        fault_relay.setVisibility(View.VISIBLE);
+        
+        title_relay_1.setVisibility(View.VISIBLE);
+        relay_1.setVisibility(View.VISIBLE);
+        
+        title_relay_2.setVisibility(View.VISIBLE);
+        relay_2.setVisibility(View.VISIBLE);
+        
+        set_defaults.setVisibility(View.VISIBLE);
+
+//        confirm_dialog_title.setVisibility(View.VISIBLE);
+//        confirm_dialog_input.setVisibility(View.VISIBLE);
+//        confirm_dialog_ok.setVisibility(View.VISIBLE);
+//        confirm_dialog_cancel.setVisibility(View.VISIBLE);
+    }
+
+    public void hideWorkScreen() {
+        title_sensor_connection.setVisibility(View.INVISIBLE);
+        input_sensor_address.setVisibility(View.INVISIBLE);
+
+        connect_to_sensor.setVisibility(View.INVISIBLE);
+
+        sensor_connection_state.setVisibility(View.INVISIBLE);
+        working_mode.setVisibility(View.INVISIBLE);
+        
+        sensor_address.setVisibility(View.INVISIBLE);
+        
+        title_serial_number.setVisibility(View.INVISIBLE);
+        serial_number.setVisibility(View.INVISIBLE);
+        
+        title_sensor_type.setVisibility(View.INVISIBLE);
+        sensor_type.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_nkpr.setVisibility(View.INVISIBLE);
+        gas_level_nkpr.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_volume.setVisibility(View.INVISIBLE);
+        gas_level_volume.setVisibility(View.INVISIBLE);
+        
+        title_gas_level_current.setVisibility(View.INVISIBLE);
+        gas_level_current.setVisibility(View.INVISIBLE);
+        
+        set_zero.setVisibility(View.INVISIBLE);
+        main_calibration.setVisibility(View.INVISIBLE);
+        middle_calibration.setVisibility(View.INVISIBLE);
+        threshold_1.setVisibility(View.INVISIBLE);
+        threshold_2.setVisibility(View.INVISIBLE);
+        
+        title_fault_relay.setVisibility(View.INVISIBLE);
+        fault_relay.setVisibility(View.INVISIBLE);
+        
+        title_relay_1.setVisibility(View.INVISIBLE);
+        relay_1.setVisibility(View.INVISIBLE);
+        
+        title_relay_2.setVisibility(View.INVISIBLE);
+        relay_2.setVisibility(View.INVISIBLE);
+        
+        set_defaults.setVisibility(View.INVISIBLE);
+
+//        confirm_dialog_title.setVisibility(View.INVISIBLE);
+//        confirm_dialog_input.setVisibility(View.INVISIBLE);
+//        confirm_dialog_ok.setVisibility(View.INVISIBLE);
+//        confirm_dialog_cancel.setVisibility(View.INVISIBLE);
+    }
+
+    public void showSearchScreen() {
+        title_search_range.setVisibility(View.VISIBLE);
+        title_search_start.setVisibility(View.VISIBLE);
+        input_search_start.setVisibility(View.VISIBLE);
+        title_search_end.setVisibility(View.VISIBLE);
+        input_search_end.setVisibility(View.VISIBLE);
+        
+        title_cur_search_address.setVisibility(View.VISIBLE);
+        cur_search_address.setVisibility(View.VISIBLE);
+        
+        title_finded_sensors.setVisibility(View.VISIBLE);
+        finded_sensors.setVisibility(View.VISIBLE);
+
+        search_sensors.setVisibility(View.VISIBLE);
+
+        title_address_list.setVisibility(View.VISIBLE);
+        address_list.setVisibility(View.VISIBLE);
+    }
+
+    public void hideSearchScreen() {
+        title_search_range.setVisibility(View.INVISIBLE);
+        title_search_start.setVisibility(View.INVISIBLE);
+        input_search_start.setVisibility(View.INVISIBLE);
+        title_search_end.setVisibility(View.INVISIBLE);
+        input_search_end.setVisibility(View.INVISIBLE);
+        
+        title_cur_search_address.setVisibility(View.INVISIBLE);
+        cur_search_address.setVisibility(View.INVISIBLE);
+        
+        title_finded_sensors.setVisibility(View.INVISIBLE);
+        finded_sensors.setVisibility(View.INVISIBLE);
+
+        search_sensors.setVisibility(View.INVISIBLE);
+
+        title_address_list.setVisibility(View.INVISIBLE);
+        address_list.setVisibility(View.INVISIBLE);
+    }
+    
     public void showConfirmDialog() {
         set_zero.setVisibility(View.INVISIBLE);
         main_calibration.setVisibility(View.INVISIBLE);
@@ -1252,8 +1630,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private byte getSensorAddress() {
+        if (appMode == AppMode.SEARCH_SENSORS) {
+            // В режиме поиска каждая команда будет с новым адресом датчика
+            // Если дошли до конца диапазона поиска
+            if (curAddressOfSearchRange > endAddressOfSearchRange) {
+                // Если выбран чекбокс о поиске по кругу, 
+                // то отдаём первый адрес диапазона и увеличиваем текущий.
+                // todo: добавить эту проверку, когда будет чекбокс
+                boolean checkbox = false; // temp!!!
+                if (checkbox) {
+                    curAddressOfSearchRange = startAddressOfSearchRange + 1;
+                    curSensorAddress = startAddressOfSearchRange;
+                } else {
+                    // Иначе останавливаемся,
+                    // сообщаем главному потоку, чтобы он остановил поиск (нажал Стоп)
+                    myHandler.obtainMessage(SEARCH_SENSORS_DATA, "stop_search").sendToTarget();
+
+                    // Чтобы не было ошибок, отдаём ещё раз тот же адрес
+                    curSensorAddress = curAddressOfSearchRange - 1;
+                }
+            } else {
+                // Иначе отдаём новый адрес и увеличиваем текущий в диапазоне
+                curSensorAddress = curAddressOfSearchRange;
+                curAddressOfSearchRange = curAddressOfSearchRange + 1;
+            }
+            // сообщаем главному потоку, чтобы он изменил текущий адрес на экране
+            myHandler.obtainMessage(SEARCH_SENSORS_DATA, curSensorAddress).sendToTarget();
+        }
+
+        return (byte)curSensorAddress;
+    }
+    
     private void createRequest(Commands _commandFromButton) {
-        byte sensorAddress = (byte)curSensorAddress;
+        byte sensorAddress = getSensorAddress();
         byte[] reqMsg = {};
         int concInt = 0;
         String concHex = "";
@@ -1261,13 +1671,19 @@ public class MainActivity extends AppCompatActivity {
 
         switch (_commandFromButton) {
             case NONE: // команды с кнопок нет, обычный запрос данных
+            // обычно запрашиваем 0x0C (12) регистров, 
+            // но если в режиме поиска, то достаточно и одного 
+            byte numRegisters = (byte)0x0C;
+            if (appMode == AppMode.SEARCH_SENSORS) {
+                numRegisters = (byte)0x01;
+            }
                 reqMsg = new byte[] {
                         sensorAddress,
                         (byte)0x03, // funcCode
                         (byte)0x00, // firstRegAddressHigh
                         (byte)0x00, // firstRegAddressLow
                         (byte)0x00, // numRegistersHigh
-                        (byte)0x0C  // numRegistersLow
+                        numRegisters  // numRegistersLow
                 };
                 break;
                 
@@ -1421,6 +1837,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // сравнение с другой границей диапазона
+        if (mode == "searchStart") {
+            int inputSearchEndInt = Integer.parseInt(inputSearchEnd);
+            if (inputAddressInt >= inputSearchEndInt) {
+                Log.d(LOG_TAG, "inputSearchStart >= inputSearchEnd");
+                Toast.makeText(getApplicationContext(), "Адрес начала поиска должен быть меньше адреса окончания", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } else if (mode == "searchEnd") {
+            int inputSearchStartInt = Integer.parseInt(inputSearchStart);
+            if (inputAddressInt <= inputSearchStartInt) {
+                Log.d(LOG_TAG, "inputSearchStart <= inputSearchStart");
+                Toast.makeText(getApplicationContext(), "Адрес окончания поиска должен быть больше адреса начала", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        } 
+        
         // проверка на максимальное значение
         if (inputAddressInt > 247) {
             Log.d(LOG_TAG, "inputAddressInt > 247");
