@@ -676,6 +676,9 @@ public class MainActivity extends AppCompatActivity {
     TextView title_address_list;
     Spinner address_list;
 
+    TextView title_request_pause;
+    EditText input_request_pause;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -754,6 +757,10 @@ public class MainActivity extends AppCompatActivity {
 
         title_address_list = (TextView) findViewById(R.id.title_address_list);
         address_list = (Spinner) findViewById(R.id.address_list);
+
+        // settings screen
+        title_request_pause = (TextView) findViewById(R.id.title_request_pause);
+        input_request_pause = (EditText) findViewById(R.id.input_request_pause);
 
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -921,6 +928,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.rb_work:
                         appMode = AppMode.WORK;
                         hideSearchScreen();
+                        hideSettingsScreen();
                         showWorkScreen();
                         hideConfirmDialog("ok");
 
@@ -929,6 +937,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.rb_search:
                         appMode = AppMode.SEARCH_SENSORS;
                         hideWorkScreen();
+                        hideSettingsScreen();
                         showSearchScreen();
 
                         break;
@@ -937,6 +946,7 @@ public class MainActivity extends AppCompatActivity {
                         appMode = AppMode.SETTINGS;
                         hideWorkScreen();
                         hideSearchScreen();
+                        showSettingsScreen();
 
                         break;
 
@@ -1535,7 +1545,21 @@ public class MainActivity extends AppCompatActivity {
         title_address_list.setVisibility(View.INVISIBLE);
         address_list.setVisibility(View.INVISIBLE);
     }
-    
+
+    public void showSettingsScreen() {
+        title_request_pause.setVisibility(View.VISIBLE);
+        input_request_pause.setVisibility(View.VISIBLE);
+
+
+    }
+
+    public void hideSettingsScreen() {
+        title_request_pause.setVisibility(View.INVISIBLE);
+        input_request_pause.setVisibility(View.INVISIBLE);
+
+
+    }
+
     public void showConfirmDialog() {
         set_zero.setVisibility(View.INVISIBLE);
         main_calibration.setVisibility(View.INVISIBLE);
