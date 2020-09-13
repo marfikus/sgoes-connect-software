@@ -636,7 +636,7 @@ public class MainActivity extends AppCompatActivity {
     // Счётчик попыток подключения.
     int btSocketCountConnectionTries = 0;
     // Максимальное количество попыток
-    final int MAX_BT_SOCKET_CONNECTION_TRIES = 3;
+    final int MAX_BT_SOCKET_CONNECTION_TRIES = 1;
 
     BluetoothAdapter bluetoothAdapter = null;
     BluetoothDevice bluetoothDevice = null;
@@ -789,7 +789,7 @@ public class MainActivity extends AppCompatActivity {
                     bt_connect.setEnabled(false);
 
                     // Меняем заголовок кнопки и статус подключения
-                    bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА 1");
+                    bt_connect.setText("ПОДКЛЮЧЕНИЕ...");
                     btDeviceConnectionState = BtDeviceConnectionState.CONNECTING;
 
                     // Получаем блютус адаптер
@@ -806,7 +806,7 @@ public class MainActivity extends AppCompatActivity {
                     // Если адаптер не доступен (выключен), то запрашиваем его включение, а пока выходим
                     if (!bluetoothAdapter.isEnabled()) {
                         Log.d(LOG_TAG, "bluetooth is disabled");
-                        Toast.makeText(getApplicationContext(), "bluetooth is disabled", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), "bluetooth is disabled", Toast.LENGTH_SHORT).show();
                         // Запрос на включение bluetooth:
                         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -892,10 +892,9 @@ public class MainActivity extends AppCompatActivity {
                     };
                     btSocketConnectionThread = new Thread(btConnection);
                     btSocketConnectionThread.start();
-                }
 
-                // Если есть подключение к плате, то отключаемся
-                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                // иначе, если есть подключение к плате, то отключаемся
+                } else if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
                     // Блокируем кнопку
                     bt_connect.setEnabled(false);
                     // Останавливаем подключение к датчику, если оно есть
