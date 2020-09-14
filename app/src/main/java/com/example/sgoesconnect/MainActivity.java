@@ -679,6 +679,10 @@ public class MainActivity extends AppCompatActivity {
 
     TextView title_request_pause;
     EditText input_request_pause;
+    
+    TextView title_high_concentration;
+    EditText input_high_concentration;
+    
     Button save_settings;
     
     final int REQUEST_PAUSE_MIN = 2000;
@@ -766,7 +770,11 @@ public class MainActivity extends AppCompatActivity {
         // settings screen
         title_request_pause = (TextView) findViewById(R.id.title_request_pause);
         input_request_pause = (EditText) findViewById(R.id.input_request_pause);
-        input_request_pause.setText(Integer.toString(requestPause));
+        // input_request_pause.setText(Integer.toString(requestPause));
+        
+        title_high_concentration = (TextView) findViewById(R.id.title_high_concentration);
+        input_high_concentration = (EditText) findViewById(R.id.input_high_concentration);
+        // input_high_concentration.setText(Float.toString(HIGH_CONCENTRATION));
 
         save_settings = (Button) findViewById(R.id.save_settings);
 
@@ -1589,6 +1597,10 @@ public class MainActivity extends AppCompatActivity {
         title_request_pause.setVisibility(View.VISIBLE);
         input_request_pause.setText(Integer.toString(requestPause));
         input_request_pause.setVisibility(View.VISIBLE);
+        
+        title_high_concentration.setVisibility(View.VISIBLE);
+        input_high_concentration.setText(Float.toString(HIGH_CONCENTRATION));
+        input_high_concentration.setVisibility(View.VISIBLE);
 
         save_settings.setVisibility(View.VISIBLE);
 

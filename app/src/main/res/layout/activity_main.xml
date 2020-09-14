@@ -571,6 +571,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_request_pause" />
 
+    <TextView
+        android:id="@+id/title_high_concentration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:text="Высокая концентрация ПГС (об. %):"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_request_pause" />
+
+    <EditText
+        android:id="@+id/input_high_concentration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:ems="6"
+        android:inputType="numberDecimal"
+        android:maxLength="6"
+        android:text=""
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_high_concentration" />
+        
+
+        
     <Button
         android:id="@+id/save_settings"
         android:layout_width="wrap_content"
@@ -582,6 +611,6 @@
         android:visibility="invisible"
         android:text="Сохранить"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_request_pause" />
+        app:layout_constraintTop_toBottomOf="@+id/input_high_concentration" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
