@@ -562,7 +562,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="5dp"
         android:ems="5"
         android:inputType="number"
         android:maxLength="5"
@@ -589,7 +588,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginTop="5dp"
         android:ems="6"
         android:inputType="numberDecimal"
         android:maxLength="6"
@@ -597,9 +595,33 @@
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_high_concentration" />
-        
 
-        
+    <TextView
+        android:id="@+id/title_middle_concentration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="5dp"
+        android:text="Средняя концентрация ПГС (об. %):"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_high_concentration" />
+
+    <EditText
+        android:id="@+id/input_middle_concentration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:ems="6"
+        android:inputType="numberDecimal"
+        android:maxLength="6"
+        android:text=""
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_middle_concentration" />
+
     <Button
         android:id="@+id/save_settings"
         android:layout_width="wrap_content"
@@ -611,6 +633,6 @@
         android:visibility="invisible"
         android:text="Сохранить"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_high_concentration" />
+        app:layout_constraintTop_toBottomOf="@+id/input_middle_concentration" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

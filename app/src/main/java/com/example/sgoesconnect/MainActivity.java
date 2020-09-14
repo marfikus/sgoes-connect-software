@@ -682,7 +682,10 @@ public class MainActivity extends AppCompatActivity {
     
     TextView title_high_concentration;
     EditText input_high_concentration;
-    
+
+    TextView title_middle_concentration;
+    EditText input_middle_concentration;
+
     Button save_settings;
     
     final int REQUEST_PAUSE_MIN = 2000;
@@ -773,14 +776,16 @@ public class MainActivity extends AppCompatActivity {
         // settings screen
         title_request_pause = (TextView) findViewById(R.id.title_request_pause);
         input_request_pause = (EditText) findViewById(R.id.input_request_pause);
-        // input_request_pause.setText(Integer.toString(requestPause));
         
         title_high_concentration = (TextView) findViewById(R.id.title_high_concentration);
         input_high_concentration = (EditText) findViewById(R.id.input_high_concentration);
-        // input_high_concentration.setText(Float.toString(highConcentration));
+
+        title_middle_concentration = (TextView) findViewById(R.id.title_middle_concentration);
+        input_middle_concentration = (EditText) findViewById(R.id.input_middle_concentration);
 
         save_settings = (Button) findViewById(R.id.save_settings);
 
+        
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1612,6 +1617,10 @@ public class MainActivity extends AppCompatActivity {
         input_high_concentration.setText(Float.toString(highConcentration));
         input_high_concentration.setVisibility(View.VISIBLE);
 
+        title_middle_concentration.setVisibility(View.VISIBLE);
+        input_middle_concentration.setText(Float.toString(middleConcentration));
+        input_middle_concentration.setVisibility(View.VISIBLE);
+
         save_settings.setVisibility(View.VISIBLE);
 
 
@@ -1621,8 +1630,13 @@ public class MainActivity extends AppCompatActivity {
         title_request_pause.setVisibility(View.INVISIBLE);
         input_request_pause.setVisibility(View.INVISIBLE);
 
-        save_settings.setVisibility(View.INVISIBLE);
+        title_high_concentration.setVisibility(View.INVISIBLE);
+        input_high_concentration.setVisibility(View.INVISIBLE);
 
+        title_middle_concentration.setVisibility(View.INVISIBLE);
+        input_middle_concentration.setVisibility(View.INVISIBLE);
+
+        save_settings.setVisibility(View.INVISIBLE);
 
     }
 
