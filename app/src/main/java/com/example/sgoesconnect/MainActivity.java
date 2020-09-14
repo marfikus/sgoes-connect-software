@@ -792,8 +792,7 @@ public class MainActivity extends AppCompatActivity {
                 // пауза между запросами
                 String inputRequestPause = input_request_pause.getText().toString();
                 if (!checkInputRequestPause(inputRequestPause)) {
-                    // todo: фокус в это поле
-                    
+                    input_request_pause.requestFocus();
                     return;
                 }
                 requestPause = Integer.parseInt(inputRequestPause);
@@ -803,8 +802,7 @@ public class MainActivity extends AppCompatActivity {
                 // высокая концентрация
                 String inputHighConcentration = input_high_concentration.getText().toString();
                 if (!checkInputConcentration(inputHighConcentration, "high")) {
-                    // todo: фокус в это поле
-                    
+                    input_high_concentration.requestFocus();
                     return;
                 }
                 highConcentration = Float.parseFloat(inputHighConcentration);
@@ -813,8 +811,7 @@ public class MainActivity extends AppCompatActivity {
                 // средняя концентрация
                 String inputMiddleConcentration = input_middle_concentration.getText().toString();
                 if (!checkInputConcentration(inputMiddleConcentration, "middle")) {
-                    // todo: фокус в это поле
-
+                    input_middle_concentration.requestFocus();
                     return;
                 }
                 middleConcentration = Float.parseFloat(inputMiddleConcentration);
