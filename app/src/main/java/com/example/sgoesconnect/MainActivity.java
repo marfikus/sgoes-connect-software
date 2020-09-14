@@ -687,6 +687,9 @@ public class MainActivity extends AppCompatActivity {
     
     final int REQUEST_PAUSE_MIN = 2000;
     final int REQUEST_PAUSE_MAX = 20000;
+    
+    final float PGS_CONCENTRATION_MIN = (float)0.0;
+    final float PGS_CONCENTRATION_MAX = (float)5.0;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -793,7 +796,14 @@ public class MainActivity extends AppCompatActivity {
                 
                 
                 // высокая концентрация
-
+                String inputHighConcentration = input_high_concentration.getText().toString();
+                if (!checkInputConcentration(inputHighConcentration, "high")) {
+                    // todo: фокус в это поле
+                    
+                    return;
+                }
+                HIGH_CONCENTRATION = Float.parseFloat(inputHighConcentration);
+                // todo: сохранение...
                 
                 // средняя концентрация
                 
@@ -1946,7 +1956,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkInputConcentration(String inputConcentration, String level) {
         // проверка на пустоту
         if (inputConcentration.length() == 0) {
-            Log.d(LOG_TAG, "confirm_dialog_input is empty");
+            Log.d(LOG_TAG, "inputConcentration is empty");
             Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
             return false;
         }
@@ -1954,32 +1964,32 @@ public class MainActivity extends AppCompatActivity {
         float inputConcentrationFloat = Float.parseFloat(inputConcentration);
         Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
         
-        // проверка на 0
-        if (inputConcentrationFloat == (float)0.0) {
-            Log.d(LOG_TAG, "confirm_dialog_input == 0");
-            Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0", Toast.LENGTH_LONG).show();
+        // проверка на минимальное значение
+        if (inputConcentrationFloat <= PGS_CONCENTRATION_MIN) {
+            Log.d(LOG_TAG, "inputConcentrationFloat <= PGS_CONCENTRATION_MIN");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть больше " + Float.toString(PGS_CONCENTRATION_MIN), Toast.LENGTH_LONG).show();
             return false;
         }
         
         // сравнение с другой концентрацией
         if (level == "middle") {
             if (inputConcentrationFloat >= HIGH_CONCENTRATION) {
-                Log.d(LOG_TAG, "confirm_dialog_input >= HIGH_CONCENTRATION");
+                Log.d(LOG_TAG, "inputConcentrationFloat >= HIGH_CONCENTRATION");
                 Toast.makeText(getApplicationContext(), "Средняя концентрация должна быть меньше высокой", Toast.LENGTH_LONG).show();
                 return false;                
             }
         } else if (level == "high") {
             if (inputConcentrationFloat <= MIDDLE_CONCENTRATION) {
-                Log.d(LOG_TAG, "confirm_dialog_input <= MIDDLE_CONCENTRATION");
+                Log.d(LOG_TAG, "inputConcentrationFloat <= MIDDLE_CONCENTRATION");
                 Toast.makeText(getApplicationContext(), "Высокая концентрация должна быть больше средней", Toast.LENGTH_LONG).show();
                 return false;
             }
         }
         
-        // проверка на максимальное значение (>=5)
-        if (inputConcentrationFloat >= (float)5.0) {
-            Log.d(LOG_TAG, "confirm_dialog_input >= 5");
-            Toast.makeText(getApplicationContext(), "Концентрация должна быть меньше 5", Toast.LENGTH_LONG).show();
+        // проверка на максимальное значение
+        if (inputConcentrationFloat >= PGS_CONCENTRATION_MAX) {
+            Log.d(LOG_TAG, "inputConcentrationFloat >= PGS_CONCENTRATION_MAX");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть меньше " + Float.toString(PGS_CONCENTRATION_MAX), Toast.LENGTH_LONG).show();
             return false;
         }
         
