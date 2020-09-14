@@ -680,6 +680,9 @@ public class MainActivity extends AppCompatActivity {
     TextView title_request_pause;
     EditText input_request_pause;
     Button save_settings;
+    
+    final int REQUEST_PAUSE_MIN = 2000;
+    final int REQUEST_PAUSE_MAX = 20000;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -2005,6 +2008,35 @@ public class MainActivity extends AppCompatActivity {
         if (inputThresholdValueInt > 100) {
             Log.d(LOG_TAG, "confirm_dialog_input > 100");
             Toast.makeText(getApplicationContext(), "Величина порога не должна быть больше 100", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkInputRequestPause(String inputValue) {
+
+        // проверка на пустоту
+        if (inputValue.length() == 0) {
+            Log.d(LOG_TAG, "input_request_pause is empty");
+            Toast.makeText(getApplicationContext(), "Введите величину паузы между запросами (от 2000 до 20000)", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        int inputValueInt = Integer.parseInt(inputValue);
+        // Log.d(LOG_TAG, "inputValueInt: " + inputValueInt);
+        
+        // проверка на минимальное значение
+        if (inputValueInt < REQUEST_PAUSE_MIN) {
+            Log.d(LOG_TAG, "input_request_pause < REQUEST_PAUSE_MIN");
+            Toast.makeText(getApplicationContext(), "Пауза не должна быть меньше " + Integer.toString(REQUEST_PAUSE_MIN), Toast.LENGTH_LONG).show();
+            return false;
+        }
+        
+        // проверка на максимальное значение
+        if (inputValueInt > REQUEST_PAUSE_MAX) {
+            Log.d(LOG_TAG, "input_request_pause > REQUEST_PAUSE_MAX");
+            Toast.makeText(getApplicationContext(), "Пауза не должна быть больше " + Integer.toString(REQUEST_PAUSE_MAX), Toast.LENGTH_LONG).show();
             return false;
         }
 
