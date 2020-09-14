@@ -785,7 +785,7 @@ public class MainActivity extends AppCompatActivity {
 
         save_settings = (Button) findViewById(R.id.save_settings);
 
-        
+
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -811,8 +811,16 @@ public class MainActivity extends AppCompatActivity {
                 // todo: сохранение...
                 
                 // средняя концентрация
-                
-                
+                String inputMiddleConcentration = input_middle_concentration.getText().toString();
+                if (!checkInputConcentration(inputMiddleConcentration, "middle")) {
+                    // todo: фокус в это поле
+
+                    return;
+                }
+                middleConcentration = Float.parseFloat(inputMiddleConcentration);
+                // todo: сохранение...
+
+
                 // текущий адрес в поле подключения (если пусто, то пропускаем)
                 
                 
