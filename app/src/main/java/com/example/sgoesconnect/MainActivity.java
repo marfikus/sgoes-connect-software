@@ -773,13 +773,30 @@ public class MainActivity extends AppCompatActivity {
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // todo: проверить значение
+                // пауза между запросами
                 String inputRequestPause = input_request_pause.getText().toString();
-                if (checkInputRequestPause(inputRequestPause)) {
-                    requestPause = Integer.parseInt(inputRequestPause);
-                    // todo: сохранение...
+                if (!checkInputRequestPause(inputRequestPause)) {
+                    // todo: фокус в это поле
+                    
+                    return;
                 }
-                // todo: вывести тост "Сохранено", если нет ошибок
+                requestPause = Integer.parseInt(inputRequestPause);
+                // todo: сохранение...
+                
+                
+                // высокая концентрация
+
+                
+                // средняя концентрация
+                
+                
+                // текущий адрес в поле подключения (если пусто, то пропускаем)
+                
+                
+                // адаптер
+                
+                
+                Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
             }
         });
 
