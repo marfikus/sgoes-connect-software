@@ -24,6 +24,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -641,9 +642,13 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter = null;
     BluetoothDevice bluetoothDevice = null;
 
-    float highConcentration = (float)4.15;
-    float middleConcentration = (float)2.2;
-    int requestPause = 2000;
+    int requestPause = 0;
+    float highConcentration = (float)0.0;
+    float middleConcentration = (float)0.0;
+    
+    final int REQUEST_PAUSE_DEFAULT = 2000;
+    final float HIGH_CONCENTRATION_DEFAULT = (float)4.15;
+    final float MIDDLE_CONCENTRATION_DEFAULT = (float)2.2;
 
     enum ConfirmDialogModes {
         NONE,
@@ -693,6 +698,9 @@ public class MainActivity extends AppCompatActivity {
     
     final float PGS_CONCENTRATION_MIN = (float)0.0;
     final float PGS_CONCENTRATION_MAX = (float)5.0;
+    
+    private static final String PREFS_FILE = "prog_settings";
+    SharedPreferences settings;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -702,7 +710,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-        
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
         rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
@@ -785,6 +792,8 @@ public class MainActivity extends AppCompatActivity {
 
         save_settings = (Button) findViewById(R.id.save_settings);
 
+        settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
+        loadSettings();
 
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1477,6 +1486,15 @@ public class MainActivity extends AppCompatActivity {
         
     }
 
+    public void loadSettings() {
+        requestPause = settings.getInt("requestPause", REQUEST_PAUSE_DEFAULT);
+        highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
+        middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
+        
+        String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
+        input_sensor_address.setText(lastConnectedSensorAddress);
+    }
+    
     public void showWorkScreen() {
         title_sensor_connection.setVisibility(View.VISIBLE);
         input_sensor_address.setVisibility(View.VISIBLE);
