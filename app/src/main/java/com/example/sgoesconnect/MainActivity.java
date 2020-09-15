@@ -24,6 +24,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -160,6 +161,10 @@ public class MainActivity extends AppCompatActivity {
                 if (curSensorAddress != newSensorAddress) {
                     curSensorAddress = newSensorAddress;
                     input_sensor_address.setText(Integer.toString(newSensorAddress));
+                    // сохраняем адрес
+                    prefEditor.putString("lastConnectedSensorAddress", Integer.toString(newSensorAddress));
+                    prefEditor.apply();
+                    
                     Log.d(LOG_TAG, "apparently response on CHANGING_SENSOR_ADDRESS, change curSensorAddress");
                     return;
                 }
@@ -641,8 +646,13 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter = null;
     BluetoothDevice bluetoothDevice = null;
 
-    float HIGH_CONCENTRATION = (float)4.15;
-    float MIDDLE_CONCENTRATION = (float)2.2;
+    int requestPause = 0;
+    float highConcentration = (float)0.0;
+    float middleConcentration = (float)0.0;
+    
+    final int REQUEST_PAUSE_DEFAULT = 2000;
+    final float HIGH_CONCENTRATION_DEFAULT = (float)4.15;
+    final float MIDDLE_CONCENTRATION_DEFAULT = (float)2.2;
 
     enum ConfirmDialogModes {
         NONE,
@@ -676,6 +686,27 @@ public class MainActivity extends AppCompatActivity {
     TextView title_address_list;
     Spinner address_list;
 
+    TextView title_request_pause;
+    EditText input_request_pause;
+    
+    TextView title_high_concentration;
+    EditText input_high_concentration;
+
+    TextView title_middle_concentration;
+    EditText input_middle_concentration;
+
+    Button save_settings;
+    
+    final int REQUEST_PAUSE_MIN = 2000;
+    final int REQUEST_PAUSE_MAX = 20000;
+    
+    final float PGS_CONCENTRATION_MIN = (float)0.0;
+    final float PGS_CONCENTRATION_MAX = (float)5.0;
+    
+    private static final String PREFS_FILE = "prog_settings";
+    SharedPreferences settings;
+    SharedPreferences.Editor prefEditor;
+
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -684,7 +715,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "ready");
 
-        
         bt_settings = (Button) findViewById(R.id.bt_settings);
         bt_connect = (Button) findViewById(R.id.bt_connect);
         rg_app_modes = (RadioGroup) findViewById(R.id.rg_app_modes);
@@ -754,6 +784,60 @@ public class MainActivity extends AppCompatActivity {
 
         title_address_list = (TextView) findViewById(R.id.title_address_list);
         address_list = (Spinner) findViewById(R.id.address_list);
+
+        // settings screen
+        title_request_pause = (TextView) findViewById(R.id.title_request_pause);
+        input_request_pause = (EditText) findViewById(R.id.input_request_pause);
+        
+        title_high_concentration = (TextView) findViewById(R.id.title_high_concentration);
+        input_high_concentration = (EditText) findViewById(R.id.input_high_concentration);
+
+        title_middle_concentration = (TextView) findViewById(R.id.title_middle_concentration);
+        input_middle_concentration = (EditText) findViewById(R.id.input_middle_concentration);
+
+        save_settings = (Button) findViewById(R.id.save_settings);
+
+        settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
+        prefEditor = settings.edit();
+        loadSettings();
+
+        save_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // пауза между запросами
+                String inputRequestPause = input_request_pause.getText().toString();
+                if (!checkInputRequestPause(inputRequestPause)) {
+                    input_request_pause.requestFocus();
+                    return;
+                }
+                requestPause = Integer.parseInt(inputRequestPause);
+                prefEditor.putInt("requestPause", requestPause);
+                
+                // высокая концентрация
+                String inputHighConcentration = input_high_concentration.getText().toString();
+                if (!checkInputConcentration(inputHighConcentration, "high")) {
+                    input_high_concentration.requestFocus();
+                    return;
+                }
+                highConcentration = Float.parseFloat(inputHighConcentration);
+                prefEditor.putFloat("highConcentration", highConcentration);
+                
+                // средняя концентрация
+                String inputMiddleConcentration = input_middle_concentration.getText().toString();
+                if (!checkInputConcentration(inputMiddleConcentration, "middle")) {
+                    input_middle_concentration.requestFocus();
+                    return;
+                }
+                middleConcentration = Float.parseFloat(inputMiddleConcentration);
+                prefEditor.putFloat("middleConcentration", middleConcentration);
+                
+                // todo: адаптер
+                
+                
+                prefEditor.apply();
+                Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -921,6 +1005,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.rb_work:
                         appMode = AppMode.WORK;
                         hideSearchScreen();
+                        hideSettingsScreen();
                         showWorkScreen();
                         hideConfirmDialog("ok");
 
@@ -929,6 +1014,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.rb_search:
                         appMode = AppMode.SEARCH_SENSORS;
                         hideWorkScreen();
+                        hideSettingsScreen();
                         showSearchScreen();
 
                         break;
@@ -937,6 +1023,8 @@ public class MainActivity extends AppCompatActivity {
                         appMode = AppMode.SETTINGS;
                         hideWorkScreen();
                         hideSearchScreen();
+                        showSettingsScreen();
+//                        todo: обновлять значения в полях ввода (на случай если раньше меняли, но не сохранили)
 
                         break;
 
@@ -957,6 +1045,9 @@ public class MainActivity extends AppCompatActivity {
                             String inputAddress = input_sensor_address.getText().toString();
                             if (checkInputAddress(inputAddress, "connection")) {
                                 curSensorAddress = Integer.parseInt(inputAddress);
+                                // сохраняем адрес
+                                prefEditor.putString("lastConnectedSensorAddress", inputAddress);
+                                prefEditor.apply();
                             } else {
                                 return;
                             }
@@ -1232,7 +1323,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 confirm_dialog_title.setText("Основная калибровка:");
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                confirm_dialog_input.setText(Float.toString(HIGH_CONCENTRATION));
+                confirm_dialog_input.setText(Float.toString(highConcentration));
                 confirm_dialog_input.setEnabled(true);
                 
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_HIGH;
@@ -1245,7 +1336,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 confirm_dialog_title.setText("Дополнительная калибровка:");
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                confirm_dialog_input.setText(Float.toString(MIDDLE_CONCENTRATION));
+                confirm_dialog_input.setText(Float.toString(middleConcentration));
                 confirm_dialog_input.setEnabled(true);
 
                 confirmDialogMode = ConfirmDialogModes.CALIBRATION_MIDDLE;
@@ -1288,8 +1379,6 @@ public class MainActivity extends AppCompatActivity {
                     case CHANGE_SENSOR_ADDRESS:
                         if (checkInputAddress(inputValue, "changing")) {
                             newSensorAddress = Integer.parseInt(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
                             commandFromButton = Commands.CHANGE_SENSOR_ADDRESS;
                             Log.d(LOG_TAG, commandFromButton.toString());
@@ -1304,9 +1393,10 @@ public class MainActivity extends AppCompatActivity {
                         
                     case CALIBRATION_HIGH:
                         if (checkInputConcentration(inputValue, "high")) {
-                            HIGH_CONCENTRATION = Float.parseFloat(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                            highConcentration = Float.parseFloat(inputValue);
+                            // сохраняем значение
+                            prefEditor.putFloat("highConcentration", highConcentration);
+                            prefEditor.apply();
 
                             commandFromButton = Commands.CALIBRATION_HIGH;
                             Log.d(LOG_TAG, commandFromButton.toString());
@@ -1321,9 +1411,10 @@ public class MainActivity extends AppCompatActivity {
                         
                     case CALIBRATION_MIDDLE:
                         if (checkInputConcentration(inputValue, "middle")) {
-                            MIDDLE_CONCENTRATION = Float.parseFloat(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                            middleConcentration = Float.parseFloat(inputValue);
+                            // сохраняем значение
+                            prefEditor.putFloat("middleConcentration", middleConcentration);
+                            prefEditor.apply();
 
                             commandFromButton = Commands.CALIBRATION_MIDDLE;
                             Log.d(LOG_TAG, commandFromButton.toString());
@@ -1400,6 +1491,15 @@ public class MainActivity extends AppCompatActivity {
         
     }
 
+    public void loadSettings() {
+        requestPause = settings.getInt("requestPause", REQUEST_PAUSE_DEFAULT);
+        highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
+        middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
+        
+        String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
+        input_sensor_address.setText(lastConnectedSensorAddress);
+    }
+    
     public void showWorkScreen() {
         title_sensor_connection.setVisibility(View.VISIBLE);
         input_sensor_address.setVisibility(View.VISIBLE);
@@ -1535,7 +1635,39 @@ public class MainActivity extends AppCompatActivity {
         title_address_list.setVisibility(View.INVISIBLE);
         address_list.setVisibility(View.INVISIBLE);
     }
-    
+
+    public void showSettingsScreen() {
+        title_request_pause.setVisibility(View.VISIBLE);
+        input_request_pause.setText(Integer.toString(requestPause));
+        input_request_pause.setVisibility(View.VISIBLE);
+        
+        title_high_concentration.setVisibility(View.VISIBLE);
+        input_high_concentration.setText(Float.toString(highConcentration));
+        input_high_concentration.setVisibility(View.VISIBLE);
+
+        title_middle_concentration.setVisibility(View.VISIBLE);
+        input_middle_concentration.setText(Float.toString(middleConcentration));
+        input_middle_concentration.setVisibility(View.VISIBLE);
+
+        save_settings.setVisibility(View.VISIBLE);
+
+
+    }
+
+    public void hideSettingsScreen() {
+        title_request_pause.setVisibility(View.INVISIBLE);
+        input_request_pause.setVisibility(View.INVISIBLE);
+
+        title_high_concentration.setVisibility(View.INVISIBLE);
+        input_high_concentration.setVisibility(View.INVISIBLE);
+
+        title_middle_concentration.setVisibility(View.INVISIBLE);
+        input_middle_concentration.setVisibility(View.INVISIBLE);
+
+        save_settings.setVisibility(View.INVISIBLE);
+
+    }
+
     public void showConfirmDialog() {
         set_zero.setVisibility(View.INVISIBLE);
         main_calibration.setVisibility(View.INVISIBLE);
@@ -1608,7 +1740,7 @@ public class MainActivity extends AppCompatActivity {
 
             // ждём некоторое время
             try {
-                Thread.sleep(2000);
+                Thread.sleep(requestPause);
             } catch (InterruptedException e) {
                 // если есть внешнее прерывание, то прерываем цикл
                 e.printStackTrace();
@@ -1711,7 +1843,7 @@ public class MainActivity extends AppCompatActivity {
             case CALIBRATION_HIGH: // калибровка по высокой смеси (основная)
                 // Концентрация газа в объёмных % * 1000
 
-                concInt = (int)(HIGH_CONCENTRATION * 1000);
+                concInt = (int)(highConcentration * 1000);
                 concHex = Integer.toHexString(concInt);
 //                Log.d(LOG_TAG, "concHex: " + concHex);
                 // если ввели маленькое значение, то дополняем спереди нулями
@@ -1736,7 +1868,7 @@ public class MainActivity extends AppCompatActivity {
             case CALIBRATION_MIDDLE: // калибровка по средней смеси (дополнительная)
                 // Концентрация газа в объёмных % * 1000
 
-                concInt = (int)(MIDDLE_CONCENTRATION * 1000);
+                concInt = (int)(middleConcentration * 1000);
                 concHex = Integer.toHexString(concInt);
 //                Log.d(LOG_TAG, "concHex: " + concHex);
                 // если ввели маленькое значение, то дополняем спереди нулями
@@ -1810,6 +1942,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkInputAddress(String inputAddress, String mode) {
         // адрес должен быть в диапазоне 1..247
 
+        // todo: заменить литералы на константы (min/max)
+        
         // проверка на пустоту
         if (inputAddress.length() == 0) {
             Log.d(LOG_TAG, "inputAddress is empty");
@@ -1866,7 +2000,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkInputConcentration(String inputConcentration, String level) {
         // проверка на пустоту
         if (inputConcentration.length() == 0) {
-            Log.d(LOG_TAG, "confirm_dialog_input is empty");
+            Log.d(LOG_TAG, "inputConcentration is empty");
             Toast.makeText(getApplicationContext(), "Введите концентрацию газа в объёмных %", Toast.LENGTH_LONG).show();
             return false;
         }
@@ -1874,32 +2008,32 @@ public class MainActivity extends AppCompatActivity {
         float inputConcentrationFloat = Float.parseFloat(inputConcentration);
         Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
         
-        // проверка на 0
-        if (inputConcentrationFloat == (float)0.0) {
-            Log.d(LOG_TAG, "confirm_dialog_input == 0");
-            Toast.makeText(getApplicationContext(), "Концентрация должна быть больше 0", Toast.LENGTH_LONG).show();
+        // проверка на минимальное значение
+        if (inputConcentrationFloat <= PGS_CONCENTRATION_MIN) {
+            Log.d(LOG_TAG, "inputConcentrationFloat <= PGS_CONCENTRATION_MIN");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть больше " + Float.toString(PGS_CONCENTRATION_MIN), Toast.LENGTH_LONG).show();
             return false;
         }
         
         // сравнение с другой концентрацией
         if (level == "middle") {
-            if (inputConcentrationFloat >= HIGH_CONCENTRATION) {
-                Log.d(LOG_TAG, "confirm_dialog_input >= HIGH_CONCENTRATION");
+            if (inputConcentrationFloat >= highConcentration) {
+                Log.d(LOG_TAG, "inputConcentrationFloat >= highConcentration");
                 Toast.makeText(getApplicationContext(), "Средняя концентрация должна быть меньше высокой", Toast.LENGTH_LONG).show();
                 return false;                
             }
         } else if (level == "high") {
-            if (inputConcentrationFloat <= MIDDLE_CONCENTRATION) {
-                Log.d(LOG_TAG, "confirm_dialog_input <= MIDDLE_CONCENTRATION");
+            if (inputConcentrationFloat <= middleConcentration) {
+                Log.d(LOG_TAG, "inputConcentrationFloat <= middleConcentration");
                 Toast.makeText(getApplicationContext(), "Высокая концентрация должна быть больше средней", Toast.LENGTH_LONG).show();
                 return false;
             }
         }
         
-        // проверка на максимальное значение (>=5)
-        if (inputConcentrationFloat >= (float)5.0) {
-            Log.d(LOG_TAG, "confirm_dialog_input >= 5");
-            Toast.makeText(getApplicationContext(), "Концентрация должна быть меньше 5", Toast.LENGTH_LONG).show();
+        // проверка на максимальное значение
+        if (inputConcentrationFloat >= PGS_CONCENTRATION_MAX) {
+            Log.d(LOG_TAG, "inputConcentrationFloat >= PGS_CONCENTRATION_MAX");
+            Toast.makeText(getApplicationContext(), "Концентрация должна быть меньше " + Float.toString(PGS_CONCENTRATION_MAX), Toast.LENGTH_LONG).show();
             return false;
         }
         
@@ -1908,6 +2042,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkInputThreshold(String inputThresholdValue, int threshold) {
 
+        // todo: заменить литералы на константы (min/max)    
+    
         // проверка на пустоту
         if (inputThresholdValue.length() == 0) {
             Log.d(LOG_TAG, "confirm_dialog_input is empty");
@@ -1957,6 +2093,35 @@ public class MainActivity extends AppCompatActivity {
         if (inputThresholdValueInt > 100) {
             Log.d(LOG_TAG, "confirm_dialog_input > 100");
             Toast.makeText(getApplicationContext(), "Величина порога не должна быть больше 100", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkInputRequestPause(String inputValue) {
+
+        // проверка на пустоту
+        if (inputValue.length() == 0) {
+            Log.d(LOG_TAG, "input_request_pause is empty");
+            Toast.makeText(getApplicationContext(), "Введите величину паузы между запросами (от 2000 до 20000)", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        int inputValueInt = Integer.parseInt(inputValue);
+        // Log.d(LOG_TAG, "inputValueInt: " + inputValueInt);
+        
+        // проверка на минимальное значение
+        if (inputValueInt < REQUEST_PAUSE_MIN) {
+            Log.d(LOG_TAG, "input_request_pause < REQUEST_PAUSE_MIN");
+            Toast.makeText(getApplicationContext(), "Пауза не должна быть меньше " + Integer.toString(REQUEST_PAUSE_MIN), Toast.LENGTH_LONG).show();
+            return false;
+        }
+        
+        // проверка на максимальное значение
+        if (inputValueInt > REQUEST_PAUSE_MAX) {
+            Log.d(LOG_TAG, "input_request_pause > REQUEST_PAUSE_MAX");
+            Toast.makeText(getApplicationContext(), "Пауза не должна быть больше " + Integer.toString(REQUEST_PAUSE_MAX), Toast.LENGTH_LONG).show();
             return false;
         }
 
