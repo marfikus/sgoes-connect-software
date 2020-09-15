@@ -161,6 +161,10 @@ public class MainActivity extends AppCompatActivity {
                 if (curSensorAddress != newSensorAddress) {
                     curSensorAddress = newSensorAddress;
                     input_sensor_address.setText(Integer.toString(newSensorAddress));
+                    // сохраняем адрес
+                    prefEditor.putString("lastConnectedSensorAddress", Integer.toString(newSensorAddress));
+                    prefEditor.apply();
+                    
                     Log.d(LOG_TAG, "apparently response on CHANGING_SENSOR_ADDRESS, change curSensorAddress");
                     return;
                 }
@@ -701,6 +705,7 @@ public class MainActivity extends AppCompatActivity {
     
     private static final String PREFS_FILE = "prog_settings";
     SharedPreferences settings;
+    SharedPreferences.Editor prefEditor;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -793,6 +798,7 @@ public class MainActivity extends AppCompatActivity {
         save_settings = (Button) findViewById(R.id.save_settings);
 
         settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
+        prefEditor = settings.edit();
         loadSettings();
 
         save_settings.setOnClickListener(new View.OnClickListener() {
@@ -805,8 +811,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 requestPause = Integer.parseInt(inputRequestPause);
-                // todo: сохранение...
-                
+                prefEditor.putInt("requestPause", requestPause);
                 
                 // высокая концентрация
                 String inputHighConcentration = input_high_concentration.getText().toString();
@@ -815,7 +820,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 highConcentration = Float.parseFloat(inputHighConcentration);
-                // todo: сохранение...
+                prefEditor.putFloat("highConcentration", highConcentration);
                 
                 // средняя концентрация
                 String inputMiddleConcentration = input_middle_concentration.getText().toString();
@@ -824,15 +829,12 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 middleConcentration = Float.parseFloat(inputMiddleConcentration);
-                // todo: сохранение...
-
-
-                // текущий адрес в поле подключения (если пусто, то пропускаем)
+                prefEditor.putFloat("middleConcentration", middleConcentration);
+                
+                // todo: адаптер
                 
                 
-                // адаптер
-                
-                
+                prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
             }
         });
@@ -1043,6 +1045,9 @@ public class MainActivity extends AppCompatActivity {
                             String inputAddress = input_sensor_address.getText().toString();
                             if (checkInputAddress(inputAddress, "connection")) {
                                 curSensorAddress = Integer.parseInt(inputAddress);
+                                // сохраняем адрес
+                                prefEditor.putString("lastConnectedSensorAddress", inputAddress);
+                                prefEditor.apply();
                             } else {
                                 return;
                             }
@@ -1374,8 +1379,6 @@ public class MainActivity extends AppCompatActivity {
                     case CHANGE_SENSOR_ADDRESS:
                         if (checkInputAddress(inputValue, "changing")) {
                             newSensorAddress = Integer.parseInt(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
 
                             commandFromButton = Commands.CHANGE_SENSOR_ADDRESS;
                             Log.d(LOG_TAG, commandFromButton.toString());
@@ -1391,8 +1394,9 @@ public class MainActivity extends AppCompatActivity {
                     case CALIBRATION_HIGH:
                         if (checkInputConcentration(inputValue, "high")) {
                             highConcentration = Float.parseFloat(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                            // сохраняем значение
+                            prefEditor.putFloat("highConcentration", highConcentration);
+                            prefEditor.apply();
 
                             commandFromButton = Commands.CALIBRATION_HIGH;
                             Log.d(LOG_TAG, commandFromButton.toString());
@@ -1408,8 +1412,9 @@ public class MainActivity extends AppCompatActivity {
                     case CALIBRATION_MIDDLE:
                         if (checkInputConcentration(inputValue, "middle")) {
                             middleConcentration = Float.parseFloat(inputValue);
-                            // todo: а если значение новое, то его надо сохранить,
-                            //  чтобы потом (при новом запуске приложения) подгружалось уже оно
+                            // сохраняем значение
+                            prefEditor.putFloat("middleConcentration", middleConcentration);
+                            prefEditor.apply();
 
                             commandFromButton = Commands.CALIBRATION_MIDDLE;
                             Log.d(LOG_TAG, commandFromButton.toString());
