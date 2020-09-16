@@ -437,21 +437,32 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
-//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-
-                    float fCurRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
-                    fCurRegDataFull = fCurRegDataFull / 10;
-                    // Log.d(LOG_TAG, "fCurRegDataFull: " + fCurRegDataFull);
-                    gas_level_nkpr.setText(Float.toString(fCurRegDataFull));
+                    String bits = Integer.toBinaryString(curRegDataFull);
+                    // дополняем строку ведущими нулями
+                    bits = String.format("%16s", bits).replace(' ', '0');
+//                    Log.d(LOG_TAG, "bits: " + bits);
+                    float nkprValue;
+                    // если старший бит = 1, то значит это отрицательное число
+                    if (bits.startsWith("1")) {
+                        // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
+                        // и то, что получится делить на 10, но это дольше.
+                        // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
+                        // причём уже с нужным знаком. Думаю, это нормальное решение)
+                        nkprValue = (curRegDataFull - 65535) / (float)10.0;
+                    } else {
+                        nkprValue = curRegDataFull / (float)10.0;
+                    }
+                    gas_level_nkpr.setText(Float.toString(nkprValue));
 
                     // объёмные проценты
-                    float volumePercent = nkprPercentToVolumePercent(fCurRegDataFull);
+                    float volumePercent = nkprPercentToVolumePercent(nkprValue);
                     // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
                     gas_level_volume.setText(Float.toString(volumePercent));
 
                     // ток в мА
-                    float current = nkprPercentToCurrent(fCurRegDataFull);
+                    float current = nkprPercentToCurrent(nkprValue);
                     // Log.d(LOG_TAG, "current: " + current);
                     gas_level_current.setText(Float.toString(current));
                     break;
