@@ -1368,7 +1368,7 @@ public class MainActivity extends AppCompatActivity {
                         if (msg.obj == "trying_to_connect_again") {
 //                            Log.d(LOG_TAG, "btSocketCountConnectionTries: " + btSocketCountConnectionTries);
                             bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА " + (btSocketCountConnectionTries + 1));
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_SHORT).show();
                             break;
                         }
                         // Если так и не подключились, то возвращаемся к исходному состоянию
@@ -1376,7 +1376,7 @@ public class MainActivity extends AppCompatActivity {
                             btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
                             bt_connect.setText("ПОДКЛЮЧИТЬСЯ");
                             bt_connect.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_SHORT).show();
                         } else {
                             // Иначе (всё ок) создаём отдельный поток с подключением
                             // для дальнейшего обмена информацией и запускаем его
