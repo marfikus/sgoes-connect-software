@@ -1689,6 +1689,7 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.VISIBLE);
 
         save_settings.setVisibility(View.VISIBLE);
+        reset_settings.setVisibility(View.VISIBLE);
 
 
     }
@@ -1704,6 +1705,7 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.INVISIBLE);
 
         save_settings.setVisibility(View.INVISIBLE);
+        reset_settings.setVisibility(View.INVISIBLE);
 
     }
 

@@ -639,12 +639,12 @@
         android:id="@+id/reset_settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginLeft="28dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginLeft="48dp"
         android:enabled="true"
         android:visibility="invisible"
         android:text="Сброс настроек"
-        app:layout_constraintStart_toEndOf="save_settings"
+        app:layout_constraintStart_toEndOf="@+id/save_settings"
         app:layout_constraintBottom_toBottomOf="@+id/save_settings" />
         
 </androidx.constraintlayout.widget.ConstraintLayout>
