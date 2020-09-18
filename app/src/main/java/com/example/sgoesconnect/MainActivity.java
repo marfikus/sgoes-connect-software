@@ -530,7 +530,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private static String macAddress = "98:D3:71:F5:DA:46";
+    
+    private static final String BT_DEVICE_MAC_ADDRESS_DEFAULT = "98:D3:71:F5:DA:46";
+    private static final String BT_DEVICE_NAME_DEFAULT = "HC-05";
+    
+    private static String btDeviceMacAddress;
+    private static String btDeviceName;
+    
     private BluetoothSocket btSocket = null;
     Button bt_settings;
     Button bt_connect;
@@ -952,11 +958,11 @@ public class MainActivity extends AppCompatActivity {
                     (чтобы исключить возможность зацикливания).
                     А при успехе, устанавливается соответсвующий флаг. */
 
-                    bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                    bluetoothDevice = bluetoothAdapter.getRemoteDevice(btDeviceMacAddress);
                     // Может эта проверка и не нужна, но на всякий случай добавил
                     if (bluetoothDevice == null) {
-                        Log.d(LOG_TAG, "No device with MAC address: " + macAddress);
-                        Toast.makeText(getApplicationContext(), "No device with MAC address: " + macAddress, Toast.LENGTH_SHORT).show();
+                        Log.d(LOG_TAG, "No device with MAC address: " + btDeviceMacAddress);
+                        Toast.makeText(getApplicationContext(), "No device with MAC address: " + btDeviceMacAddress, Toast.LENGTH_SHORT).show();
                         resetBtConnectButton();
                         return;
                     }
@@ -1543,7 +1549,8 @@ public class MainActivity extends AppCompatActivity {
         highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
         middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
         
-        
+        btDeviceMacAddress = settings.getString("btDeviceMacAddress", BT_DEVICE_MAC_ADDRESS_DEFAULT);
+        btDeviceName = settings.getString("btDeviceName", BT_DEVICE_NAME_DEFAULT);
         
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
