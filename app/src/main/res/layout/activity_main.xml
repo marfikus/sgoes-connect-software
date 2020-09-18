@@ -623,29 +623,29 @@
         app:layout_constraintTop_toBottomOf="@+id/title_middle_concentration" />
         
     <TextView
-        android:id="@+id/title_bt_adapter_list"
+        android:id="@+id/title_bt_device_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="5dp"
-        android:text="Bluetooth адаптер:"
+        android:text="Bluetooth устройство:"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/input_middle_concentration" />
         
     <Spinner
-        android:id="@+id/bt_adapter_list"
+        android:id="@+id/bt_device_list"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_bt_adapter_list" />
+        app:layout_constraintTop_toBottomOf="@+id/title_bt_device_list" />
 
     <Button
-        android:id="@+id/update_bt_adapter_list"
+        android:id="@+id/update_bt_device_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
@@ -653,8 +653,8 @@
         android:enabled="true"
         android:visibility="invisible"
         android:text="Обновить \n список"
-        app:layout_constraintStart_toEndOf="@+id/bt_adapter_list"
-        app:layout_constraintBottom_toBottomOf="@+id/bt_adapter_list" />
+        app:layout_constraintStart_toEndOf="@+id/bt_device_list"
+        app:layout_constraintBottom_toBottomOf="@+id/bt_device_list" />
         
     <Button
         android:id="@+id/save_settings"
@@ -667,7 +667,7 @@
         android:visibility="invisible"
         android:text="Сохранить"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bt_adapter_list" />
+        app:layout_constraintTop_toBottomOf="@+id/bt_device_list" />
 
     <Button
         android:id="@+id/reset_settings"

@@ -706,9 +706,9 @@ public class MainActivity extends AppCompatActivity {
     TextView title_middle_concentration;
     EditText input_middle_concentration;
 
-    TextView title_bt_adapter_list;
-    Spinner bt_adapter_list;
-    Button update_bt_adapter_list;
+    TextView title_bt_device_list;
+    Spinner bt_device_list;
+    Button update_bt_device_list;
     
     Button save_settings;
     Button reset_settings;
@@ -811,9 +811,9 @@ public class MainActivity extends AppCompatActivity {
         title_middle_concentration = (TextView) findViewById(R.id.title_middle_concentration);
         input_middle_concentration = (EditText) findViewById(R.id.input_middle_concentration);
 
-        title_bt_adapter_list = (TextView) findViewById(R.id.title_bt_adapter_list);
-        bt_adapter_list = (Spinner) findViewById(R.id.bt_adapter_list);
-        update_bt_adapter_list = (Button) findViewById(R.id.update_bt_adapter_list);
+        title_bt_device_list = (TextView) findViewById(R.id.title_bt_device_list);
+        bt_device_list = (Spinner) findViewById(R.id.bt_device_list);
+        update_bt_device_list = (Button) findViewById(R.id.update_bt_device_list);
 
         save_settings = (Button) findViewById(R.id.save_settings);
         reset_settings = (Button) findViewById(R.id.reset_settings);
@@ -1543,6 +1543,8 @@ public class MainActivity extends AppCompatActivity {
         highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
         middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
         
+        
+        
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
     }
@@ -1696,10 +1698,10 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setText(Float.toString(middleConcentration));
         input_middle_concentration.setVisibility(View.VISIBLE);
         
-        title_bt_adapter_list.setVisibility(View.VISIBLE);
+        title_bt_device_list.setVisibility(View.VISIBLE);
         // todo: заполнить список 
-        bt_adapter_list.setVisibility(View.VISIBLE);
-        update_bt_adapter_list.setVisibility(View.VISIBLE);
+        bt_device_list.setVisibility(View.VISIBLE);
+        update_bt_device_list.setVisibility(View.VISIBLE);
 
         save_settings.setVisibility(View.VISIBLE);
         reset_settings.setVisibility(View.VISIBLE);
@@ -1717,9 +1719,9 @@ public class MainActivity extends AppCompatActivity {
         title_middle_concentration.setVisibility(View.INVISIBLE);
         input_middle_concentration.setVisibility(View.INVISIBLE);
 
-        title_bt_adapter_list.setVisibility(View.INVISIBLE);
-        bt_adapter_list.setVisibility(View.INVISIBLE);
-        update_bt_adapter_list.setVisibility(View.INVISIBLE);
+        title_bt_device_list.setVisibility(View.INVISIBLE);
+        bt_device_list.setVisibility(View.INVISIBLE);
+        update_bt_device_list.setVisibility(View.INVISIBLE);
         
         save_settings.setVisibility(View.INVISIBLE);
         reset_settings.setVisibility(View.INVISIBLE);
