@@ -707,6 +707,7 @@ public class MainActivity extends AppCompatActivity {
     EditText input_middle_concentration;
 
     Button save_settings;
+    Button reset_settings;
     
     final int REQUEST_PAUSE_MIN = 2000;
     final int REQUEST_PAUSE_MAX = 20000;
@@ -807,6 +808,7 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration = (EditText) findViewById(R.id.input_middle_concentration);
 
         save_settings = (Button) findViewById(R.id.save_settings);
+        reset_settings = (Button) findViewById(R.id.reset_settings);
 
         settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
         prefEditor = settings.edit();
@@ -850,6 +852,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        reset_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // пауза между запросами
+                requestPause = REQUEST_PAUSE_DEFAULT;
+                input_request_pause.setText(Integer.toString(requestPause));
+                prefEditor.putInt("requestPause", requestPause);
+                
+                // высокая концентрация
+                highConcentration = HIGH_CONCENTRATION_DEFAULT;
+                input_high_concentration.setText(Float.toString(highConcentration));
+                prefEditor.putFloat("highConcentration", highConcentration);
+                
+                // средняя концентрация
+                middleConcentration = MIDDLE_CONCENTRATION_DEFAULT;
+                input_middle_concentration.setText(Float.toString(middleConcentration));
+                prefEditor.putFloat("middleConcentration", middleConcentration);
+                
+                // todo: адаптер
+                
+                
+                prefEditor.apply();
+                Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
         address_list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -1661,6 +1689,7 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.VISIBLE);
 
         save_settings.setVisibility(View.VISIBLE);
+        reset_settings.setVisibility(View.VISIBLE);
 
 
     }
@@ -1676,6 +1705,7 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.INVISIBLE);
 
         save_settings.setVisibility(View.INVISIBLE);
+        reset_settings.setVisibility(View.INVISIBLE);
 
     }
 
