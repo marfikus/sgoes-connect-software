@@ -383,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
@@ -400,27 +400,27 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 4: // D - приведённое
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 5: // напряжение опорного канала
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 6: // напряжение рабочего канала
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 7: // D - приборное
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 8: // температура, показания встроенного терморезистора
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
@@ -463,27 +463,19 @@ public class MainActivity extends AppCompatActivity {
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
                     // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 12: // старший байт: тип прибора, младший: модификация прибора
-                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
+//                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
+//                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     break;
 
             }
         }
-
-//              в цикле читаем по 2 байта далее, пока не наберём это число
-//            byte[] respData = new byte[respNumDataBytes];
-//            for (int i = 0; i < respNumDataBytes; i++) {
-//
-//            }
-//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
-
     }
 
     private byte[] calcCRC(byte[] msg) {
