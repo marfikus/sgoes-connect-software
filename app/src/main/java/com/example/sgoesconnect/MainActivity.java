@@ -946,7 +946,7 @@ public class MainActivity extends AppCompatActivity {
                 input_middle_concentration.setText(Float.toString(middleConcentration));
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
-                // todo: адаптер
+                // адаптер
                 btDeviceName = BT_DEVICE_NAME_DEFAULT;
                 btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
 
@@ -1122,7 +1122,7 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопку соединения с датчиком
                     connect_to_sensor.setEnabled(false);
                     search_sensors.setEnabled(false);
-                    Toast.makeText(getApplicationContext(), "Связь с адаптером прервана", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Связь с адаптером \"" + btDeviceName + "\" прервана", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -1368,7 +1368,7 @@ public class MainActivity extends AppCompatActivity {
                         if (msg.obj == "trying_to_connect_again") {
 //                            Log.d(LOG_TAG, "btSocketCountConnectionTries: " + btSocketCountConnectionTries);
                             bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА " + (btSocketCountConnectionTries + 1));
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру. Новая попытка", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_LONG).show();
                             break;
                         }
                         // Если так и не подключились, то возвращаемся к исходному состоянию
@@ -1376,7 +1376,7 @@ public class MainActivity extends AppCompatActivity {
                             btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
                             bt_connect.setText("ПОДКЛЮЧИТЬСЯ");
                             bt_connect.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_LONG).show();
                         } else {
                             // Иначе (всё ок) создаём отдельный поток с подключением
                             // для дальнейшего обмена информацией и запускаем его
@@ -1393,7 +1393,7 @@ public class MainActivity extends AppCompatActivity {
                             // И делаем доступной кнопку соединения с датчиком
                             connect_to_sensor.setEnabled(true);
                             search_sensors.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Адаптер \"" + btDeviceName + "\" подключен", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     case SEARCH_SENSORS_DATA:
