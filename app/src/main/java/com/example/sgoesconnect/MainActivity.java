@@ -1503,7 +1503,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(LOG_TAG, commandFromButton.toString());
 
                             workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
-                            working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
+                            working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА");
                             working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
@@ -1521,7 +1521,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(LOG_TAG, commandFromButton.toString());
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
-                            working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                            working_mode.setText("РЕЖИМ: ОСН. КАЛИБР.");
                             working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
@@ -1539,7 +1539,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(LOG_TAG, commandFromButton.toString());
 
                             workingMode = WorkingMode.CALIBRATION_MIDDLE;
-                            working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
+                            working_mode.setText("РЕЖИМ: ДОП. КАЛИБР.");
                             working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
@@ -1562,7 +1562,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(LOG_TAG, commandFromButton.toString());
 
                         workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
-                        working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
+                        working_mode.setText("РЕЖИМ: УСТ. ЗАВОД.ЗНАЧ.");
                         working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
