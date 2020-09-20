@@ -717,7 +717,7 @@ public class MainActivity extends AppCompatActivity {
     Spinner bt_device_list;
     Button update_bt_device_list;
     ArrayAdapter<String> bt_device_list_adapter;
-    HashMap<String, String> btPairedDevices = new HashMap<String, String>();
+    LinkedHashSet<String[]> btPairedDevices = new LinkedHashSet<>();
 
     Button save_settings;
     Button reset_settings;
@@ -857,14 +857,16 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-//                btPairedDevices = bluetoothAdapter.getBondedDevices();
                 Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
                 if (pairedDevices.size() > 0) {
                     bt_device_list_adapter.clear();
                     bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
+                    btPairedDevices.clear();
+                    btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
                     for (BluetoothDevice device : pairedDevices) {
                         if (!device.getAddress().equals(btDeviceMacAddress)) {
                             bt_device_list_adapter.add(device.getName() + " (" + device.getAddress() + ")");
+                            btPairedDevices.add(new String[] {device.getName(), device.getAddress()});
                         }
                     }
                     bt_device_list.setSelection(0);
@@ -904,8 +906,14 @@ public class MainActivity extends AppCompatActivity {
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
                 // адаптер
-//                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
-//                prefEditor.putString("btDeviceName", btDeviceName);
+                int pos = bt_device_list.getSelectedItemPosition();
+                String[][] devices = btPairedDevices.toArray(new String[btPairedDevices.size()][2]);
+                Log.d(LOG_TAG, "selected device: " + devices[pos][0] + " " + devices[pos][1]);
+
+                btDeviceName = devices[pos][0];
+                btDeviceMacAddress = devices[pos][1];
+                prefEditor.putString("btDeviceName", btDeviceName);
+                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
 
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
@@ -933,9 +941,13 @@ public class MainActivity extends AppCompatActivity {
                 // todo: адаптер
                 btDeviceName = BT_DEVICE_NAME_DEFAULT;
                 btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
+
+                btPairedDevices.clear();
+                btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
                 bt_device_list_adapter.clear();
-                bt_device_list_adapter.add(btDeviceName);
+                bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
                 bt_device_list.setSelection(0);
+
                 prefEditor.putString("btDeviceName", btDeviceName);
                 prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
 
@@ -1599,9 +1611,9 @@ public class MainActivity extends AppCompatActivity {
         requestPause = settings.getInt("requestPause", REQUEST_PAUSE_DEFAULT);
         highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
         middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
-        
-        btDeviceMacAddress = settings.getString("btDeviceMacAddress", BT_DEVICE_MAC_ADDRESS_DEFAULT);
+
         btDeviceName = settings.getString("btDeviceName", BT_DEVICE_NAME_DEFAULT);
+        btDeviceMacAddress = settings.getString("btDeviceMacAddress", BT_DEVICE_MAC_ADDRESS_DEFAULT);
         
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
@@ -1757,9 +1769,12 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.VISIBLE);
         
         title_bt_device_list.setVisibility(View.VISIBLE);
+
         // todo: заполнить список
+        btPairedDevices.clear();
+        btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
         bt_device_list_adapter.clear();
-        bt_device_list_adapter.add(btDeviceName);
+        bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
         bt_device_list.setSelection(0);
 
         bt_device_list.setVisibility(View.VISIBLE);
