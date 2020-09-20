@@ -705,7 +705,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView title_request_pause;
     EditText input_request_pause;
-    
+
     TextView title_high_concentration;
     EditText input_high_concentration;
 
@@ -715,7 +715,8 @@ public class MainActivity extends AppCompatActivity {
     TextView title_bt_device_list;
     Spinner bt_device_list;
     Button update_bt_device_list;
-    
+    ArrayAdapter<String> bt_device_list_adapter;
+
     Button save_settings;
     Button reset_settings;
     
@@ -821,6 +822,11 @@ public class MainActivity extends AppCompatActivity {
         bt_device_list = (Spinner) findViewById(R.id.bt_device_list);
         update_bt_device_list = (Button) findViewById(R.id.update_bt_device_list);
 
+        bt_device_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item);
+        bt_device_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        bt_device_list.setAdapter(bt_device_list_adapter);
+        bt_device_list.setPrompt("Устройства:");
+
         save_settings = (Button) findViewById(R.id.save_settings);
         reset_settings = (Button) findViewById(R.id.reset_settings);
 
@@ -858,9 +864,10 @@ public class MainActivity extends AppCompatActivity {
                 middleConcentration = Float.parseFloat(inputMiddleConcentration);
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
-                // todo: адаптер
-                
-                
+                // адаптер
+//                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+//                prefEditor.putString("btDeviceName", btDeviceName);
+
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
             }
@@ -885,8 +892,14 @@ public class MainActivity extends AppCompatActivity {
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
                 // todo: адаптер
-                
-                
+                btDeviceName = BT_DEVICE_NAME_DEFAULT;
+                btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
+                bt_device_list_adapter.clear();
+                bt_device_list_adapter.add(btDeviceName);
+                bt_device_list.setSelection(0);
+                prefEditor.putString("btDeviceName", btDeviceName);
+                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
             }
@@ -1077,7 +1090,6 @@ public class MainActivity extends AppCompatActivity {
                         hideWorkScreen();
                         hideSearchScreen();
                         showSettingsScreen();
-//                        todo: обновлять значения в полях ввода (на случай если раньше меняли, но не сохранили)
 
                         break;
 
@@ -1220,7 +1232,7 @@ public class MainActivity extends AppCompatActivity {
                             String[] str_arr = new String[arr.length];
                             for (int i = 0; i < arr.length; i++) {
                                 str_arr[i] = arr[i].toString();
-                                Log.d(LOG_TAG, str_arr[i]);
+//                                Log.d(LOG_TAG, str_arr[i]);
                             }
 
                             // заполняем выпадуху
@@ -1706,7 +1718,11 @@ public class MainActivity extends AppCompatActivity {
         input_middle_concentration.setVisibility(View.VISIBLE);
         
         title_bt_device_list.setVisibility(View.VISIBLE);
-        // todo: заполнить список 
+        // todo: заполнить список
+        bt_device_list_adapter.clear();
+        bt_device_list_adapter.add(btDeviceName);
+        bt_device_list.setSelection(0);
+
         bt_device_list.setVisibility(View.VISIBLE);
         update_bt_device_list.setVisibility(View.VISIBLE);
 
