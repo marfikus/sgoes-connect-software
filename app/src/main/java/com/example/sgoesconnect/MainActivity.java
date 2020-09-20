@@ -1508,7 +1508,6 @@ public class MainActivity extends AppCompatActivity {
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                         
                     case CALIBRATION_HIGH:
@@ -1527,7 +1526,6 @@ public class MainActivity extends AppCompatActivity {
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                         
                     case CALIBRATION_MIDDLE:
@@ -1546,7 +1544,6 @@ public class MainActivity extends AppCompatActivity {
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_ZERO:
@@ -1558,7 +1555,6 @@ public class MainActivity extends AppCompatActivity {
                         working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_DEFAULT_SETTINGS:
@@ -1570,7 +1566,6 @@ public class MainActivity extends AppCompatActivity {
                         working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_THRESHOLD_1:
@@ -1586,7 +1581,6 @@ public class MainActivity extends AppCompatActivity {
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_THRESHOLD_2:
@@ -1602,10 +1596,10 @@ public class MainActivity extends AppCompatActivity {
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                 }
             }
+            // TODO: 19.04.2020  Долгая задержка показаний после команды, 5-6 секунд...
         });
 
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
@@ -1780,7 +1774,6 @@ public class MainActivity extends AppCompatActivity {
         
         title_bt_device_list.setVisibility(View.VISIBLE);
 
-        // todo: заполнить список
         btPairedDevices.clear();
         btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
         bt_device_list_adapter.clear();
@@ -1899,15 +1892,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO: 22.04.2020 переименовать connectionState в sensorConnectionState
-
-    // TODO: 22.04.2020  привязать ко всем местам, где меняется этот статус
-    private void changeSensorConnectionStateOnScreen() {
-        // TODO: 22.04.2020 switch
-        if (connectionState == ConnectionState.NO_RESPONSE) {
-            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
-            sensor_connection_state.setBackgroundColor(0xFFFF0000);
-        }
-    }
 
     private byte getSensorAddress() {
         if (appMode == AppMode.SEARCH_SENSORS) {
