@@ -913,14 +913,14 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d(LOG_TAG, "selected device: " + btDeviceNameNew + " " + btDeviceMacAddressNew);
 
                 if (!btDeviceMacAddressNew.equals(btDeviceMacAddress)) {
+                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                        bt_connect.performClick();
+                    }
+
                     btDeviceName = btDeviceNameNew;
                     btDeviceMacAddress = btDeviceMacAddressNew;
                     prefEditor.putString("btDeviceName", btDeviceName);
                     prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
-
-                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
-                        bt_connect.performClick();
-                    }
                 }
 
                 prefEditor.apply();
@@ -947,6 +947,10 @@ public class MainActivity extends AppCompatActivity {
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
                 // адаптер
+                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                    bt_connect.performClick();
+                }
+
                 btDeviceName = BT_DEVICE_NAME_DEFAULT;
                 btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
 
@@ -958,10 +962,6 @@ public class MainActivity extends AppCompatActivity {
 
                 prefEditor.putString("btDeviceName", btDeviceName);
                 prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
-
-                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
-                    bt_connect.performClick();
-                }
 
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
