@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -716,6 +717,7 @@ public class MainActivity extends AppCompatActivity {
     Spinner bt_device_list;
     Button update_bt_device_list;
     ArrayAdapter<String> bt_device_list_adapter;
+    HashMap<String, String> btPairedDevices = new HashMap<String, String>();
 
     Button save_settings;
     Button reset_settings;
@@ -833,6 +835,43 @@ public class MainActivity extends AppCompatActivity {
         settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
         prefEditor = settings.edit();
         loadSettings();
+
+        update_bt_device_list.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                update_bt_device_list.setEnabled(false);
+
+                bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                if (bluetoothAdapter == null) {
+                    Log.d(LOG_TAG, "bluetooth adapter is not detected");
+                    Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
+                    update_bt_device_list.setEnabled(true);
+                    return;
+                }
+
+                if (!bluetoothAdapter.isEnabled()) {
+                    Log.d(LOG_TAG, "bluetooth is disabled");
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    update_bt_device_list.setEnabled(true);
+                    return;
+                }
+
+//                btPairedDevices = bluetoothAdapter.getBondedDevices();
+                Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+                if (pairedDevices.size() > 0) {
+                    bt_device_list_adapter.clear();
+                    bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
+                    for (BluetoothDevice device : pairedDevices) {
+                        if (!device.getAddress().equals(btDeviceMacAddress)) {
+                            bt_device_list_adapter.add(device.getName() + " (" + device.getAddress() + ")");
+                        }
+                    }
+                    bt_device_list.setSelection(0);
+                }
+                update_bt_device_list.setEnabled(true);
+            }
+        });
 
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
