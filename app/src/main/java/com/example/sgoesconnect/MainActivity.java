@@ -214,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
         connectionState = ConnectionState.CONNECTED;
         sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕН");
+        sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
 
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
@@ -1229,6 +1230,7 @@ public class MainActivity extends AppCompatActivity {
                     // устанавливаем статусы
                     connectionState = ConnectionState.WAITING_FOR_RESPONSE;
                     sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
+                    sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ОПРОС");
 
@@ -1271,6 +1273,7 @@ public class MainActivity extends AppCompatActivity {
 
                     connectionState = ConnectionState.DISCONNECTED;
                     sensor_connection_state.setText("СТАТУС: ОТКЛЮЧЕН");
+                    sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ---");
 
@@ -1360,6 +1363,7 @@ public class MainActivity extends AppCompatActivity {
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
                         if (msg.obj == ConnectionState.NO_RESPONSE) {
                             sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
+                            sensor_connection_state.setBackgroundColor(0xFFFF0000);
                         }
                         break;
                     case BT_SOCKET_CONNECTION_THREAD_DATA:
@@ -1908,6 +1912,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: 22.04.2020 switch
         if (connectionState == ConnectionState.NO_RESPONSE) {
             sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
+            sensor_connection_state.setBackgroundColor(0xFFFF0000);
         }
     }
 
