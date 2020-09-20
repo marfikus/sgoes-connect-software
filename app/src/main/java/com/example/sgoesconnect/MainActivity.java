@@ -219,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
         working_mode.setText("РЕЖИМ: ОПРОС");
+        working_mode.setBackgroundColor(0xFFFFFFFF);
 
         if (appMode == AppMode.SEARCH_SENSORS) {
             // добавляем адрес из ответа в массив найденных датчиков
@@ -1233,6 +1234,7 @@ public class MainActivity extends AppCompatActivity {
                     sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ОПРОС");
+                    working_mode.setBackgroundColor(0xFFFFFFFF);
 
                     requestCounter = 0;
 
@@ -1276,6 +1278,7 @@ public class MainActivity extends AppCompatActivity {
                     sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ---");
+                    working_mode.setBackgroundColor(0xFFFFFFFF);
 
                     rg_app_modes.setEnabled(true);
                     rb_work.setEnabled(true);
@@ -1518,6 +1521,7 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
                             working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
@@ -1536,6 +1540,7 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
@@ -1554,6 +1559,7 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_MIDDLE;
                             working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
@@ -1566,6 +1572,7 @@ public class MainActivity extends AppCompatActivity {
 
                         workingMode = WorkingMode.SETTING_ZERO;
                         working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
+                        working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
@@ -1577,6 +1584,7 @@ public class MainActivity extends AppCompatActivity {
 
                         workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
                         working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
+                        working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
                         // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
@@ -1591,6 +1599,7 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
@@ -1606,6 +1615,7 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.SETTING_THRESHOLD_2;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
