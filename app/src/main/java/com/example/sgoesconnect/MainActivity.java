@@ -5,13 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.bluetooth.*;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.os.ResultReceiver;
-import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -31,15 +27,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.CryptoPrimitive;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.ToDoubleBiFunction;
-import java.util.zip.Checksum;
-import java.util.BitSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -200,11 +191,11 @@ public class MainActivity extends AppCompatActivity {
         // сравниваем последние 2 байта ответа с тем, что вычислим здесь
 
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
-        Log.d(LOG_TAG, "localCopyResponse: " + bytesToHex(localCopyResponse));
+//        Log.d(LOG_TAG, "localCopyResponse: " + bytesToHex(localCopyResponse));
 
         // если контрольная сумма из ответа не совпадает с расчётом, то выходим:
         if (!Arrays.equals(respCRC, calcCRC(respMsg))) {
-            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
+//            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
             return;
         }
 
@@ -214,10 +205,12 @@ public class MainActivity extends AppCompatActivity {
 
         connectionState = ConnectionState.CONNECTED;
         sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕН");
+        sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
 
         // Востанавливаем индикацию обычного режима:
         workingMode = WorkingMode.READING_DATA;
         working_mode.setText("РЕЖИМ: ОПРОС");
+        working_mode.setBackgroundColor(0xFFFFFFFF);
 
         if (appMode == AppMode.SEARCH_SENSORS) {
             // добавляем адрес из ответа в массив найденных датчиков
@@ -279,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
 //              читаем третий байт ответа и выводим информацию об ошибке...
                 int respError = localCopyResponse[2] & 0xFF;
                 Log.d(LOG_TAG, "Error in localCopyResponse. Error code: " + respError);
-                // TODO: 22.04.2020 вывод на экран, можно тостом наверное
+                Toast.makeText(getBaseContext(), "Error in response. Error code: " + respError, Toast.LENGTH_SHORT).show();
             } else {
                 // значит это хз что за ответ)...
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
@@ -390,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
@@ -407,27 +400,27 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 4: // D - приведённое
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 5: // напряжение опорного канала
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 6: // напряжение рабочего канала
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 7: // D - приборное
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 8: // температура, показания встроенного терморезистора
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
@@ -470,27 +463,19 @@ public class MainActivity extends AppCompatActivity {
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
                     // TODO: 12.04.2020 знаковое\беззнаковое. Возможно иначе надо преобразовывать...
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     break;
 
                 case 12: // старший байт: тип прибора, младший: модификация прибора
-                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
+//                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
+//                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     break;
 
             }
         }
-
-//              в цикле читаем по 2 байта далее, пока не наберём это число
-//            byte[] respData = new byte[respNumDataBytes];
-//            for (int i = 0; i < respNumDataBytes; i++) {
-//
-//            }
-//              далее, по какой-то таблице соответсвия, определять, что в какое поле выводить...
-
     }
 
     private byte[] calcCRC(byte[] msg) {
@@ -810,6 +795,11 @@ public class MainActivity extends AppCompatActivity {
         title_address_list = (TextView) findViewById(R.id.title_address_list);
         address_list = (Spinner) findViewById(R.id.address_list);
 
+        address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item);
+        address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        address_list.setAdapter(address_list_adapter);
+        address_list.setPrompt("Адреса:");
+
         // settings screen
         title_request_pause = (TextView) findViewById(R.id.title_request_pause);
         input_request_pause = (EditText) findViewById(R.id.input_request_pause);
@@ -913,14 +903,14 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d(LOG_TAG, "selected device: " + btDeviceNameNew + " " + btDeviceMacAddressNew);
 
                 if (!btDeviceMacAddressNew.equals(btDeviceMacAddress)) {
+                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                        bt_connect.performClick();
+                    }
+
                     btDeviceName = btDeviceNameNew;
                     btDeviceMacAddress = btDeviceMacAddressNew;
                     prefEditor.putString("btDeviceName", btDeviceName);
                     prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
-
-                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
-                        bt_connect.performClick();
-                    }
                 }
 
                 prefEditor.apply();
@@ -947,6 +937,10 @@ public class MainActivity extends AppCompatActivity {
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
                 // адаптер
+                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                    bt_connect.performClick();
+                }
+
                 btDeviceName = BT_DEVICE_NAME_DEFAULT;
                 btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
 
@@ -958,10 +952,6 @@ public class MainActivity extends AppCompatActivity {
 
                 prefEditor.putString("btDeviceName", btDeviceName);
                 prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
-
-                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
-                    bt_connect.performClick();
-                }
 
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
@@ -1193,6 +1183,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 findedSensors.clear();
                                 finded_sensors.setText("0");
+                                address_list_adapter.clear();
 
 //                                String[] s = {""};
 //                                address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, s);
@@ -1223,8 +1214,10 @@ public class MainActivity extends AppCompatActivity {
                     // устанавливаем статусы
                     connectionState = ConnectionState.WAITING_FOR_RESPONSE;
                     sensor_connection_state.setText("СТАТУС: ПОДКЛЮЧЕНИЕ...");
+                    sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ОПРОС");
+                    working_mode.setBackgroundColor(0xFFFFFFFF);
 
                     requestCounter = 0;
 
@@ -1265,8 +1258,10 @@ public class MainActivity extends AppCompatActivity {
 
                     connectionState = ConnectionState.DISCONNECTED;
                     sensor_connection_state.setText("СТАТУС: ОТКЛЮЧЕН");
+                    sensor_connection_state.setBackgroundColor(0xFFFFFFFF);
                     workingMode = WorkingMode.READING_DATA;
                     working_mode.setText("РЕЖИМ: ---");
+                    working_mode.setBackgroundColor(0xFFFFFFFF);
 
                     rg_app_modes.setEnabled(true);
                     rb_work.setEnabled(true);
@@ -1290,19 +1285,14 @@ public class MainActivity extends AppCompatActivity {
                             // todo: покаказать сообщение: Список адресов найденных датчиков доступен в разделе \"Работа\"
                             //  (когда буду это делать)
 
+//                            address_list_adapter.clear();
+
                             // преобразовываем множество в массив строк для выпадухи
                             Object[] arr = findedSensors.toArray();
-                            String[] str_arr = new String[arr.length];
                             for (int i = 0; i < arr.length; i++) {
-                                str_arr[i] = arr[i].toString();
-//                                Log.d(LOG_TAG, str_arr[i]);
+                                address_list_adapter.add(arr[i].toString());
                             }
 
-                            // заполняем выпадуху
-                            address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, str_arr);
-                            address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            address_list.setAdapter(address_list_adapter);
-                            address_list.setPrompt("Адреса:");
                             address_list.setSelection(0);
                             address_list.setVisibility(View.VISIBLE);
                         }
@@ -1359,16 +1349,17 @@ public class MainActivity extends AppCompatActivity {
 //                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
                         if (msg.obj == ConnectionState.NO_RESPONSE) {
                             sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
+                            sensor_connection_state.setBackgroundColor(0xFFFF0000);
                         }
                         break;
                     case BT_SOCKET_CONNECTION_THREAD_DATA:
-                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
 
                         // Сообщаем о новой попытке подключения
                         if (msg.obj == "trying_to_connect_again") {
 //                            Log.d(LOG_TAG, "btSocketCountConnectionTries: " + btSocketCountConnectionTries);
                             bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА " + (btSocketCountConnectionTries + 1));
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_SHORT).show();
                             break;
                         }
                         // Если так и не подключились, то возвращаемся к исходному состоянию
@@ -1376,7 +1367,7 @@ public class MainActivity extends AppCompatActivity {
                             btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
                             bt_connect.setText("ПОДКЛЮЧИТЬСЯ");
                             bt_connect.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_SHORT).show();
                         } else {
                             // Иначе (всё ок) создаём отдельный поток с подключением
                             // для дальнейшего обмена информацией и запускаем его
@@ -1513,10 +1504,10 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CHANGING_SENSOR_ADDRESS;
                             working_mode.setText("РЕЖИМ: СМЕНА АДРЕСА ДАТЧИКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                         
                     case CALIBRATION_HIGH:
@@ -1531,10 +1522,10 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_HIGH;
                             working_mode.setText("РЕЖИМ: ОСН. КАЛИБРОВКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                         
                     case CALIBRATION_MIDDLE:
@@ -1549,10 +1540,10 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.CALIBRATION_MIDDLE;
                             working_mode.setText("РЕЖИМ: ДОП. КАЛИБРОВКА");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_ZERO:
@@ -1561,9 +1552,9 @@ public class MainActivity extends AppCompatActivity {
 
                         workingMode = WorkingMode.SETTING_ZERO;
                         working_mode.setText("РЕЖИМ: УСТАНОВКА НУЛЯ");
+                        working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_DEFAULT_SETTINGS:
@@ -1572,9 +1563,9 @@ public class MainActivity extends AppCompatActivity {
 
                         workingMode = WorkingMode.SETTING_DEFAULT_SETTINGS;
                         working_mode.setText("РЕЖИМ: УСТ. ЗАВОД. ЗНАЧ.");
+                        working_mode.setBackgroundColor(0xFFFFFF00);
 
                         hideConfirmDialog("ok");
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_THRESHOLD_1:
@@ -1586,10 +1577,10 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.SETTING_THRESHOLD_1;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 1");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
 
                     case SET_THRESHOLD_2:
@@ -1601,13 +1592,14 @@ public class MainActivity extends AppCompatActivity {
 
                             workingMode = WorkingMode.SETTING_THRESHOLD_2;
                             working_mode.setText("РЕЖИМ: УСТ. ПОРОГА 2");
+                            working_mode.setBackgroundColor(0xFFFFFF00);
 
                             hideConfirmDialog("ok");
                         }
-                        // TODO: 19.04.2020  Долгая задержка показаний после обнуления, 5-6 секунд...
                         break;
                 }
             }
+            // TODO: 19.04.2020  Долгая задержка показаний после команды, 5-6 секунд...
         });
 
         confirm_dialog_cancel.setOnClickListener(new View.OnClickListener() {
@@ -1782,7 +1774,6 @@ public class MainActivity extends AppCompatActivity {
         
         title_bt_device_list.setVisibility(View.VISIBLE);
 
-        // todo: заполнить список
         btPairedDevices.clear();
         btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
         bt_device_list_adapter.clear();
@@ -1901,14 +1892,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO: 22.04.2020 переименовать connectionState в sensorConnectionState
-
-    // TODO: 22.04.2020  привязать ко всем местам, где меняется этот статус
-    private void changeSensorConnectionStateOnScreen() {
-        // TODO: 22.04.2020 switch
-        if (connectionState == ConnectionState.NO_RESPONSE) {
-            sensor_connection_state.setText("СТАТУС: НЕТ ОТВЕТА");
-        }
-    }
 
     private byte getSensorAddress() {
         if (appMode == AppMode.SEARCH_SENSORS) {
@@ -2101,7 +2084,7 @@ public class MainActivity extends AppCompatActivity {
         }
         
         int inputAddressInt = Integer.parseInt(inputAddress);
-        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
+//        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
         
         // проверка на 0
         if (inputAddressInt < 1) {
@@ -2155,7 +2138,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         float inputConcentrationFloat = Float.parseFloat(inputConcentration);
-        Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
+//        Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
         
         // проверка на минимальное значение
         if (inputConcentrationFloat <= PGS_CONCENTRATION_MIN) {
@@ -2201,7 +2184,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int inputThresholdValueInt = Integer.parseInt(inputThresholdValue);
-        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
+//        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
 
         // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
         int curThresholdValue = 0;
@@ -2277,7 +2260,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
     public void onDestroy() {
         closeAllConnections();
