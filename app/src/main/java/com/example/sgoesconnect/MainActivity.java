@@ -810,6 +810,11 @@ public class MainActivity extends AppCompatActivity {
         title_address_list = (TextView) findViewById(R.id.title_address_list);
         address_list = (Spinner) findViewById(R.id.address_list);
 
+        address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item);
+        address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        address_list.setAdapter(address_list_adapter);
+        address_list.setPrompt("Адреса:");
+
         // settings screen
         title_request_pause = (TextView) findViewById(R.id.title_request_pause);
         input_request_pause = (EditText) findViewById(R.id.input_request_pause);
@@ -1193,6 +1198,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 findedSensors.clear();
                                 finded_sensors.setText("0");
+                                address_list_adapter.clear();
 
 //                                String[] s = {""};
 //                                address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, s);
@@ -1290,19 +1296,14 @@ public class MainActivity extends AppCompatActivity {
                             // todo: покаказать сообщение: Список адресов найденных датчиков доступен в разделе \"Работа\"
                             //  (когда буду это делать)
 
+//                            address_list_adapter.clear();
+
                             // преобразовываем множество в массив строк для выпадухи
                             Object[] arr = findedSensors.toArray();
-                            String[] str_arr = new String[arr.length];
                             for (int i = 0; i < arr.length; i++) {
-                                str_arr[i] = arr[i].toString();
-//                                Log.d(LOG_TAG, str_arr[i]);
+                                address_list_adapter.add(arr[i].toString());
                             }
 
-                            // заполняем выпадуху
-                            address_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, str_arr);
-                            address_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            address_list.setAdapter(address_list_adapter);
-                            address_list.setPrompt("Адреса:");
                             address_list.setSelection(0);
                             address_list.setVisibility(View.VISIBLE);
                         }
