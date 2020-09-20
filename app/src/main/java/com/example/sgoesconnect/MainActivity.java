@@ -5,13 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.bluetooth.*;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.os.ResultReceiver;
-import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -31,15 +27,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.CryptoPrimitive;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.ToDoubleBiFunction;
-import java.util.zip.Checksum;
-import java.util.BitSet;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -200,11 +191,11 @@ public class MainActivity extends AppCompatActivity {
         // сравниваем последние 2 байта ответа с тем, что вычислим здесь
 
 //        Log.d(LOG_TAG, "calcCRC: " + bytesToHex(calcCRC(respMsg)));
-        Log.d(LOG_TAG, "localCopyResponse: " + bytesToHex(localCopyResponse));
+//        Log.d(LOG_TAG, "localCopyResponse: " + bytesToHex(localCopyResponse));
 
         // если контрольная сумма из ответа не совпадает с расчётом, то выходим:
         if (!Arrays.equals(respCRC, calcCRC(respMsg))) {
-            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
+//            Log.d(LOG_TAG, bytesToHex(respCRC) + " != " + bytesToHex(calcCRC(respMsg)));
             return;
         }
 
@@ -281,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
 //              читаем третий байт ответа и выводим информацию об ошибке...
                 int respError = localCopyResponse[2] & 0xFF;
                 Log.d(LOG_TAG, "Error in localCopyResponse. Error code: " + respError);
-                // TODO: 22.04.2020 вывод на экран, можно тостом наверное
+                Toast.makeText(getBaseContext(), "Error in response. Error code: " + respError, Toast.LENGTH_SHORT).show();
             } else {
                 // значит это хз что за ответ)...
                 Log.d(LOG_TAG, "respFuncCode(" + respFuncCode + ") != modReqFuncCode(" + modReqFuncCode + ")");
@@ -1370,7 +1361,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         break;
                     case BT_SOCKET_CONNECTION_THREAD_DATA:
-                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
+//                        Log.d(LOG_TAG, "msg.obj: " + msg.obj);
 
                         // Сообщаем о новой попытке подключения
                         if (msg.obj == "trying_to_connect_again") {
@@ -2117,7 +2108,7 @@ public class MainActivity extends AppCompatActivity {
         }
         
         int inputAddressInt = Integer.parseInt(inputAddress);
-        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
+//        Log.d(LOG_TAG, "inputAddressInt: " + inputAddressInt);
         
         // проверка на 0
         if (inputAddressInt < 1) {
@@ -2171,7 +2162,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         float inputConcentrationFloat = Float.parseFloat(inputConcentration);
-        Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
+//        Log.d(LOG_TAG, "inputConcentrationFloat: " + inputConcentrationFloat);
         
         // проверка на минимальное значение
         if (inputConcentrationFloat <= PGS_CONCENTRATION_MIN) {
@@ -2217,7 +2208,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int inputThresholdValueInt = Integer.parseInt(inputThresholdValue);
-        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
+//        Log.d(LOG_TAG, "inputThresholdValueInt: " + inputThresholdValueInt);
 
         // сравнение с текущим значением (чтоб зря ресурс регистров не тратить)
         int curThresholdValue = 0;
@@ -2293,7 +2284,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    //TODO  вот это надо как-то переделать... чтобы корректно всё закрывалось когда надо...
     @Override
     public void onDestroy() {
         closeAllConnections();
