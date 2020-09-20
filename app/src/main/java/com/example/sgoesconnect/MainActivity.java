@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.CryptoPrimitive;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -530,7 +531,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private static String macAddress = "98:D3:71:F5:DA:46";
+    
+    private static final String BT_DEVICE_MAC_ADDRESS_DEFAULT = "98:D3:71:F5:DA:46";
+    private static final String BT_DEVICE_NAME_DEFAULT = "HC-05";
+    
+    private static String btDeviceMacAddress;
+    private static String btDeviceName;
+    
     private BluetoothSocket btSocket = null;
     Button bt_settings;
     Button bt_connect;
@@ -699,12 +706,18 @@ public class MainActivity extends AppCompatActivity {
 
     TextView title_request_pause;
     EditText input_request_pause;
-    
+
     TextView title_high_concentration;
     EditText input_high_concentration;
 
     TextView title_middle_concentration;
     EditText input_middle_concentration;
+
+    TextView title_bt_device_list;
+    Spinner bt_device_list;
+    Button update_bt_device_list;
+    ArrayAdapter<String> bt_device_list_adapter;
+    LinkedHashSet<String[]> btPairedDevices = new LinkedHashSet<>();
 
     Button save_settings;
     Button reset_settings;
@@ -807,12 +820,60 @@ public class MainActivity extends AppCompatActivity {
         title_middle_concentration = (TextView) findViewById(R.id.title_middle_concentration);
         input_middle_concentration = (EditText) findViewById(R.id.input_middle_concentration);
 
+        title_bt_device_list = (TextView) findViewById(R.id.title_bt_device_list);
+        bt_device_list = (Spinner) findViewById(R.id.bt_device_list);
+        update_bt_device_list = (Button) findViewById(R.id.update_bt_device_list);
+
+        bt_device_list_adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item);
+        bt_device_list_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        bt_device_list.setAdapter(bt_device_list_adapter);
+        bt_device_list.setPrompt("Устройства:");
+
         save_settings = (Button) findViewById(R.id.save_settings);
         reset_settings = (Button) findViewById(R.id.reset_settings);
 
         settings = getSharedPreferences(PREFS_FILE, MODE_PRIVATE);
         prefEditor = settings.edit();
         loadSettings();
+
+        update_bt_device_list.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                update_bt_device_list.setEnabled(false);
+
+                bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                if (bluetoothAdapter == null) {
+                    Log.d(LOG_TAG, "bluetooth adapter is not detected");
+                    Toast.makeText(getApplicationContext(), "bluetooth adapter is not detected", Toast.LENGTH_SHORT).show();
+                    update_bt_device_list.setEnabled(true);
+                    return;
+                }
+
+                if (!bluetoothAdapter.isEnabled()) {
+                    Log.d(LOG_TAG, "bluetooth is disabled");
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    update_bt_device_list.setEnabled(true);
+                    return;
+                }
+
+                Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+                if (pairedDevices.size() > 0) {
+                    bt_device_list_adapter.clear();
+                    bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
+                    btPairedDevices.clear();
+                    btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
+                    for (BluetoothDevice device : pairedDevices) {
+                        if (!device.getAddress().equals(btDeviceMacAddress)) {
+                            bt_device_list_adapter.add(device.getName() + " (" + device.getAddress() + ")");
+                            btPairedDevices.add(new String[] {device.getName(), device.getAddress()});
+                        }
+                    }
+                    bt_device_list.setSelection(0);
+                }
+                update_bt_device_list.setEnabled(true);
+            }
+        });
 
         save_settings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -844,9 +905,24 @@ public class MainActivity extends AppCompatActivity {
                 middleConcentration = Float.parseFloat(inputMiddleConcentration);
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
-                // todo: адаптер
-                
-                
+                // адаптер
+                int pos = bt_device_list.getSelectedItemPosition();
+                String[][] devices = btPairedDevices.toArray(new String[btPairedDevices.size()][2]);
+                String btDeviceNameNew = devices[pos][0];
+                String btDeviceMacAddressNew = devices[pos][1];
+//                Log.d(LOG_TAG, "selected device: " + btDeviceNameNew + " " + btDeviceMacAddressNew);
+
+                if (!btDeviceMacAddressNew.equals(btDeviceMacAddress)) {
+                    btDeviceName = btDeviceNameNew;
+                    btDeviceMacAddress = btDeviceMacAddressNew;
+                    prefEditor.putString("btDeviceName", btDeviceName);
+                    prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+
+                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                        bt_connect.performClick();
+                    }
+                }
+
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
             }
@@ -870,9 +946,23 @@ public class MainActivity extends AppCompatActivity {
                 input_middle_concentration.setText(Float.toString(middleConcentration));
                 prefEditor.putFloat("middleConcentration", middleConcentration);
                 
-                // todo: адаптер
-                
-                
+                // адаптер
+                btDeviceName = BT_DEVICE_NAME_DEFAULT;
+                btDeviceMacAddress = BT_DEVICE_MAC_ADDRESS_DEFAULT;
+
+                btPairedDevices.clear();
+                btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
+                bt_device_list_adapter.clear();
+                bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
+                bt_device_list.setSelection(0);
+
+                prefEditor.putString("btDeviceName", btDeviceName);
+                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+
+                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                    bt_connect.performClick();
+                }
+
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
             }
@@ -944,11 +1034,11 @@ public class MainActivity extends AppCompatActivity {
                     (чтобы исключить возможность зацикливания).
                     А при успехе, устанавливается соответсвующий флаг. */
 
-                    bluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress);
+                    bluetoothDevice = bluetoothAdapter.getRemoteDevice(btDeviceMacAddress);
                     // Может эта проверка и не нужна, но на всякий случай добавил
                     if (bluetoothDevice == null) {
-                        Log.d(LOG_TAG, "No device with MAC address: " + macAddress);
-                        Toast.makeText(getApplicationContext(), "No device with MAC address: " + macAddress, Toast.LENGTH_SHORT).show();
+                        Log.d(LOG_TAG, "No device with MAC address: " + btDeviceMacAddress);
+                        Toast.makeText(getApplicationContext(), "No device with MAC address: " + btDeviceMacAddress, Toast.LENGTH_SHORT).show();
                         resetBtConnectButton();
                         return;
                     }
@@ -1032,7 +1122,7 @@ public class MainActivity extends AppCompatActivity {
                     // Блокируем кнопку соединения с датчиком
                     connect_to_sensor.setEnabled(false);
                     search_sensors.setEnabled(false);
-                    Toast.makeText(getApplicationContext(), "Связь с адаптером прервана", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Связь с адаптером \"" + btDeviceName + "\" прервана", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -1063,7 +1153,6 @@ public class MainActivity extends AppCompatActivity {
                         hideWorkScreen();
                         hideSearchScreen();
                         showSettingsScreen();
-//                        todo: обновлять значения в полях ввода (на случай если раньше меняли, но не сохранили)
 
                         break;
 
@@ -1206,7 +1295,7 @@ public class MainActivity extends AppCompatActivity {
                             String[] str_arr = new String[arr.length];
                             for (int i = 0; i < arr.length; i++) {
                                 str_arr[i] = arr[i].toString();
-                                Log.d(LOG_TAG, str_arr[i]);
+//                                Log.d(LOG_TAG, str_arr[i]);
                             }
 
                             // заполняем выпадуху
@@ -1279,7 +1368,7 @@ public class MainActivity extends AppCompatActivity {
                         if (msg.obj == "trying_to_connect_again") {
 //                            Log.d(LOG_TAG, "btSocketCountConnectionTries: " + btSocketCountConnectionTries);
                             bt_connect.setText("ПОДКЛЮЧЕНИЕ...\nПОПЫТКА " + (btSocketCountConnectionTries + 1));
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру. Новая попытка", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\". Новая попытка", Toast.LENGTH_LONG).show();
                             break;
                         }
                         // Если так и не подключились, то возвращаемся к исходному состоянию
@@ -1287,7 +1376,7 @@ public class MainActivity extends AppCompatActivity {
                             btDeviceConnectionState = BtDeviceConnectionState.DISCONNECTED;
                             bt_connect.setText("ПОДКЛЮЧИТЬСЯ");
                             bt_connect.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Не удалось подключиться к адаптеру \"" + btDeviceName + "\"", Toast.LENGTH_LONG).show();
                         } else {
                             // Иначе (всё ок) создаём отдельный поток с подключением
                             // для дальнейшего обмена информацией и запускаем его
@@ -1304,7 +1393,7 @@ public class MainActivity extends AppCompatActivity {
                             // И делаем доступной кнопку соединения с датчиком
                             connect_to_sensor.setEnabled(true);
                             search_sensors.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Адаптер подключен", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Адаптер \"" + btDeviceName + "\" подключен", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     case SEARCH_SENSORS_DATA:
@@ -1534,6 +1623,9 @@ public class MainActivity extends AppCompatActivity {
         requestPause = settings.getInt("requestPause", REQUEST_PAUSE_DEFAULT);
         highConcentration = settings.getFloat("highConcentration", HIGH_CONCENTRATION_DEFAULT);
         middleConcentration = settings.getFloat("middleConcentration", MIDDLE_CONCENTRATION_DEFAULT);
+
+        btDeviceName = settings.getString("btDeviceName", BT_DEVICE_NAME_DEFAULT);
+        btDeviceMacAddress = settings.getString("btDeviceMacAddress", BT_DEVICE_MAC_ADDRESS_DEFAULT);
         
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
@@ -1687,6 +1779,18 @@ public class MainActivity extends AppCompatActivity {
         title_middle_concentration.setVisibility(View.VISIBLE);
         input_middle_concentration.setText(Float.toString(middleConcentration));
         input_middle_concentration.setVisibility(View.VISIBLE);
+        
+        title_bt_device_list.setVisibility(View.VISIBLE);
+
+        // todo: заполнить список
+        btPairedDevices.clear();
+        btPairedDevices.add(new String[] {btDeviceName, btDeviceMacAddress});
+        bt_device_list_adapter.clear();
+        bt_device_list_adapter.add(btDeviceName + " (" + btDeviceMacAddress + ")");
+        bt_device_list.setSelection(0);
+
+        bt_device_list.setVisibility(View.VISIBLE);
+        update_bt_device_list.setVisibility(View.VISIBLE);
 
         save_settings.setVisibility(View.VISIBLE);
         reset_settings.setVisibility(View.VISIBLE);
@@ -1704,6 +1808,10 @@ public class MainActivity extends AppCompatActivity {
         title_middle_concentration.setVisibility(View.INVISIBLE);
         input_middle_concentration.setVisibility(View.INVISIBLE);
 
+        title_bt_device_list.setVisibility(View.INVISIBLE);
+        bt_device_list.setVisibility(View.INVISIBLE);
+        update_bt_device_list.setVisibility(View.INVISIBLE);
+        
         save_settings.setVisibility(View.INVISIBLE);
         reset_settings.setVisibility(View.INVISIBLE);
 
