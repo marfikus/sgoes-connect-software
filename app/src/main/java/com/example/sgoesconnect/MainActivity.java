@@ -908,12 +908,20 @@ public class MainActivity extends AppCompatActivity {
                 // адаптер
                 int pos = bt_device_list.getSelectedItemPosition();
                 String[][] devices = btPairedDevices.toArray(new String[btPairedDevices.size()][2]);
-                Log.d(LOG_TAG, "selected device: " + devices[pos][0] + " " + devices[pos][1]);
+                String btDeviceNameNew = devices[pos][0];
+                String btDeviceMacAddressNew = devices[pos][1];
+//                Log.d(LOG_TAG, "selected device: " + btDeviceNameNew + " " + btDeviceMacAddressNew);
 
-                btDeviceName = devices[pos][0];
-                btDeviceMacAddress = devices[pos][1];
-                prefEditor.putString("btDeviceName", btDeviceName);
-                prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+                if (!btDeviceMacAddressNew.equals(btDeviceMacAddress)) {
+                    btDeviceName = btDeviceNameNew;
+                    btDeviceMacAddress = btDeviceMacAddressNew;
+                    prefEditor.putString("btDeviceName", btDeviceName);
+                    prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+
+                    if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                        bt_connect.performClick();
+                    }
+                }
 
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Сохранено", Toast.LENGTH_SHORT).show();
@@ -950,6 +958,10 @@ public class MainActivity extends AppCompatActivity {
 
                 prefEditor.putString("btDeviceName", btDeviceName);
                 prefEditor.putString("btDeviceMacAddress", btDeviceMacAddress);
+
+                if (btDeviceConnectionState == BtDeviceConnectionState.CONNECTED) {
+                    bt_connect.performClick();
+                }
 
                 prefEditor.apply();
                 Toast.makeText(getBaseContext(), "Восстановлены первоначальные значения", Toast.LENGTH_SHORT).show();
