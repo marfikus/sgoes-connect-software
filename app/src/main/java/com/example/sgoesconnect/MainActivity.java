@@ -316,16 +316,18 @@ public class MainActivity extends AppCompatActivity {
             switch (curRegAddress) {
                 case 0: // старший байт: адрес устройства, младший: скорость обмена
 
+                    // для ГСО пришлось отказаться от этого регистра, дабы уместиться в лимит (10 регистров в запросе)
+
 //                  берём в ответе соответсвующие 2 байта
 //                  преобразовываем их в соответсвии со спецификацией!
 
-                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
+                    // curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
+                    // sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
 //                    curSensorAddress = curRegDataHighByte;
 //                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
-                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
+                    // curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     break;
 
@@ -1403,6 +1405,8 @@ public class MainActivity extends AppCompatActivity {
         sensor_address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // пока отключил клик по этой кнопке, поскольку нет данных для неё (первый регистр не запрашивается)
+                /*
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curSensorAddress));
@@ -1410,6 +1414,7 @@ public class MainActivity extends AppCompatActivity {
                 
                 confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
                 showConfirmDialog();
+                */
             }
         });
         
@@ -1936,7 +1941,8 @@ public class MainActivity extends AppCompatActivity {
             case NONE: // команды с кнопок нет, обычный запрос данных
             // обычно запрашиваем 0x0C (12) регистров, 
             // но если в режиме поиска, то достаточно и одного 
-            byte numRegisters = (byte)0x0C;
+            // byte numRegisters = (byte)0x0C; // для СГОЭС
+            byte numRegisters = (byte)0x0A; // для ГСО (у него ограничение запроса в 10 регистров)
             if (appMode == AppMode.SEARCH_SENSORS) {
                 numRegisters = (byte)0x01;
             }
@@ -1944,7 +1950,8 @@ public class MainActivity extends AppCompatActivity {
                         sensorAddress,
                         (byte)0x03, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x00, // firstRegAddressLow
+                        // (byte)0x00, // firstRegAddressLow
+                        (byte)0x01, // firstRegAddressLow (для ГСО первый регистр не запрашиваем, пожертвуем им)
                         (byte)0x00, // numRegistersHigh
                         numRegisters  // numRegistersLow
                 };
