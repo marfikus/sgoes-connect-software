@@ -129,14 +129,14 @@
         app:layout_constraintTop_toTopOf="@+id/bt_settings" />
 
     <Button
-        android:id="@+id/sensor_address"
+        android:id="@+id/change_sensor_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginTop="10dp"
         android:enabled="false"
-        android:text="Адрес датчика: null"
+        android:text="Смена адреса датчика"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/input_sensor_address" />
 
@@ -156,8 +156,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="Заводской №:"
-        app:layout_constraintStart_toStartOf="@+id/sensor_address"
-        app:layout_constraintTop_toBottomOf="@+id/sensor_address" />
+        app:layout_constraintStart_toStartOf="@+id/change_sensor_address"
+        app:layout_constraintTop_toBottomOf="@+id/change_sensor_address" />
 
     <TextView
         android:id="@+id/title_gas_level_nkpr"

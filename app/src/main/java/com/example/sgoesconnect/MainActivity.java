@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         set_defaults.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
-            sensor_address.setEnabled(true);
+            change_sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);
         }
@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    // sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
+                    // change_sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
 //                    curSensorAddress = curRegDataHighByte;
 //                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
@@ -536,7 +536,7 @@ public class MainActivity extends AppCompatActivity {
     Button confirm_dialog_cancel;
     Button threshold_1;
     Button threshold_2;
-    Button sensor_address;
+    Button change_sensor_address;
     Button set_defaults;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
@@ -741,7 +741,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         
-        sensor_address = (Button) findViewById(R.id.sensor_address);
+        change_sensor_address = (Button) findViewById(R.id.change_sensor_address);
         
         title_serial_number = (TextView) findViewById(R.id.title_serial_number);
         serial_number = (TextView) findViewById(R.id.serial_number);
@@ -1402,22 +1402,19 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        sensor_address.setOnClickListener(new View.OnClickListener() {
+        change_sensor_address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // пока отключил клик по этой кнопке, поскольку нет данных для неё (первый регистр не запрашивается)
-                /*
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curSensorAddress));
                 confirm_dialog_input.setEnabled(true);
-                
+
                 confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
                 showConfirmDialog();
-                */
             }
         });
-        
+
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1637,7 +1634,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state.setVisibility(View.VISIBLE);
         working_mode.setVisibility(View.VISIBLE);
         
-        sensor_address.setVisibility(View.VISIBLE);
+        change_sensor_address.setVisibility(View.VISIBLE);
         
         title_serial_number.setVisibility(View.VISIBLE);
         serial_number.setVisibility(View.VISIBLE);
@@ -1686,7 +1683,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state.setVisibility(View.INVISIBLE);
         working_mode.setVisibility(View.INVISIBLE);
         
-        sensor_address.setVisibility(View.INVISIBLE);
+        change_sensor_address.setVisibility(View.INVISIBLE);
         
         title_serial_number.setVisibility(View.INVISIBLE);
         serial_number.setVisibility(View.INVISIBLE);
@@ -1824,7 +1821,7 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_ok.setVisibility(View.VISIBLE);
         confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
-        sensor_address.setEnabled(false);
+        change_sensor_address.setEnabled(false);
         threshold_1.setEnabled(false);
         threshold_2.setEnabled(false);
     }
@@ -1841,12 +1838,12 @@ public class MainActivity extends AppCompatActivity {
             middle_calibration.setEnabled(false);
             set_defaults.setEnabled(false);
             
-            sensor_address.setEnabled(false);
+            change_sensor_address.setEnabled(false);
             threshold_1.setEnabled(false);
             threshold_2.setEnabled(false);
             
         } else if (mode == "cancel") {
-            sensor_address.setEnabled(true);
+            change_sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);            
         }
