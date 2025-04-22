@@ -387,6 +387,38 @@ public class MainActivity extends AppCompatActivity {
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
 //                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+                    // экспериментально для гсо, ну и может для сгоэс будет тоже работать...
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    String bits = Integer.toBinaryString(curRegDataFull);
+                    // дополняем строку ведущими нулями
+                    bits = String.format("%16s", bits).replace(' ', '0');
+//                    Log.d(LOG_TAG, "bits: " + bits);
+                    float nkprValue;
+                    // если старший бит = 1, то значит это отрицательное число
+                    if (bits.startsWith("1")) {
+                        // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
+                        // и то, что получится делить на 10(для регистра 11, а тут делить не надо, но чтобы не ломать алгоритм, делю на 1), но это дольше.
+                        // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
+                        // причём уже с нужным знаком. Думаю, это нормальное решение)
+                        nkprValue = (curRegDataFull - 65535) / (float)1.0;
+                    } else {
+                        nkprValue = curRegDataFull / (float)1.0;
+                    }
+                    gas_level_nkpr.setText(Float.toString(nkprValue));
+
+                    // объёмные проценты
+                    float volumePercent = nkprPercentToVolumePercent(nkprValue);
+                    // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                    gas_level_volume.setText(Float.toString(volumePercent));
+
+                    // ток в мА
+                    float current = nkprPercentToCurrent(nkprValue);
+                    // Log.d(LOG_TAG, "current: " + current);
+                    gas_level_current.setText(Float.toString(current));
+
+
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
@@ -433,6 +465,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
+                    // для сгоэс это работает, а для гсо нет (у него в этом регистре другие данные), поэтому пока отключил
+
+                    /*
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     String bits = Integer.toBinaryString(curRegDataFull);
@@ -461,6 +496,7 @@ public class MainActivity extends AppCompatActivity {
                     float current = nkprPercentToCurrent(nkprValue);
                     // Log.d(LOG_TAG, "current: " + current);
                     gas_level_current.setText(Float.toString(current));
+                    */
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
