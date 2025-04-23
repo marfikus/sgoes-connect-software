@@ -28,6 +28,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rg_app_modes" />
 
+    <RadioGroup
+        android:id="@+id/rg_sensor_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@id/title_sensor_connection"
+        app:layout_constraintBottom_toBottomOf="@+id/title_sensor_connection"
+        app:layout_constraintTop_toTopOf="@+id/title_sensor_connection">
+
+        <RadioButton
+            android:id="@+id/rb_sgoes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="СГОЭС" />
+
+        <RadioButton
+            android:id="@+id/rb_gso"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ГСО" />
+    </RadioGroup>
+
     <EditText
         android:id="@+id/input_sensor_address"
         android:layout_width="wrap_content"

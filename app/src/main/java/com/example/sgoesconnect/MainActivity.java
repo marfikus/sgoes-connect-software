@@ -606,6 +606,15 @@ public class MainActivity extends AppCompatActivity {
     RadioButton rb_settings;
     Handler myHandler;
 
+    RadioGroup rg_sensor_type;
+    RadioButton rb_sgoes;
+    RadioButton rb_gso;
+    enum SensorType {
+        SGOES,
+        GSO
+    }
+    SensorType selected_sensor_type = SensorType.SGOES;
+
     TextView title_search_range;
     TextView title_search_start;
     EditText input_search_start;
@@ -769,6 +778,10 @@ public class MainActivity extends AppCompatActivity {
         rb_work = (RadioButton) findViewById(R.id.rb_work);
         rb_search = (RadioButton) findViewById(R.id.rb_search);
         rb_settings = (RadioButton) findViewById(R.id.rb_settings);
+
+        rg_sensor_type = (RadioGroup) findViewById(R.id.rg_sensor_type);
+        rb_sgoes = (RadioButton) findViewById(R.id.rb_sgoes);
+        rb_gso = (RadioButton) findViewById(R.id.rb_gso);
 
         // work screen
         title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
@@ -1181,6 +1194,26 @@ public class MainActivity extends AppCompatActivity {
                         hideWorkScreen();
                         hideSearchScreen();
                         showSettingsScreen();
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        });
+
+        rg_sensor_type.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.rb_sgoes:
+                        selected_sensor_type = SensorType.SGOES;
+
+                        break;
+
+                    case R.id.rb_gso:
+                        selected_sensor_type = SensorType.GSO;
 
                         break;
 
