@@ -1271,6 +1271,10 @@ public class MainActivity extends AppCompatActivity {
                     rb_search.setEnabled(false);
                     rb_settings.setEnabled(false);
 
+                    rg_sensor_type.setEnabled(false);
+                    rb_sgoes.setEnabled(false);
+                    rb_gso.setEnabled(false);
+
                     input_sensor_address.setEnabled(false);
                     connect_to_sensor.setText("Стоп");
                     search_sensors.setText("Стоп");
@@ -1338,6 +1342,10 @@ public class MainActivity extends AppCompatActivity {
                     rb_work.setEnabled(true);
                     rb_search.setEnabled(true);
                     rb_settings.setEnabled(true);
+
+                    rg_sensor_type.setEnabled(true);
+                    rb_sgoes.setEnabled(true);
+                    rb_gso.setEnabled(true);
                     
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
@@ -1696,6 +1704,9 @@ public class MainActivity extends AppCompatActivity {
     
     public void showWorkScreen() {
         title_sensor_connection.setVisibility(View.VISIBLE);
+
+        rg_sensor_type.setVisibility(View.VISIBLE);
+
         input_sensor_address.setVisibility(View.VISIBLE);
 
         connect_to_sensor.setVisibility(View.VISIBLE);
@@ -1745,6 +1756,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void hideWorkScreen() {
         title_sensor_connection.setVisibility(View.INVISIBLE);
+
+        rg_sensor_type.setVisibility(View.INVISIBLE);
+
         input_sensor_address.setVisibility(View.INVISIBLE);
 
         connect_to_sensor.setVisibility(View.INVISIBLE);
