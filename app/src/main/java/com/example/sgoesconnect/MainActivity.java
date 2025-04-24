@@ -1209,17 +1209,18 @@ public class MainActivity extends AppCompatActivity {
                 switch (checkedId) {
                     case R.id.rb_sgoes:
                         selected_sensor_type = SensorType.SGOES;
-
                         break;
 
                     case R.id.rb_gso:
                         selected_sensor_type = SensorType.GSO;
-
                         break;
 
                     default:
                         break;
                 }
+                // для проверки:
+//                prefEditor.putString("lastConnectedSensorType", selected_sensor_type.toString());
+//                prefEditor.apply();
             }
         });
 
@@ -1236,6 +1237,8 @@ public class MainActivity extends AppCompatActivity {
                                 curSensorAddress = Integer.parseInt(inputAddress);
                                 // сохраняем адрес
                                 prefEditor.putString("lastConnectedSensorAddress", inputAddress);
+                                // сохраняем выбраный тип датчика
+                                prefEditor.putString("lastConnectedSensorType", selected_sensor_type.toString());
                                 prefEditor.apply();
                             } else {
                                 return;
@@ -1700,6 +1703,15 @@ public class MainActivity extends AppCompatActivity {
         
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
+
+        String lastConnectedSensorType = settings.getString("lastConnectedSensorType", SensorType.SGOES.toString());
+        if (lastConnectedSensorType.equals(SensorType.SGOES.toString())) {
+            selected_sensor_type = SensorType.SGOES;
+            rb_sgoes.toggle();
+        } else if (lastConnectedSensorType.equals(SensorType.GSO.toString())) {
+            selected_sensor_type = SensorType.GSO;
+            rb_gso.toggle();
+        }
     }
     
     public void showWorkScreen() {
