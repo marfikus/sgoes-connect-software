@@ -388,37 +388,37 @@ public class MainActivity extends AppCompatActivity {
 //                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
 
-                    // экспериментально для гсо, ну и может для сгоэс будет тоже работать...
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+                    // если выбран тип датчика - ГСО (для СГОЭС берет из регистра 10, см. ниже):
+                    if (selected_sensor_type.equals(SensorType.GSO)) {
+                        curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-                    String bits = Integer.toBinaryString(curRegDataFull);
-                    // дополняем строку ведущими нулями
-                    bits = String.format("%16s", bits).replace(' ', '0');
+                        String bits = Integer.toBinaryString(curRegDataFull);
+                        // дополняем строку ведущими нулями
+                        bits = String.format("%16s", bits).replace(' ', '0');
 //                    Log.d(LOG_TAG, "bits: " + bits);
-                    float nkprValue;
-                    // если старший бит = 1, то значит это отрицательное число
-                    if (bits.startsWith("1")) {
-                        // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
-                        // и то, что получится делить на 10(для регистра 11, а тут делить не надо, но чтобы не ломать алгоритм, делю на 1), но это дольше.
-                        // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
-                        // причём уже с нужным знаком. Думаю, это нормальное решение)
-                        nkprValue = (curRegDataFull - 65535) / (float)1.0;
-                    } else {
-                        nkprValue = curRegDataFull / (float)1.0;
+                        float nkprValue;
+                        // если старший бит = 1, то значит это отрицательное число
+                        if (bits.startsWith("1")) {
+                            // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
+                            // и то, что получится делить на 10(для регистра 11, а тут делить не надо, но чтобы не ломать алгоритм, делю на 1), но это дольше.
+                            // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
+                            // причём уже с нужным знаком. Думаю, это нормальное решение)
+                            nkprValue = (curRegDataFull - 65535) / (float)1.0;
+                        } else {
+                            nkprValue = curRegDataFull / (float)1.0;
+                        }
+                        gas_level_nkpr.setText(Float.toString(nkprValue));
+
+                        // объёмные проценты
+                        float volumePercent = nkprPercentToVolumePercent(nkprValue);
+                        // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                        gas_level_volume.setText(Float.toString(volumePercent));
+
+                        // ток в мА
+                        float current = nkprPercentToCurrent(nkprValue);
+                        // Log.d(LOG_TAG, "current: " + current);
+                        gas_level_current.setText(Float.toString(current));
                     }
-                    gas_level_nkpr.setText(Float.toString(nkprValue));
-
-                    // объёмные проценты
-                    float volumePercent = nkprPercentToVolumePercent(nkprValue);
-                    // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
-                    gas_level_volume.setText(Float.toString(volumePercent));
-
-                    // ток в мА
-                    float current = nkprPercentToCurrent(nkprValue);
-                    // Log.d(LOG_TAG, "current: " + current);
-                    gas_level_current.setText(Float.toString(current));
-
-
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
@@ -465,38 +465,40 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
-                    // для сгоэс это работает, а для гсо нет (у него в этом регистре другие данные), поэтому пока отключил
+                    // тут данные чаще обновляются (как бы усиленные) - более живое отображение состояния.
+                    // для сгоэс это работает, а для гсо нет (у него в этом регистре другие данные)
 
-                    /*
-                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+                    // если выбран тип датчика - СГОЭС (для ГСО берет из регистра 2, см. выше):
+                    if (selected_sensor_type.equals(SensorType.SGOES)) {
+                        curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
-                    String bits = Integer.toBinaryString(curRegDataFull);
-                    // дополняем строку ведущими нулями
-                    bits = String.format("%16s", bits).replace(' ', '0');
+                        String bits = Integer.toBinaryString(curRegDataFull);
+                        // дополняем строку ведущими нулями
+                        bits = String.format("%16s", bits).replace(' ', '0');
 //                    Log.d(LOG_TAG, "bits: " + bits);
-                    float nkprValue;
-                    // если старший бит = 1, то значит это отрицательное число
-                    if (bits.startsWith("1")) {
-                        // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
-                        // и то, что получится делить на 10, но это дольше.
-                        // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
-                        // причём уже с нужным знаком. Думаю, это нормальное решение)
-                        nkprValue = (curRegDataFull - 65535) / (float)10.0;
-                    } else {
-                        nkprValue = curRegDataFull / (float)10.0;
+                        float nkprValue;
+                        // если старший бит = 1, то значит это отрицательное число
+                        if (bits.startsWith("1")) {
+                            // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
+                            // и то, что получится делить на 10, но это дольше.
+                            // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
+                            // причём уже с нужным знаком. Думаю, это нормальное решение)
+                            nkprValue = (curRegDataFull - 65535) / (float)10.0;
+                        } else {
+                            nkprValue = curRegDataFull / (float)10.0;
+                        }
+                        gas_level_nkpr.setText(Float.toString(nkprValue));
+
+                        // объёмные проценты
+                        float volumePercent = nkprPercentToVolumePercent(nkprValue);
+                        // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                        gas_level_volume.setText(Float.toString(volumePercent));
+
+                        // ток в мА
+                        float current = nkprPercentToCurrent(nkprValue);
+                        // Log.d(LOG_TAG, "current: " + current);
+                        gas_level_current.setText(Float.toString(current));
                     }
-                    gas_level_nkpr.setText(Float.toString(nkprValue));
-
-                    // объёмные проценты
-                    float volumePercent = nkprPercentToVolumePercent(nkprValue);
-                    // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
-                    gas_level_volume.setText(Float.toString(volumePercent));
-
-                    // ток в мА
-                    float current = nkprPercentToCurrent(nkprValue);
-                    // Log.d(LOG_TAG, "current: " + current);
-                    gas_level_current.setText(Float.toString(current));
-                    */
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -605,6 +607,15 @@ public class MainActivity extends AppCompatActivity {
     RadioButton rb_search;
     RadioButton rb_settings;
     Handler myHandler;
+
+    RadioGroup rg_sensor_type;
+    RadioButton rb_sgoes;
+    RadioButton rb_gso;
+    enum SensorType {
+        SGOES,
+        GSO
+    }
+    SensorType selected_sensor_type = SensorType.SGOES;
 
     TextView title_search_range;
     TextView title_search_start;
@@ -769,6 +780,10 @@ public class MainActivity extends AppCompatActivity {
         rb_work = (RadioButton) findViewById(R.id.rb_work);
         rb_search = (RadioButton) findViewById(R.id.rb_search);
         rb_settings = (RadioButton) findViewById(R.id.rb_settings);
+
+        rg_sensor_type = (RadioGroup) findViewById(R.id.rg_sensor_type);
+        rb_sgoes = (RadioButton) findViewById(R.id.rb_sgoes);
+        rb_gso = (RadioButton) findViewById(R.id.rb_gso);
 
         // work screen
         title_sensor_connection = (TextView) findViewById(R.id.title_sensor_connection);
@@ -1190,6 +1205,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        rg_sensor_type.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.rb_sgoes:
+                        selected_sensor_type = SensorType.SGOES;
+                        break;
+
+                    case R.id.rb_gso:
+                        selected_sensor_type = SensorType.GSO;
+                        break;
+
+                    default:
+                        break;
+                }
+                // для проверки:
+//                prefEditor.putString("lastConnectedSensorType", selected_sensor_type.toString());
+//                prefEditor.apply();
+            }
+        });
+
         connect_to_sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1203,6 +1239,8 @@ public class MainActivity extends AppCompatActivity {
                                 curSensorAddress = Integer.parseInt(inputAddress);
                                 // сохраняем адрес
                                 prefEditor.putString("lastConnectedSensorAddress", inputAddress);
+                                // сохраняем выбраный тип датчика
+                                prefEditor.putString("lastConnectedSensorType", selected_sensor_type.toString());
                                 prefEditor.apply();
                             } else {
                                 return;
@@ -1237,6 +1275,10 @@ public class MainActivity extends AppCompatActivity {
                     rb_work.setEnabled(false);
                     rb_search.setEnabled(false);
                     rb_settings.setEnabled(false);
+
+                    rg_sensor_type.setEnabled(false);
+                    rb_sgoes.setEnabled(false);
+                    rb_gso.setEnabled(false);
 
                     input_sensor_address.setEnabled(false);
                     connect_to_sensor.setText("Стоп");
@@ -1305,6 +1347,10 @@ public class MainActivity extends AppCompatActivity {
                     rb_work.setEnabled(true);
                     rb_search.setEnabled(true);
                     rb_settings.setEnabled(true);
+
+                    rg_sensor_type.setEnabled(true);
+                    rb_sgoes.setEnabled(true);
+                    rb_gso.setEnabled(true);
                     
                     connect_to_sensor.setText("Старт");
                     input_sensor_address.setEnabled(true);
@@ -1659,10 +1705,22 @@ public class MainActivity extends AppCompatActivity {
         
         String lastConnectedSensorAddress = settings.getString("lastConnectedSensorAddress", "");
         input_sensor_address.setText(lastConnectedSensorAddress);
+
+        String lastConnectedSensorType = settings.getString("lastConnectedSensorType", SensorType.SGOES.toString());
+        if (lastConnectedSensorType.equals(SensorType.SGOES.toString())) {
+            selected_sensor_type = SensorType.SGOES;
+            rb_sgoes.toggle();
+        } else if (lastConnectedSensorType.equals(SensorType.GSO.toString())) {
+            selected_sensor_type = SensorType.GSO;
+            rb_gso.toggle();
+        }
     }
     
     public void showWorkScreen() {
         title_sensor_connection.setVisibility(View.VISIBLE);
+
+        rg_sensor_type.setVisibility(View.VISIBLE);
+
         input_sensor_address.setVisibility(View.VISIBLE);
 
         connect_to_sensor.setVisibility(View.VISIBLE);
@@ -1712,6 +1770,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void hideWorkScreen() {
         title_sensor_connection.setVisibility(View.INVISIBLE);
+
+        rg_sensor_type.setVisibility(View.INVISIBLE);
+
         input_sensor_address.setVisibility(View.INVISIBLE);
 
         connect_to_sensor.setVisibility(View.INVISIBLE);
