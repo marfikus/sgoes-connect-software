@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         set_defaults.setEnabled(true);
 
         if (confirm_dialog_title.getVisibility() == View.INVISIBLE) {
-            sensor_address.setEnabled(true);
+            change_sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);
         }
@@ -316,16 +316,18 @@ public class MainActivity extends AppCompatActivity {
             switch (curRegAddress) {
                 case 0: // старший байт: адрес устройства, младший: скорость обмена
 
+                    // для ГСО пришлось отказаться от этого регистра, дабы уместиться в лимит (10 регистров в запросе)
+
 //                  берём в ответе соответсвующие 2 байта
 //                  преобразовываем их в соответсвии со спецификацией!
 
-                    curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
+                    // curRegDataHighByte = localCopyResponse[curBytePos] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataHighByte: " + curRegDataHighByte);
-                    sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
+                    // change_sensor_address.setText("Адрес датчика: " + Integer.toString(curRegDataHighByte));
 //                    curSensorAddress = curRegDataHighByte;
 //                    input_sensor_address.setText(Integer.toString(curRegDataHighByte));
 
-                    curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
+                    // curRegDataLowByte = localCopyResponse[curBytePos + 1] & 0xFF;
                     // Log.d(LOG_TAG, "curRegDataLowByte: " + curRegDataLowByte);
                     break;
 
@@ -385,6 +387,38 @@ public class MainActivity extends AppCompatActivity {
                 case 2: // концентрация измеряемого газа в % НКПР (целое знаковое)
 //                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
                     // Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+
+                    // экспериментально для гсо, ну и может для сгоэс будет тоже работать...
+                    curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
+//                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
+                    String bits = Integer.toBinaryString(curRegDataFull);
+                    // дополняем строку ведущими нулями
+                    bits = String.format("%16s", bits).replace(' ', '0');
+//                    Log.d(LOG_TAG, "bits: " + bits);
+                    float nkprValue;
+                    // если старший бит = 1, то значит это отрицательное число
+                    if (bits.startsWith("1")) {
+                        // Mожно, конечно, инвертировать биты, преобразовывать к целому числу,
+                        // и то, что получится делить на 10(для регистра 11, а тут делить не надо, но чтобы не ломать алгоритм, делю на 1), но это дольше.
+                        // А так просто вычитаем максимальное значение для 2х байт(65535) и получаем то же самое,
+                        // причём уже с нужным знаком. Думаю, это нормальное решение)
+                        nkprValue = (curRegDataFull - 65535) / (float)1.0;
+                    } else {
+                        nkprValue = curRegDataFull / (float)1.0;
+                    }
+                    gas_level_nkpr.setText(Float.toString(nkprValue));
+
+                    // объёмные проценты
+                    float volumePercent = nkprPercentToVolumePercent(nkprValue);
+                    // Log.d(LOG_TAG, "volumePercent: " + volumePercent);
+                    gas_level_volume.setText(Float.toString(volumePercent));
+
+                    // ток в мА
+                    float current = nkprPercentToCurrent(nkprValue);
+                    // Log.d(LOG_TAG, "current: " + current);
+                    gas_level_current.setText(Float.toString(current));
+
+
                     break;
 
                 case 3: // старший байт: порог 1, младший: порог 2
@@ -431,6 +465,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 10: // концентрация измеряемого газа в % НКПР * 10 (целое знаковое)
+                    // для сгоэс это работает, а для гсо нет (у него в этом регистре другие данные), поэтому пока отключил
+
+                    /*
                     curRegDataFull = ((localCopyResponse[curBytePos] & 0xFF) << 8) | (localCopyResponse[curBytePos + 1] & 0xFF);
 //                    Log.d(LOG_TAG, "curRegDataFull: " + curRegDataFull);
                     String bits = Integer.toBinaryString(curRegDataFull);
@@ -459,6 +496,7 @@ public class MainActivity extends AppCompatActivity {
                     float current = nkprPercentToCurrent(nkprValue);
                     // Log.d(LOG_TAG, "current: " + current);
                     gas_level_current.setText(Float.toString(current));
+                    */
                     break;
 
                 case 11: // номер версии ПО прибора (беззнаковое целое)
@@ -534,7 +572,7 @@ public class MainActivity extends AppCompatActivity {
     Button confirm_dialog_cancel;
     Button threshold_1;
     Button threshold_2;
-    Button sensor_address;
+    Button change_sensor_address;
     Button set_defaults;
     EditText confirm_dialog_input;
     private ConnectedThread myThread = null;
@@ -739,7 +777,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state = (TextView) findViewById(R.id.sensor_connection_state);
         working_mode = (TextView) findViewById(R.id.working_mode);
         
-        sensor_address = (Button) findViewById(R.id.sensor_address);
+        change_sensor_address = (Button) findViewById(R.id.change_sensor_address);
         
         title_serial_number = (TextView) findViewById(R.id.title_serial_number);
         serial_number = (TextView) findViewById(R.id.serial_number);
@@ -1400,19 +1438,19 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        sensor_address.setOnClickListener(new View.OnClickListener() {
+        change_sensor_address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 confirm_dialog_title.setText("Смена адреса датчика:");
                 confirm_dialog_input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
                 confirm_dialog_input.setText(Integer.toString(curSensorAddress));
                 confirm_dialog_input.setEnabled(true);
-                
+
                 confirmDialogMode = ConfirmDialogModes.CHANGE_SENSOR_ADDRESS;
                 showConfirmDialog();
             }
         });
-        
+
         set_zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1632,7 +1670,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state.setVisibility(View.VISIBLE);
         working_mode.setVisibility(View.VISIBLE);
         
-        sensor_address.setVisibility(View.VISIBLE);
+        change_sensor_address.setVisibility(View.VISIBLE);
         
         title_serial_number.setVisibility(View.VISIBLE);
         serial_number.setVisibility(View.VISIBLE);
@@ -1681,7 +1719,7 @@ public class MainActivity extends AppCompatActivity {
         sensor_connection_state.setVisibility(View.INVISIBLE);
         working_mode.setVisibility(View.INVISIBLE);
         
-        sensor_address.setVisibility(View.INVISIBLE);
+        change_sensor_address.setVisibility(View.INVISIBLE);
         
         title_serial_number.setVisibility(View.INVISIBLE);
         serial_number.setVisibility(View.INVISIBLE);
@@ -1819,7 +1857,7 @@ public class MainActivity extends AppCompatActivity {
         confirm_dialog_ok.setVisibility(View.VISIBLE);
         confirm_dialog_cancel.setVisibility(View.VISIBLE);
 
-        sensor_address.setEnabled(false);
+        change_sensor_address.setEnabled(false);
         threshold_1.setEnabled(false);
         threshold_2.setEnabled(false);
     }
@@ -1836,12 +1874,12 @@ public class MainActivity extends AppCompatActivity {
             middle_calibration.setEnabled(false);
             set_defaults.setEnabled(false);
             
-            sensor_address.setEnabled(false);
+            change_sensor_address.setEnabled(false);
             threshold_1.setEnabled(false);
             threshold_2.setEnabled(false);
             
         } else if (mode == "cancel") {
-            sensor_address.setEnabled(true);
+            change_sensor_address.setEnabled(true);
             threshold_1.setEnabled(true);
             threshold_2.setEnabled(true);            
         }
@@ -1936,7 +1974,8 @@ public class MainActivity extends AppCompatActivity {
             case NONE: // команды с кнопок нет, обычный запрос данных
             // обычно запрашиваем 0x0C (12) регистров, 
             // но если в режиме поиска, то достаточно и одного 
-            byte numRegisters = (byte)0x0C;
+            // byte numRegisters = (byte)0x0C; // для СГОЭС
+            byte numRegisters = (byte)0x0A; // для ГСО (у него ограничение запроса в 10 регистров)
             if (appMode == AppMode.SEARCH_SENSORS) {
                 numRegisters = (byte)0x01;
             }
@@ -1944,7 +1983,8 @@ public class MainActivity extends AppCompatActivity {
                         sensorAddress,
                         (byte)0x03, // funcCode
                         (byte)0x00, // firstRegAddressHigh
-                        (byte)0x00, // firstRegAddressLow
+                        // (byte)0x00, // firstRegAddressLow
+                        (byte)0x01, // firstRegAddressLow (для ГСО первый регистр не запрашиваем, пожертвуем им)
                         (byte)0x00, // numRegistersHigh
                         numRegisters  // numRegistersLow
                 };
